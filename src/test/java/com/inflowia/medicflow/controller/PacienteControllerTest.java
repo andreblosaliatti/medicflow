@@ -1,8 +1,8 @@
 package com.inflowia.medicflow.controller;
 
-import com.inflowia.medicflow.domain.paciente.Paciente;
-import com.inflowia.medicflow.domain.paciente.PacienteRepository;
-import com.inflowia.medicflow.domain.dto.DadosListagemPaciente;
+import com.inflowia.medicflow.entities.paciente.Paciente;
+import com.inflowia.medicflow.repositories.PacienteRepository;
+import com.inflowia.medicflow.dto.paciente.DadosListagemPaciente;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

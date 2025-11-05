@@ -1,7 +1,8 @@
 package com.inflowia.medicflow.controller;
 
-import com.inflowia.medicflow.domain.dto.*;
-import com.inflowia.medicflow.domain.medicamento.MedicamentoService;
+import com.inflowia.medicflow.dto.medicamento.DadosCadastroMedicamento;
+import com.inflowia.medicflow.dto.medicamento.DadosListagemMedicamento;
+import com.inflowia.medicflow.services.MedicamentoService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

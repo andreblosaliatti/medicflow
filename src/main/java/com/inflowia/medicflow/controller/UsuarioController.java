@@ -1,11 +1,11 @@
 package com.inflowia.medicflow.controller;
 
-import com.inflowia.medicflow.domain.dto.DadosAtualizacaoUsuario;
-import com.inflowia.medicflow.domain.dto.DadosCadastroUsuario;
-import com.inflowia.medicflow.domain.dto.DadosDetalhamentoUsuario;
-import com.inflowia.medicflow.domain.dto.DadosListagemUsuario;
-import com.inflowia.medicflow.domain.usuario.Usuario;
-import com.inflowia.medicflow.domain.usuario.UsuarioRepository;
+import com.inflowia.medicflow.dto.usuario.DadosAtualizacaoUsuario;
+import com.inflowia.medicflow.dto.usuario.DadosCadastroUsuario;
+import com.inflowia.medicflow.dto.usuario.DadosDetalhamentoUsuario;
+import com.inflowia.medicflow.dto.usuario.DadosListagemUsuario;
+import com.inflowia.medicflow.entities.usuario.Usuario;
+import com.inflowia.medicflow.repositories.UsuarioRepository;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

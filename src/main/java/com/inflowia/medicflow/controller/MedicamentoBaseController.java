@@ -1,7 +1,7 @@
 package com.inflowia.medicflow.controller;
 
-import com.inflowia.medicflow.domain.dto.MedicamentoBaseDTO;
-import com.inflowia.medicflow.domain.medicamento.MedicamentoBaseService;
+import com.inflowia.medicflow.dto.medicamento.MedicamentoBaseDTO;
+import com.inflowia.medicflow.services.MedicamentoBaseService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

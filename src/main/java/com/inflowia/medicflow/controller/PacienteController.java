@@ -1,7 +1,11 @@
 package com.inflowia.medicflow.controller;
 
-import com.inflowia.medicflow.domain.dto.*;
-import com.inflowia.medicflow.domain.paciente.*;
+import com.inflowia.medicflow.dto.paciente.DadosAtualizacaoPaciente;
+import com.inflowia.medicflow.dto.paciente.DadosCadastroPaciente;
+import com.inflowia.medicflow.dto.paciente.DadosDetalhamentoPaciente;
+import com.inflowia.medicflow.dto.paciente.DadosListagemPaciente;
+import com.inflowia.medicflow.entities.paciente.Paciente;
+import com.inflowia.medicflow.repositories.PacienteRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
