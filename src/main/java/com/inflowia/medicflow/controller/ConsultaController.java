@@ -35,7 +35,8 @@ private ConsultaResponseDTO toResponse(Consulta c){
     r.motivo = c.getMotivo();
     if (c.getPaciente() != null){
         r.pacienteId = c.getPaciente().getId();
-        r.pacienteNome = c.getPaciente().getNome();
+        r.pacienteNome = c.getPaciente().getPrimeiroNome();
+        r.pacienteNome = c.getPaciente().getSobrenome();
     }
     if (c.getMedico() != null){
         r.medicoId = c.getMedico().getId();

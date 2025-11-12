@@ -10,14 +10,18 @@ import java.time.LocalDate;
  * DTO usado para cadastro de um novo paciente no sistema.
  */
 public record DadosCadastroPaciente(
-        @NotBlank(message = "Nome é obrigatório.")
-        String nome,
+        @NotBlank(message = "Primeiro nome é obrigatório.")
+        String primeiroNome,
+
+        @NotBlank(message = "sobrenome nome é obrigatório.")
+        String sobrenome,
 
         @NotBlank(message = "CPF é obrigatório")
         @CPF(message = "CPF inválido")
         String cpf,
 
         @NotNull(message = "Data de nascimento é obrigatória.")
+        @Past(message = "A data de nascimento tem que ser no passdo")
         LocalDate dataNascimento,
 
         @NotBlank(message = "Telefone é obrigatório")

@@ -1,20 +1,14 @@
 package com.inflowia.medicflow.entities.paciente;
 
+import com.inflowia.medicflow.entities.consulta.Consulta;
 import jakarta.persistence.*;
 import lombok.*;
 import jakarta.validation.constraints.*;
-import org.hibernate.validator.constraints.br.CPF;
-
 import com.inflowia.medicflow.dto.paciente.DadosAtualizacaoPaciente;
-import com.inflowia.medicflow.entities.medicamento.MedicamentoPrescrito;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Entidade que representa os dados de um paciente no sistema MedicFlow.
- */
 @Entity
 @Table(name = "pacientes")
 @Getter
@@ -22,17 +16,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
-
 public class Paciente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    private String nome;
+    @Column(name = "nome")
+    private String primeiroNome;
+    private String sobrenome;
 
-    @CPF
     @Column(unique = true)
     private String cpf;
 
@@ -45,6 +37,9 @@ public class Paciente {
     @Email
     private String email;
 
+    @NotNull
+    private String sexo;
+
     @Embedded
     private Endereco endereco;
 
@@ -53,18 +48,18 @@ public class Paciente {
     @Builder.Default
     private boolean ativo = true;
 
-    public void atualizarInformacoes(DadosAtualizacaoPaciente dados){
-    if (dados.nome() != null) this.nome = dados.nome();
-    if (dados.telefone() != null) this.telefone = dados.telefone();
-    if (dados.email() != null) this.email = dados.email();
-    if (dados.dataNascimento() != null) this.dataNascimento = dados.dataNascimento();
-    if (dados.endereco() != null) this.endereco.atualizarInformacoes(dados.endereco());
-}
+    @OneToMany(mappedBy = "paciente")
+    private List<Consulta> consultas = new ArrayList<>();
 
-@Builder.Default
-@OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MedicamentoPrescrito> medicamentosAtuais = new ArrayList<>();
-
+    public void atualizarInformacoes(DadosAtualizacaoPaciente dados) {
+        if (dados.primeiroNome() != null) this.primeiroNome = dados.primeiroNome();
+        if (dados.sobrenome() != null) this.sobrenome = dados.sobrenome();
+        if (dados.telefone() != null) this.telefone = dados.telefone();
+        if (dados.email() != null) this.email = dados.email();
+        if (dados.sexo() != null) this.sexo = dados.sexo();
+        if (dados.dataNascimento() != null) this.dataNascimento = dados.dataNascimento();
+        if (dados.endereco() != null) this.endereco.atualizarInformacoes(dados.endereco());
+    }
 }
 
 

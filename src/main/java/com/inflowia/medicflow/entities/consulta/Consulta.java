@@ -1,10 +1,21 @@
 package com.inflowia.medicflow.entities.consulta;
 
+import com.inflowia.medicflow.entities.exame.ExameSolicitado;
+import com.inflowia.medicflow.entities.medicamento.MedicamentoPrescrito;
 import com.inflowia.medicflow.entities.paciente.Paciente;
 import com.inflowia.medicflow.entities.usuario.Medico;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "consultas")
 public class Consulta {
@@ -13,7 +24,6 @@ public class Consulta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Data e hora do atendimento
     @Column(nullable = false)
     private LocalDateTime dataHora;
 
@@ -26,7 +36,7 @@ public class Consulta {
     private StatusConsulta status;
 
     @Column(length = 500)
-    private String motivo;          // queixa principal
+    private String motivo;
 
     @Column(length = 4000)
     private String anamnese;
@@ -38,7 +48,7 @@ public class Consulta {
     private String diagnostico;
 
     @Column(length = 4000)
-    private String prescricao;      // texto livre por enquanto; depois liga com MedicamentoPrescrito
+    private String prescricao;
 
     @Column(length = 2000)
     private String observacoes;
@@ -51,7 +61,11 @@ public class Consulta {
     @JoinColumn(name = "medico_id")
     private Medico medico;
 
-    public Consulta() {}
+    @OneToMany(mappedBy = "consulta")
+    private List<MedicamentoPrescrito> medicamentoPrescrito = new ArrayList<>();
+
+    @OneToMany(mappedBy = "consulta")
+    private List<ExameSolicitado> exameSolicitado = new ArrayList<>();
 
     public Consulta(LocalDateTime dataHora,
                     TipoConsulta tipo,
@@ -66,29 +80,4 @@ public class Consulta {
         this.paciente = paciente;
         this.medico = medico;
     }
-
-    // getters e setters (ou Lombok @Getter/@Setter se preferir)
-    public Long getId() { return id; }
-    public LocalDateTime getDataHora() { return dataHora; }
-    public void setDataHora(LocalDateTime dataHora) { this.dataHora = dataHora; }
-    public TipoConsulta getTipo() { return tipo; }
-    public void setTipo(TipoConsulta tipo) { this.tipo = tipo; }
-    public StatusConsulta getStatus() { return status; }
-    public void setStatus(StatusConsulta status) { this.status = status; }
-    public String getMotivo() { return motivo; }
-    public void setMotivo(String motivo) { this.motivo = motivo; }
-    public String getAnamnese() { return anamnese; }
-    public void setAnamnese(String anamnese) { this.anamnese = anamnese; }
-    public String getExameFisico() { return exameFisico; }
-    public void setExameFisico(String exameFisico) { this.exameFisico = exameFisico; }
-    public String getDiagnostico() { return diagnostico; }
-    public void setDiagnostico(String diagnostico) { this.diagnostico = diagnostico; }
-    public String getPrescricao() { return prescricao; }
-    public void setPrescricao(String prescricao) { this.prescricao = prescricao; }
-    public String getObservacoes() { return observacoes; }
-    public void setObservacoes(String observacoes) { this.observacoes = observacoes; }
-    public Paciente getPaciente() { return paciente; }
-    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
-    public Medico getMedico() { return medico; }
-    public void setMedico(Medico medico) { this.medico = medico; }
 }

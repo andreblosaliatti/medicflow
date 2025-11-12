@@ -3,6 +3,9 @@ package com.inflowia.medicflow.entities.medicamento;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -15,12 +18,15 @@ public class MedicamentoBase {
     @GeneratedValue
     private Long id;
 
-    private String dcb;                   //Denominação comum brasileira
-    private String nomeComercial;         //Ex: Tylenol
-    private String pricipioAtivo;         //Ex: Paracetamol
-    private String formaFarmaceutica;     //Ex: Comprimidos
-    private String dosagemPadrão;         //Ex: 500mg
-    private String viaAdministracao;      //Ex: Oral
-    private String codigoATC;             //Classficação OMS
+    private String dcb;
+    private String nomeComercial;
+    private String pricipioAtivo;
+    private String formaFarmaceutica;
+    private String dosagemPadrão;
+    private String viaAdministracao;
+    private String codigoATC;
+
+    @OneToMany(mappedBy = "medicamentoBase")
+    private List<MedicamentoPrescrito> medicamentoPrescrito = new ArrayList<>();
 
 }

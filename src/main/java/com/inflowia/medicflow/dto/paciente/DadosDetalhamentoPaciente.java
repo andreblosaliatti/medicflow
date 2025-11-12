@@ -7,7 +7,8 @@ import com.inflowia.medicflow.entities.paciente.Paciente;
 
 public record DadosDetalhamentoPaciente(
     Long id,
-    String nome,
+    String primeiroNome,
+    String sobrenome,
     String email,
     String cpf,
     String Telefone,
@@ -17,7 +18,8 @@ public record DadosDetalhamentoPaciente(
     public DadosDetalhamentoPaciente(Paciente paciente){
         this(
             paciente.getId(),
-            paciente.getNome(),
+            paciente.getPrimeiroNome(),
+                paciente.getSobrenome(),
             paciente.getEmail(),
             paciente.getCpf(),
             paciente.getTelefone(),

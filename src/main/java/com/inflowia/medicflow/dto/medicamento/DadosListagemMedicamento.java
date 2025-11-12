@@ -1,11 +1,11 @@
 package com.inflowia.medicflow.dto.medicamento;
 
 import com.inflowia.medicflow.entities.medicamento.MedicamentoPrescrito;
-    
+
 public record DadosListagemMedicamento (
     Long id,
     String nome,
-    String doasgem,
+    String dosagem,
     String frequencia,
     String via
 ){

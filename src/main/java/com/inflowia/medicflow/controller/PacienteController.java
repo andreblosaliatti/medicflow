@@ -8,6 +8,7 @@ import com.inflowia.medicflow.entities.paciente.Paciente;
 import com.inflowia.medicflow.repositories.PacienteRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,21 +25,15 @@ public class PacienteController {
 
     private final PacienteRepository repository;
 
-    /**
-     * Injeção de dependência via construtor.
-     * O Spring automaticamente fornece uma instância do repositório.
-     */
     public PacienteController(PacienteRepository repository) {
         this.repository = repository;
     }
 
-    /**
-     * Cadastrar novo paciente.
-     */
     @PostMapping
     public ResponseEntity<String> cadastrar(@RequestBody @Valid DadosCadastroPaciente dados) {
         Paciente novoPaciente = Paciente.builder()
-                .nome(dados.nome())
+                .primeiroNome(dados.primeiroNome())
+                .sobrenome(dados.sobrenome())
                 .cpf(dados.cpf())
                 .dataNascimento(dados.dataNascimento())
                 .telefone(dados.telefone())
@@ -50,20 +45,14 @@ public class PacienteController {
         return ResponseEntity.ok("Paciente cadastrado com sucesso!");
     }
 
-    /**
-     * Listar pacientes.
-     */
     @GetMapping
     public ResponseEntity<Page<DadosListagemPaciente>> listar(
-        @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
+        @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
         
         var pages = repository.findAllByAtivoTrue(pageable).map(DadosListagemPaciente::new);
         return ResponseEntity.ok(pages);
     }
 
-    /**
-     * Buscar paciente por ID.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<DadosDetalhamentoPaciente> buscarPorId(@PathVariable Long id) {
         Paciente paciente = repository.findById(id)
@@ -71,12 +60,10 @@ public class PacienteController {
         return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
     }
 
-    /**
-     * Atualizar paciente.
-     */
-    @PutMapping
-    public ResponseEntity<String> atualizar(@RequestBody @Valid DadosAtualizacaoPaciente dados) {
-        Paciente paciente = repository.findById(dados.id())
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<String> atualizar(@PathVariable Long id,@RequestBody @Valid DadosAtualizacaoPaciente dados) {
+        Paciente paciente = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
 
         paciente.atualizarInformacoes(dados);
@@ -85,9 +72,6 @@ public class PacienteController {
         return ResponseEntity.ok("Paciente atualizado com sucesso");
     }
 
-    /**
-     * Deleção lógica - marca paciente como inativo.
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         Paciente paciente = repository.findById(id)
@@ -99,9 +83,6 @@ public class PacienteController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Deleção física - exclui permanentemente.
-     */
     @DeleteMapping("/excluir/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         Paciente paciente = repository.findById(id)

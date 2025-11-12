@@ -18,4 +18,7 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
     List<Consulta> findByStatus(StatusConsulta status);
 
     List<Consulta> findByDataHoraBetween(LocalDateTime inicio,  LocalDateTime fim);
+
+    Consulta findTop1ByPacienteIdOrderByDataHoraDesc(Long pacienteId);
+
 }
