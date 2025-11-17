@@ -17,7 +17,7 @@ VALUES
 INSERT INTO usuarios
 (ativo, cpf, email, login, logradouro, nome, numero, perfil, senha, sobrenome)
 VALUES
-(TRUE, '90011122200', 'dr.house@example.com',   'drhouse',   'Rua Médica 1', 'Gregory', '10', 'MEDICO', 'senhaSegura#1', 'House'),
+(TRUE, '39053344705', 'dr.house@example.com',   'drhouse',   'Rua Médica 1', 'Gregory', '10', 'MEDICO', 'senhaSegura#1', 'House'),
 (TRUE, '90011122201', 'dr.cameron@example.com', 'drcameron', 'Rua Médica 2', 'Allison', '20', 'MEDICO', 'senhaSegura#2', 'Cameron'),
 (TRUE, '90011122202', 'dr.foreman@example.com', 'drforeman', 'Rua Médica 3', 'Eric',    '30', 'MEDICO', 'senhaSegura#3', 'Foreman'),
 (TRUE, '90011122203', 'dr.chase@example.com',   'drchase',   'Rua Médica 4', 'Robert',  '40', 'MEDICO', 'senhaSegura#4', 'Chase');

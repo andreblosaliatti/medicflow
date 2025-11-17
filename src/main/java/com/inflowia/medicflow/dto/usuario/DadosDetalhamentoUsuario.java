@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto.usuario;
 
-import com.inflowia.medicflow.dto.DadosEndereco;
+import com.inflowia.medicflow.dto.EnderecoDTO;
 import com.inflowia.medicflow.entities.usuario.Perfil;
 import com.inflowia.medicflow.entities.usuario.Usuario;
 
@@ -13,7 +13,7 @@ public record DadosDetalhamentoUsuario(
         String cpf,
         Perfil perfil,
         boolean ativo,
-        DadosEndereco endereco
+        EnderecoDTO endereco
 ) {
     public DadosDetalhamentoUsuario(Usuario u) {
         this(
@@ -27,7 +27,7 @@ public record DadosDetalhamentoUsuario(
             u.isAtivo(),
             u.getEndereco() == null
                 ? null
-                : new DadosEndereco(
+                : new EnderecoDTO(
                     u.getEndereco().getLogradouro(),
                     u.getEndereco().getNumero(),
                     u.getEndereco().getComplemento(),

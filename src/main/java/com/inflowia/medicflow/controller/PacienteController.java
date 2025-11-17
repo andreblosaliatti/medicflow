@@ -1,95 +1,86 @@
 package com.inflowia.medicflow.controller;
 
-import com.inflowia.medicflow.dto.paciente.DadosAtualizacaoPaciente;
-import com.inflowia.medicflow.dto.paciente.DadosCadastroPaciente;
-import com.inflowia.medicflow.dto.paciente.DadosDetalhamentoPaciente;
-import com.inflowia.medicflow.dto.paciente.DadosListagemPaciente;
-import com.inflowia.medicflow.entities.paciente.Paciente;
-import com.inflowia.medicflow.repositories.PacienteRepository;
+import com.inflowia.medicflow.dto.paciente.PacienteDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteMinDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteUpdateDTO;
+import com.inflowia.medicflow.services.PacienteService;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 
-/**
- * Controller REST responsável por lidar com operações relacionadas a pacientes.
- * Segue os princípios do SOLID, em especial o de responsabilidade única.
- */
 @RestController
 @RequestMapping("/pacientes")
 public class PacienteController {
 
-    private final PacienteRepository repository;
+    @Autowired
+    private PacienteService service;
 
-    public PacienteController(PacienteRepository repository) {
-        this.repository = repository;
-    }
-
+    // POST - cadastrar
     @PostMapping
-    public ResponseEntity<String> cadastrar(@RequestBody @Valid DadosCadastroPaciente dados) {
-        Paciente novoPaciente = Paciente.builder()
-                .primeiroNome(dados.primeiroNome())
-                .sobrenome(dados.sobrenome())
-                .cpf(dados.cpf())
-                .dataNascimento(dados.dataNascimento())
-                .telefone(dados.telefone())
-                .email(dados.email())
-                .endereco(dados.endereco().toEntity())
-                .build();
+    public ResponseEntity<PacienteDTO> cadastrar(
+            @RequestBody @Valid PacienteDTO dto,
+            UriComponentsBuilder uriBuilder) {
 
-        repository.save(novoPaciente);
-        return ResponseEntity.ok("Paciente cadastrado com sucesso!");
+        PacienteDTO salvo = service.cadastrar(dto);
+
+        URI uri = uriBuilder
+                .path("/pacientes/{id}")
+                .buildAndExpand(salvo.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(salvo);
     }
 
+    // GET - listar
     @GetMapping
-    public ResponseEntity<Page<DadosListagemPaciente>> listar(
-        @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
-        
-        var pages = repository.findAllByAtivoTrue(pageable).map(DadosListagemPaciente::new);
-        return ResponseEntity.ok(pages);
+    public ResponseEntity<Page<PacienteMinDTO>> listar(
+            @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
+
+        Page<PacienteMinDTO> page = service.listar(pageable);
+        return ResponseEntity.ok(page);
     }
 
+    @GetMapping("/inativos")
+    public ResponseEntity<Page<PacienteMinDTO>> listarInativos(
+            @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
+
+        return ResponseEntity.ok(service.listarInativos(pageable));
+    }
+
+    // GET - buscar por ID
     @GetMapping("/{id}")
-    public ResponseEntity<DadosDetalhamentoPaciente> buscarPorId(@PathVariable Long id) {
-        Paciente paciente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
-        return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
+    public ResponseEntity<PacienteDTO> buscarPorId(@PathVariable Long id) {
+        PacienteDTO dto = service.buscarPorId(id);
+        return ResponseEntity.ok(dto);
     }
 
+    // PUT - atualizar
     @PutMapping("/{id}")
-    @Transactional
-    public ResponseEntity<String> atualizar(@PathVariable Long id,@RequestBody @Valid DadosAtualizacaoPaciente dados) {
-        Paciente paciente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+    public ResponseEntity<PacienteDTO> atualizar(
+            @PathVariable Long id,
+            @RequestBody @Valid PacienteUpdateDTO dto) {
 
-        paciente.atualizarInformacoes(dados);
-        repository.save(paciente);
-
-        return ResponseEntity.ok("Paciente atualizado com sucesso");
+        PacienteDTO atualizado = service.atualizar(id, dto);
+        return ResponseEntity.ok(atualizado);
     }
 
+    // DELETE - desativar (soft delete)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        Paciente paciente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
-
-        paciente.setAtivo(false);
-        repository.save(paciente);
-        
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/excluir/{id}")
-    public ResponseEntity<Void> excluir(@PathVariable Long id) {
-        Paciente paciente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
-
-        repository.delete(paciente);
+    @PatchMapping("/{id}/inativar")
+    public ResponseEntity<Void> softDelete(@PathVariable Long id) {
+        service.softDelete(id);
         return ResponseEntity.noContent().build();
     }
 }
-

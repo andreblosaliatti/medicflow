@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Pattern;
 /**
  * DTO com os dados de endereço do paciente.
  */
-public record DadosEndereco(
+public record EnderecoDTO(
 
         @NotBlank
         String logradouro,
@@ -31,7 +31,7 @@ public record DadosEndereco(
         @Pattern(regexp = "\\d{5}-\\d{3}", message = "CEP deve estar no formato 00000-000")
         String cep
 ) {
-        public DadosEndereco(Endereco endereco){
+        public EnderecoDTO(Endereco endereco){
         this(
                 endereco.getLogradouro(),
                 endereco.getNumero(),

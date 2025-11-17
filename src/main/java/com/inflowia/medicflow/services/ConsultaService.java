@@ -9,6 +9,7 @@ import com.inflowia.medicflow.entities.usuario.Medico;
 import com.inflowia.medicflow.repositories.ConsultaRepository;
 import com.inflowia.medicflow.repositories.MedicoRepository;
 import com.inflowia.medicflow.repositories.PacienteRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,9 +18,14 @@ import java.util.List;
 @Service
 public class ConsultaService {
 
-    private final ConsultaRepository consultaRepository;
-    private final PacienteRepository pacienteRepository;
-    private final MedicoRepository medicoRepository;
+    @Autowired
+    private ConsultaRepository consultaRepository;
+
+    @Autowired
+    private PacienteRepository pacienteRepository;
+
+    @Autowired
+    private MedicoRepository medicoRepository;
 
     public ConsultaService(ConsultaRepository consultaRepository,
                            PacienteRepository pacienteRepository,

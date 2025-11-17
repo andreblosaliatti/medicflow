@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.entities.paciente;
 
-import com.inflowia.medicflow.dto.DadosEndereco;
+import com.inflowia.medicflow.dto.EnderecoDTO;
 
 import jakarta.persistence.Embeddable;
 import lombok.*;
@@ -33,7 +33,7 @@ public class Endereco {
         this.cep = cep;
     }
 
-    public void atualizarInformacoes(DadosEndereco dados) {
+    public void atualizarInformacoes(EnderecoDTO dados) {
         if (dados.logradouro() != null) this.logradouro = dados.logradouro();
         if (dados.numero() != null) this.numero = dados.numero();
         if (dados.complemento() != null) this.complemento = dados.complemento();

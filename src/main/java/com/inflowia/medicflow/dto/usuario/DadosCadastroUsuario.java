@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto.usuario;
 
-import com.inflowia.medicflow.dto.DadosEndereco;
+import com.inflowia.medicflow.dto.EnderecoDTO;
 import com.inflowia.medicflow.entities.usuario.Perfil;
 
 import jakarta.validation.Valid;
@@ -34,7 +34,7 @@ public record DadosCadastroUsuario(
         Perfil perfil,
 
         @Valid
-        DadosEndereco endereco
+        EnderecoDTO endereco
         ){
         }
 

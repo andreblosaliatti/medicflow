@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto.usuario;
 
-import com.inflowia.medicflow.dto.DadosEndereco;
+import com.inflowia.medicflow.dto.EnderecoDTO;
 import com.inflowia.medicflow.entities.usuario.Perfil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -13,5 +13,5 @@ public record DadosAtualizacaoUsuario(
         @Email String email,
         Perfil perfil,
         Boolean ativo,
-        @Valid DadosEndereco endereco
+        @Valid EnderecoDTO endereco
 ) {}

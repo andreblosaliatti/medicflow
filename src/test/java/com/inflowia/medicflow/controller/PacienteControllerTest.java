@@ -2,7 +2,6 @@ package com.inflowia.medicflow.controller;
 
 import com.inflowia.medicflow.entities.paciente.Paciente;
 import com.inflowia.medicflow.repositories.PacienteRepository;
-import com.inflowia.medicflow.dto.paciente.DadosListagemPaciente;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -48,8 +47,8 @@ void deveListarPacientesAtivosComSucesso() {
     Page<Paciente> page = new PageImpl<>(List.of(paciente));
     when(repository.findAllByAtivoTrue(pageable)).thenReturn(page);
 
-    ResponseEntity<Page<DadosListagemPaciente>> response = controller.listar(pageable);
-    Page<DadosListagemPaciente> pacientes = response.getBody();
+    ResponseEntity<Page<PacienteMinDTO>> response = controller.listar(pageable);
+    Page<PacienteMinDTO> pacientes = response.getBody();
 
     assertNotNull(pacientes);
     assertEquals(1, pacientes.getContent().size());
@@ -63,10 +62,10 @@ void deveListarPacientesAtivosComSucesso() {
 
         when(repository.findAllByAtivoTrue(pageable)).thenReturn(paginaVazia);
 
-        ResponseEntity<Page<DadosListagemPaciente>> response = controller.listar(pageable);
+        ResponseEntity<Page<PacienteMinDTO>> response = controller.listar(pageable);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        Page<DadosListagemPaciente> pacientes = (Page<DadosListagemPaciente>) response.getBody();
+        Page<PacienteMinDTO> pacientes = (Page<PacienteMinDTO>) response.getBody();
         assertNotNull(pacientes);
         assertEquals(0, pacientes.getContent().size());
     }

@@ -4,6 +4,7 @@ import com.inflowia.medicflow.dto.consulta.ConsultaRequestDTO;
 import com.inflowia.medicflow.dto.consulta.ConsultaResponseDTO;
 import com.inflowia.medicflow.entities.consulta.Consulta;
 import com.inflowia.medicflow.services.ConsultaService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,11 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/consultas")
 public class ConsultaController {
 
-private final ConsultaService service;
-
-public ConsultaController(ConsultaService service){
-    this.service = service;
-}
+    @Autowired
+    private  ConsultaService service;
  
 @PostMapping
     public ResponseEntity<ConsultaResponseDTO> consultar(@RequestBody ConsultaRequestDTO dto){

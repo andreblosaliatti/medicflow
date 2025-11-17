@@ -14,6 +14,9 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long>{
     List<Paciente> findAllAtivos();
 
     Page<Paciente> findAllByAtivoTrue(Pageable pageable);
+
+
+    Page<Paciente> findAllByAtivoFalse(Pageable pageable);
 }
 
 

@@ -7,6 +7,7 @@ import com.inflowia.medicflow.dto.usuario.DadosListagemUsuario;
 import com.inflowia.medicflow.entities.usuario.Usuario;
 import com.inflowia.medicflow.repositories.UsuarioRepository;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -20,13 +21,11 @@ import java.net.URI;
 @RequestMapping("/usuarios")
 public class UsuarioController {
 
-    private final UsuarioRepository repository;
-    private final PasswordEncoder encoder;
+    @Autowired
+    private UsuarioRepository repository;
 
-    public UsuarioController(UsuarioRepository repository, PasswordEncoder encoder) {
-        this.repository = repository;
-        this.encoder = encoder;
-    }
+    @Autowired
+    private PasswordEncoder encoder;
 
     @PostMapping
     public ResponseEntity<DadosDetalhamentoUsuario> criar(@RequestBody @Valid DadosCadastroUsuario dados) {
@@ -76,7 +75,6 @@ public class UsuarioController {
             return ResponseEntity.status(409).build();
         }
 
-        // records => nome(), sobrenome(), email(), perfil(), ativo(), endereco()
         u.atualizar(
                 dados.nome(),
                 dados.sobrenome(),
@@ -90,7 +88,6 @@ public class UsuarioController {
         return ResponseEntity.ok(new DadosDetalhamentoUsuario(salvo));
     }
 
-    // deleção lógica
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> desativar(@PathVariable Long id) {
         Usuario u = repository.findById(id)
@@ -100,7 +97,6 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    // deleção física
     @DeleteMapping("/excluir/{id}")
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         if (!repository.existsById(id)) return ResponseEntity.notFound().build();

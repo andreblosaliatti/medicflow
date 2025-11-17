@@ -4,7 +4,7 @@ import com.inflowia.medicflow.entities.consulta.Consulta;
 import jakarta.persistence.*;
 import lombok.*;
 import jakarta.validation.constraints.*;
-import com.inflowia.medicflow.dto.paciente.DadosAtualizacaoPaciente;
+import com.inflowia.medicflow.dto.paciente.PacienteUpdateDTO;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,14 +51,28 @@ public class Paciente {
     @OneToMany(mappedBy = "paciente")
     private List<Consulta> consultas = new ArrayList<>();
 
-    public void atualizarInformacoes(DadosAtualizacaoPaciente dados) {
-        if (dados.primeiroNome() != null) this.primeiroNome = dados.primeiroNome();
-        if (dados.sobrenome() != null) this.sobrenome = dados.sobrenome();
-        if (dados.telefone() != null) this.telefone = dados.telefone();
-        if (dados.email() != null) this.email = dados.email();
-        if (dados.sexo() != null) this.sexo = dados.sexo();
-        if (dados.dataNascimento() != null) this.dataNascimento = dados.dataNascimento();
-        if (dados.endereco() != null) this.endereco.atualizarInformacoes(dados.endereco());
+    public void atualizarInformacoes(PacienteUpdateDTO dados) {
+        if (dados.getPrimeiroNome() != null) {
+            this.primeiroNome = dados.getPrimeiroNome();
+        }
+        if (dados.getSobrenome() != null) {
+            this.sobrenome = dados.getSobrenome();
+        }
+        if (dados.getTelefone() != null) {
+            this.telefone = dados.getTelefone();
+        }
+        if (dados.getEmail() != null) {
+            this.email = dados.getEmail();
+        }
+        if (dados.getSexo() != null) {
+            this.sexo = dados.getSexo();
+        }
+        if (dados.getDataNascimento() != null) {
+            this.dataNascimento = dados.getDataNascimento();
+        }
+        if (dados.getEndereco() != null) {
+            this.endereco.atualizarInformacoes(dados.getEndereco());
+        }
     }
 }
 
