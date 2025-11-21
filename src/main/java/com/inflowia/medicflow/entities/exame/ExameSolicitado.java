@@ -19,11 +19,11 @@ public class ExameSolicitado {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Enumerated(EnumType.STRING)
     private StatusExame status;
-    private String jusitificativa;
+    private String justificativa;
     private String observacoes;
     private LocalDateTime dataColeta;
     private LocalDateTime dataResultado;

@@ -30,7 +30,6 @@ public class MedicoService {
     @Autowired
     private ConsultaRepository consultaRepository;
 
-    // POST - cadastrar médico
     @Transactional
     public MedicoDetailsDTO cadastrar(MedicoDTO dto) {
         // aqui você poderia validar duplicidade de CRM, email, etc
@@ -45,7 +44,7 @@ public class MedicoService {
         return page.map(MedicoMinDTO::new);
     }
 
-    // GET - buscar por ID
+
     @Transactional(readOnly = true)
     public MedicoDetailsDTO buscarPorId(Long id) {
         Medico medico = repository.findById(id)
@@ -64,25 +63,22 @@ public class MedicoService {
                 })
                 .toList();
     }
-    // PUT - atualizar
+
     @Transactional
     public MedicoDetailsDTO atualizar(Long id, MedicoUpdateDTO dto) {
         Medico medico = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Médico não encontrado"));
 
-        // Dados de Usuário (classe mãe)
         if (dto.getNome() != null) medico.setNome(dto.getNome());
         if (dto.getSobrenome() != null) medico.setSobrenome(dto.getSobrenome());
         if (dto.getEmail() != null) medico.setEmail(dto.getEmail());
 
-        // Dados de Médico
         if (dto.getEspecialidade() != null) medico.setEspecialidade(dto.getEspecialidade());
         if (dto.getInstituicaoFormacao() != null) medico.setInstituicaoFormacao(dto.getInstituicaoFormacao());
         if (dto.getDataFormacao() != null) medico.setDataFormacao(dto.getDataFormacao());
         if (dto.getSexo() != null) medico.setSexo(dto.getSexo());
         if (dto.getObservacoes() != null) medico.setObservacoes(dto.getObservacoes());
 
-        // 🔥 Atualizar o endereço (embeddable)
         if (dto.getEndereco() != null) {
             medico.setEndereco(dto.getEndereco().toEntity());
         }

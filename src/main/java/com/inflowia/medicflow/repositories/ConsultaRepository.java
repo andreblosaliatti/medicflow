@@ -27,4 +27,6 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
     @Query("SELECT DISTINCT c.paciente FROM Consulta c WHERE c.medico.id = :medicoId")
     List<Paciente> findPacientesDistinctByMedicoId(@Param("medicoId") Long medicoId);
 
+    Optional<Consulta> findTopByPacienteIdOrderByIdDesc(Long pacienteId);
+
 }

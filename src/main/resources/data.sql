@@ -142,32 +142,32 @@ VALUES
 
 -- ---------------------------------------------------------------------
 
-INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, jusitificativa, observacoes)
+INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, justificativa, observacoes)
 VALUES
 (1, 1,  'SOLICITADO', 'Rastreamento inicial: hemograma.', 'Paciente em avaliação'),
 (1, 8,  'SOLICITADO', 'Função renal por dor lombar.',     'Solicitado junto ao hemograma'),
 (2, 10, 'SOLICITADO', 'Sintomas urinários recentes.',      'EAS para triagem');
 
-INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, data_coleta, jusitificativa, observacoes)
+INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, data_coleta, justificativa, observacoes)
 VALUES
 (3, 12, 'AGENDADO', DATEADD('DAY',  1, CURRENT_TIMESTAMP), 'Dor abdominal, avaliar hepatobiliar.', 'USG marcado para amanhã 09h'),
 (3, 11, 'AGENDADO', DATEADD('DAY',  2, CURRENT_TIMESTAMP), 'Dispneia leve, RX de tórax.',          'Radiografia no mesmo serviço');
 
-INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, data_coleta, data_resultado, jusitificativa, observacoes)
+INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, data_coleta, data_resultado, justificativa, observacoes)
 VALUES
 (4, 2,  'REALIZADO', DATEADD('DAY', -2, CURRENT_TIMESTAMP), DATEADD('DAY', -1, CURRENT_TIMESTAMP), 'Glicemia de jejum por suspeita de DM.', 'Resultado disponível no prontuário'),
 (4, 3,  'REALIZADO', DATEADD('DAY', -2, CURRENT_TIMESTAMP), DATEADD('DAY', -1, CURRENT_TIMESTAMP), 'Perfil lipídico: colesterol total.',    'Valores limítrofes'),
 (5, 7,  'REALIZADO', DATEADD('DAY', -1, CURRENT_TIMESTAMP), DATEADD('HOUR', -6, CURRENT_TIMESTAMP), 'Inflamação: PCR.',                      'PCR discretamente elevado');
 
-INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, jusitificativa, observacoes)
+INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, justificativa, observacoes)
 VALUES
 (6, 14, 'CANCELADO', 'Paciente não compareceu para tomografia.', 'Remarcar conforme disponibilidade'),
 (6, 5,  'CANCELADO', 'Solicitação duplicada detectada.',          'Cancelado pela recepção');
 
-INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, data_coleta, jusitificativa, observacoes)
+INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, data_coleta, justificativa, observacoes)
 VALUES
 (7, 13, 'AGENDADO', DATEADD('DAY', 3, CURRENT_TIMESTAMP), 'Arritmia: solicitar ECG.', 'Agendado via convênio');
 
-INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, data_coleta, data_resultado, jusitificativa, observacoes)
+INSERT INTO exame_solicitado (consulta_id, exame_base_id, status, data_coleta, data_resultado, justificativa, observacoes)
 VALUES
 (8, 15, 'REALIZADO', DATEADD('DAY', -5, CURRENT_TIMESTAMP), DATEADD('DAY', -3, CURRENT_TIMESTAMP), 'Dor no joelho, suspeita de lesão.', 'Ressonância concluída, laudo anexado');
