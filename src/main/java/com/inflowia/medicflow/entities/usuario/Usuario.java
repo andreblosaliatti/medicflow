@@ -8,9 +8,12 @@ import org.hibernate.validator.constraints.br.CPF;
 
 import com.inflowia.medicflow.entities.paciente.Endereco;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Inheritance(strategy = InheritanceType.JOINED)
 @Entity
-@Table(name = "usuarios",
+@Table(name = "tb_usuarios",
         uniqueConstraints = {
             @UniqueConstraint(name = "uk_usuario_login", columnNames = "login"),
             @UniqueConstraint(name = "uk_usuario_email", columnNames = "email"),
@@ -57,22 +60,14 @@ public class Usuario {
     @Embedded
     private Endereco endereco;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Perfil perfil;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "tb_usuario_role",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
 
     @Builder.Default
     @Column(nullable = false)
     private boolean ativo = true;
-
-    public void atualizar(String novoNome, String novoSobrenome, String novoEmail, Perfil novoPerfil,
-                            Boolean  novoAtivo, Endereco novoEndereco) {
-            if (novoNome != null && !novoNome.isBlank()) this.nome = novoNome;
-            if (novoSobrenome != null && !novoSobrenome.isBlank()) this.sobrenome = novoSobrenome;
-            if (novoEmail != null && !novoEmail.isBlank()) this.email = novoEmail;
-            if (novoPerfil != null) this.perfil = novoPerfil;
-            if (novoAtivo != null) this.ativo = novoAtivo;
-            if (novoEndereco != null) this.endereco = novoEndereco;
-                            }
-
 }

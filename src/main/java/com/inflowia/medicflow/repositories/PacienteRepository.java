@@ -10,9 +10,6 @@ import java.util.List;
 
 public interface PacienteRepository extends JpaRepository<Paciente, Long>{
 
-    @Query("SELECT p FROM Paciente p WHERE p.ativo = true")
-    List<Paciente> findAllAtivos();
-
     Page<Paciente> findAllByAtivoTrue(Pageable pageable);
 
 

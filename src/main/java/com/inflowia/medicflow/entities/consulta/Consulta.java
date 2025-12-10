@@ -35,6 +35,26 @@ public class Consulta {
     @Column(nullable = false)
     private StatusConsulta status;
 
+    private Double valorConsulta;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MeioPagamento meioPagamento;
+
+    private Boolean pago;
+    private LocalDateTime dataPagamento;
+
+    private Integer duracaoMinutos;
+
+    private boolean retorno;
+    private LocalDateTime dataLimiteRetorno;
+
+    private boolean teleconsulta;
+    private String linkAcesso;
+
+     private String planoSaude;
+    private String numeroCarteirinha;
+
     @Column(length = 500)
     private String motivo;
 

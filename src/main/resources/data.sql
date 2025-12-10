@@ -14,48 +14,633 @@ VALUES
 
 -- ---------------------------------------------------------------------
 
-INSERT INTO usuarios
-(ativo, cpf, email, login, logradouro, nome, numero, perfil, senha, sobrenome)
-VALUES
-(TRUE, '39053344705', 'dr.house@example.com',   'drhouse',   'Rua Médica 1', 'Gregory', '10', 'MEDICO', 'senhaSegura#1', 'House'),
-(TRUE, '90011122201', 'dr.cameron@example.com', 'drcameron', 'Rua Médica 2', 'Allison', '20', 'MEDICO', 'senhaSegura#2', 'Cameron'),
-(TRUE, '90011122202', 'dr.foreman@example.com', 'drforeman', 'Rua Médica 3', 'Eric',    '30', 'MEDICO', 'senhaSegura#3', 'Foreman'),
-(TRUE, '90011122203', 'dr.chase@example.com',   'drchase',   'Rua Médica 4', 'Robert',  '40', 'MEDICO', 'senhaSegura#4', 'Chase');
+-- =====================================================================
+-- ROLES DO SISTEMA (PERFIS DE ACESSO)
+-- =====================================================================
+INSERT INTO tb_role (authority) VALUES
+    ('ROLE_ADMIN'),
+    ('ROLE_MEDICO'),
+    ('ROLE_SECRETARIO'),
+    ('ROLE_ATENDENTE'),
+    ('ROLE_ENFERMEIRO'),
+    ('ROLE_PACIENTE');
 
--- ---------------------------------------------------------------------
-
-INSERT INTO medicos (usuario_id, crm, especialidade, instituicao_formacao, observacoes, sexo, data_formacao)
+-- =====================================================================
+-- USUÁRIOS BASE (SEM PERFIL NA TABELA, APENAS CREDENCIAIS)
+-- =====================================================================
+INSERT INTO tb_usuarios
+(ativo, cpf, email, login, senha, nome, sobrenome, logradouro, numero)
 VALUES
-((SELECT MIN(id) FROM usuarios WHERE login='drhouse'),   'CRM-RS-10001', 'Clínica Geral', 'Princeton-Plainsboro', NULL, 'M', DATE '2000-01-01'),
-((SELECT MIN(id) FROM usuarios WHERE login='drcameron'), 'CRM-RS-10002', 'Imunologia',    'Princeton-Plainsboro', NULL, 'F', DATE '2002-01-01'),
-((SELECT MIN(id) FROM usuarios WHERE login='drforeman'), 'CRM-RS-10003', 'Neurologia',    'Princeton-Plainsboro', NULL, 'M', DATE '2001-01-01'),
-((SELECT MIN(id) FROM usuarios WHERE login='drchase'),   'CRM-RS-10004', 'Cirurgia',      'Princeton-Plainsboro', NULL, 'M', DATE '2003-01-01');
+-- ADMIN
+(TRUE, '32844208606', 'admin@medicflow.com', 'admin',  'admin123', 'System',  'Admin',      'Rua Central', '1'),
+
+-- MÉDICOS (Dr House team)
+(TRUE, '39053344705', 'dr.house@example.com',   'drhouse',   'senhaSegura#1', 'Gregory', 'House',   'Rua Médica 1', '10'),
+(TRUE, '90011122201', 'dr.cameron@example.com', 'drcameron', 'senhaSegura#2', 'Allison', 'Cameron', 'Rua Médica 2', '20'),
+(TRUE, '90011122202', 'dr.foreman@example.com', 'drforeman', 'senhaSegura#3', 'Eric',    'Foreman', 'Rua Médica 3', '30'),
+(TRUE, '90011122203', 'dr.chase@example.com',   'drchase',   'senhaSegura#4', 'Robert',  'Chase',   'Rua Médica 4', '40'),
+
+-- SECRETÁRIO
+(TRUE, '12345678901', 'sec.marina@example.com', 'marina.sec', 'senha#Sec1', 'Marina', 'Silva', 'Rua Clínica 10', '100'),
+
+-- ATENDENTE
+(TRUE, '12345678902', 'at.claudio@example.com', 'claudio.at', 'senha#At1', 'Claudio', 'Pereira', 'Rua Clínica 11', '200'),
+
+-- ENFERMEIRO (subclasse)
+(TRUE, '12345678903', 'nf.juliana@example.com', 'juliana.enf', 'senha#Enf1', 'Juliana', 'Rocha', 'Rua Enfermagem 1', '300'),
+
+-- PACIENTE
+(TRUE, '98765432100', 'pac.teste@example.com', 'paciente01', 'senha#pac1', 'Carlos', 'Santos', 'Rua Paciente 1', '500');
+
+-- =====================================================================
+-- ASSOCIAÇÃO DOS USUÁRIOS COM ROLES
+-- =====================================================================
+
+-- ADMIN
+INSERT INTO tb_usuario_role (usuario_id, role_id)
+VALUES (
+    (SELECT id FROM tb_usuarios WHERE login = 'admin'),
+    (SELECT id FROM tb_role WHERE authority = 'ROLE_ADMIN')
+);
+
+-- MÉDICOS
+INSERT INTO tb_usuario_role (usuario_id, role_id)
+VALUES
+((SELECT id FROM tb_usuarios WHERE login = 'drhouse'),   (SELECT id FROM tb_role WHERE authority = 'ROLE_MEDICO')),
+((SELECT id FROM tb_usuarios WHERE login = 'drcameron'), (SELECT id FROM tb_role WHERE authority = 'ROLE_MEDICO')),
+((SELECT id FROM tb_usuarios WHERE login = 'drforeman'), (SELECT id FROM tb_role WHERE authority = 'ROLE_MEDICO')),
+((SELECT id FROM tb_usuarios WHERE login = 'drchase'),   (SELECT id FROM tb_role WHERE authority = 'ROLE_MEDICO'));
+
+-- SECRETÁRIO
+INSERT INTO tb_usuario_role (usuario_id, role_id)
+VALUES (
+    (SELECT id FROM tb_usuarios WHERE login = 'marina.sec'),
+    (SELECT id FROM tb_role WHERE authority = 'ROLE_SECRETARIO')
+);
+
+-- ATENDENTE
+INSERT INTO tb_usuario_role (usuario_id, role_id)
+VALUES (
+    (SELECT id FROM tb_usuarios WHERE login = 'claudio.at'),
+    (SELECT id FROM tb_role WHERE authority = 'ROLE_ATENDENTE')
+);
+
+-- ENFERMEIRO
+INSERT INTO tb_usuario_role (usuario_id, role_id)
+VALUES (
+    (SELECT id FROM tb_usuarios WHERE login = 'juliana.enf'),
+    (SELECT id FROM tb_role WHERE authority = 'ROLE_ENFERMEIRO')
+);
+
+-- PACIENTE
+INSERT INTO tb_usuario_role (usuario_id, role_id)
+VALUES (
+    (SELECT id FROM tb_usuarios WHERE login = 'paciente01'),
+    (SELECT id FROM tb_role WHERE authority = 'ROLE_PACIENTE')
+);
+
+-- =====================================================================
+-- MÉDICOS — TABELA medicos
+-- =====================================================================
+INSERT INTO tb_medicos
+(usuario_id, crm, especialidade, instituicao_formacao, observacoes, sexo, data_formacao)
+VALUES
+((SELECT id FROM tb_usuarios WHERE login='drhouse'),   'CRM-RS-10001', 'Clínica Geral', 'Princeton-Plainsboro', NULL, 'M', DATE '2000-01-01'),
+((SELECT id FROM tb_usuarios WHERE login='drcameron'), 'CRM-RS-10002', 'Imunologia',    'Princeton-Plainsboro', NULL, 'F', DATE '2002-01-01'),
+((SELECT id FROM tb_usuarios WHERE login='drforeman'), 'CRM-RS-10003', 'Neurologia',    'Princeton-Plainsboro', NULL, 'M', DATE '2001-01-01'),
+((SELECT id FROM tb_usuarios WHERE login='drchase'),   'CRM-RS-10004', 'Cirurgia',      'Princeton-Plainsboro', NULL, 'M', DATE '2003-01-01');
+
+-- =====================================================================
+-- ENFERMEIROS — TABELA enfermeiros (JOINED: PK = usuario_id)
+-- =====================================================================
+INSERT INTO enfermeiros (
+    id,                      -- mesma PK do tb_usuarios
+    coren,
+    uf_coren,
+    especialidade_enfermagem,
+    setor_clinico,
+    turno_trabalho,
+    data_admissao,
+    observacoes
+) VALUES (
+    (SELECT id FROM tb_usuarios WHERE login = 'juliana.enf'),
+    'COREN-RS-50001',
+    'RS',
+    'UTI Adulto',
+    'UTI',                   -- tem que bater com o Enum SetorClinico.UTI
+    'NOITE',                 -- tem que bater com o Enum TurnoTrabalho.NOITE
+    DATE '2020-05-10',
+    'Profissional com experiência em cuidados intensivos.'
+);
 
 -- ---------------------------------------------------------------------
 
 INSERT INTO consultas
-(data_hora, medico_id, paciente_id, motivo, observacoes, anamnese, diagnostico, exame_fisico, prescricao, status, tipo)
+(
+    data_hora,
+    medico_id,
+    paciente_id,
+    motivo,
+    observacoes,
+    anamnese,
+    diagnostico,
+    exame_fisico,
+    prescricao,
+    status,
+    tipo,
+    valor_consulta,
+    meio_pagamento,
+    pago,
+    data_pagamento,
+    duracao_minutos,
+    retorno,
+    data_limite_retorno,
+    teleconsulta,
+    link_acesso,
+    plano_saude,
+    numero_carteirinha
+)
 VALUES
-(TIMESTAMP '2025-01-10 09:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drhouse'),   1, 'Cefaleia',         'Paciente refere dor leve',        'Anamnese A', 'Sem diagnóstico fechado', 'Exame normal',    NULL,                 'AGENDADA',      'PRESENCIAL'),
-(TIMESTAMP '2025-01-10 10:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drcameron'), 2, 'Alergia',          'Prurido ocasional',               'Anamnese B', 'Rinite alérgica',      'Exame normal',    'Loratadina 10mg',    'CONFIRMADA',    'PRESENCIAL'),
-(TIMESTAMP '2025-01-11 09:30:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drforeman'),  3, 'Tontura',          NULL,                               'Anamnese C', 'Vertigem posicional',  'Romberg +',       NULL,                 'EM_ATENDIMENTO','RETORNO'),
-(TIMESTAMP '2025-01-11 11:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drchase'),    4, 'Dor abdominal',    'Jejum 8h',                        'Anamnese D', 'Suspeita colecistite', 'Dor à palpação',  NULL,                 'AGENDADA',      'URGENCIA'),
-(TIMESTAMP '2025-01-12 08:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drhouse'),    5, 'Acompanhamento',   NULL,                               'Anamnese E', NULL,                   'Exame normal',    NULL,                 'CONFIRMADA',    'TELECONSULTA'),
-(TIMESTAMP '2025-01-12 09:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drcameron'),  6, 'Asma',             'Dispneia noturna',                'Anamnese F', 'Asma persistente',      'Sibilos',         'Corticoide inalatório','CONCLUIDA',    'PRESENCIAL'),
-(TIMESTAMP '2025-01-13 13:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drforeman'),  7, 'Enxaqueca',        NULL,                               'Anamnese G', 'Migrânea',              'Exame normal',    NULL,                 'CANCELADA',     'RETORNO'),
-(TIMESTAMP '2025-01-13 14:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drchase'),    8, 'Lombalgia',        'Dor há 3 semanas',                'Anamnese H', 'Lombalgia mecânica',    'Dor L5',          'Analgésico',         'CONCLUIDA',     'PRESENCIAL'),
-(TIMESTAMP '2025-01-14 15:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drhouse'),    9, 'Gripe',            NULL,                               'Anamnese I', 'Síndrome gripal',       'Febre 38.2',      NULL,                 'CONFIRMADA',    'TELECONSULTA'),
-(TIMESTAMP '2025-01-14 16:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drcameron'), 10, 'Dismenorreia',     'Cólica intensa',                   'Anamnese J', NULL,                   'Exame normal',    'Antiespasmódico',    'AGENDADA',      'PRESENCIAL'),
-(TIMESTAMP '2025-02-10 09:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drhouse'),    1, 'Checkup',          NULL,                               'Anamnese K', 'Saudável',             'Exame normal',    NULL,                 'CONCLUIDA',     'PRESENCIAL'),
-(TIMESTAMP '2025-02-10 10:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drcameron'),  2, 'Alergia pó',       NULL,                               'Anamnese L', 'Rinite',               'Exame normal',    'Anti-histamínico',   'CONCLUIDA',     'RETORNO'),
-(TIMESTAMP '2025-02-11 09:30:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drforeman'),  3, 'Tremor',           NULL,                               'Anamnese M', 'Essencial',            'Leve tremor',     NULL,                 'AGENDADA',      'PRESENCIAL'),
-(TIMESTAMP '2025-02-11 11:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drchase'),    4, 'Náusea',           'Desde ontem',                       'Anamnese N', NULL,                   'Exame normal',    'Ondansetrona',       'CONFIRMADA',    'TELECONSULTA'),
-(TIMESTAMP '2025-02-12 08:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drhouse'),    5, 'Dor torácica',     'Esforço',                          'Anamnese O', 'Musculoesquelética',   'Dor à pressão',   NULL,                 'CONCLUIDA',     'PRESENCIAL'),
-(TIMESTAMP '2025-02-12 09:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drcameron'),  6, 'Urticária',        NULL,                               'Anamnese P', NULL,                   'Pápulas',         'Anti-histamínico',   'CONCLUIDA',     'PRESENCIAL'),
-(TIMESTAMP '2025-02-13 13:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drforeman'),  7, 'Parestesia',       NULL,                               'Anamnese Q', 'Ansiedade',            'Exame normal',    NULL,                 'EM_ATENDIMENTO','RETORNO'),
-(TIMESTAMP '2025-02-13 14:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drchase'),    8, 'Sinusite',         'Secreção espessa',                 'Anamnese R', 'Sinusite bacteriana',  'Dor seios face',  'Amoxicilina',        'CONCLUIDA',     'PRESENCIAL'),
-(TIMESTAMP '2025-02-14 15:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drhouse'),    9, 'Resfriado',        NULL,                               'Anamnese S', 'Viral',                'Exame normal',    NULL,                 'CONFIRMADA',    'TELECONSULTA'),
-(TIMESTAMP '2025-02-14 16:00:00', (SELECT usuario_id FROM medicos m JOIN usuarios u ON u.id=m.usuario_id WHERE u.login='drcameron'), 10, 'Tensão pré-menstrual','Irritabilidade',                 'Anamnese T', NULL,                   'Exame normal',    'Sintomáticos',       'AGENDADA',      'RETORNO');
+-- 1
+(TIMESTAMP '2025-01-10 09:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drhouse'),
+ 1,
+ 'Cefaleia',
+ 'Paciente refere dor leve',
+ 'Anamnese A',
+ 'Sem diagnóstico fechado',
+ 'Exame normal',
+ NULL,
+ 'AGENDADA',
+ 'PRESENCIAL',
+ 250.00,
+ 'DEBITO',
+ FALSE,
+ NULL,
+ 30,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 2
+(TIMESTAMP '2025-01-10 10:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drcameron'),
+ 2,
+ 'Alergia',
+ 'Prurido ocasional',
+ 'Anamnese B',
+ 'Rinite alérgica',
+ 'Exame normal',
+ 'Loratadina 10mg',
+ 'CONFIRMADA',
+ 'PRESENCIAL',
+ 280.00,
+ 'CREDITO',
+ TRUE,
+ TIMESTAMP '2025-01-10 10:05:00',
+ 30,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 3
+(TIMESTAMP '2025-01-11 09:30:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drforeman'),
+ 3,
+ 'Tontura',
+ NULL,
+ 'Anamnese C',
+ 'Vertigem posicional',
+ 'Romberg +',
+ NULL,
+ 'EM_ATENDIMENTO',
+ 'RETORNO',
+ 0.00,
+ 'DEBITO',
+ FALSE,
+ NULL,
+ 40,
+ TRUE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 4
+(TIMESTAMP '2025-01-11 11:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drchase'),
+ 4,
+ 'Dor abdominal',
+ 'Jejum 8h',
+ 'Anamnese D',
+ 'Suspeita colecistite',
+ 'Dor à palpação',
+ NULL,
+ 'AGENDADA',
+ 'URGENCIA',
+ 350.00,
+ 'DEBITO',
+ FALSE,
+ NULL,
+ 60,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 5
+(TIMESTAMP '2025-01-12 08:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drhouse'),
+ 5,
+ 'Acompanhamento',
+ NULL,
+ 'Anamnese E',
+ NULL,
+ 'Exame normal',
+ NULL,
+ 'CONFIRMADA',
+ 'TELECONSULTA',
+ 220.00,
+ 'PIX',
+ TRUE,
+ TIMESTAMP '2025-01-12 08:01:00',
+ 30,
+ FALSE,
+ NULL,
+ TRUE,
+ 'https://teleconsulta.medicflow/consultas/5',
+ NULL,
+ NULL),
+
+-- 6
+(TIMESTAMP '2025-01-12 09:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drcameron'),
+ 6,
+ 'Asma',
+ 'Dispneia noturna',
+ 'Anamnese F',
+ 'Asma persistente',
+ 'Sibilos',
+ 'Corticoide inalatório',
+ 'CONCLUIDA',
+ 'PRESENCIAL',
+ 260.00,
+ 'DEBITO',
+ TRUE,
+ TIMESTAMP '2025-01-12 09:10:00',
+ 30,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 7
+(TIMESTAMP '2025-01-13 13:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drforeman'),
+ 7,
+ 'Enxaqueca',
+ NULL,
+ 'Anamnese G',
+ 'Migrânea',
+ 'Exame normal',
+ NULL,
+ 'CANCELADA',
+ 'RETORNO',
+ 0.00,
+ 'DEBITO',
+ FALSE,
+ NULL,
+ 30,
+ TRUE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 8
+(TIMESTAMP '2025-01-13 14:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drchase'),
+ 8,
+ 'Lombalgia',
+ 'Dor há 3 semanas',
+ 'Anamnese H',
+ 'Lombalgia mecânica',
+ 'Dor L5',
+ 'Analgésico',
+ 'CONCLUIDA',
+ 'PRESENCIAL',
+ 270.00,
+ 'PIX',
+ TRUE,
+ TIMESTAMP '2025-01-13 14:20:00',
+ 30,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 9
+(TIMESTAMP '2025-01-14 15:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drhouse'),
+ 9,
+ 'Gripe',
+ NULL,
+ 'Anamnese I',
+ 'Síndrome gripal',
+ 'Febre 38.2',
+ NULL,
+ 'CONFIRMADA',
+ 'TELECONSULTA',
+ 230.00,
+ 'PIX',
+ TRUE,
+ TIMESTAMP '2025-01-14 15:02:00',
+ 20,
+ FALSE,
+ NULL,
+ TRUE,
+ 'https://teleconsulta.medicflow/consultas/9',
+ NULL,
+ NULL),
+
+-- 10
+(TIMESTAMP '2025-01-14 16:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drcameron'),
+ 10,
+ 'Dismenorreia',
+ 'Cólica intensa',
+ 'Anamnese J',
+ NULL,
+ 'Exame normal',
+ 'Antiespasmódico',
+ 'AGENDADA',
+ 'PRESENCIAL',
+ 250.00,
+ 'CREDITO',
+ FALSE,
+ NULL,
+ 30,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 11
+(TIMESTAMP '2025-02-10 09:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drhouse'),
+ 1,
+ 'Checkup',
+ NULL,
+ 'Anamnese K',
+ 'Saudável',
+ 'Exame normal',
+ NULL,
+ 'CONCLUIDA',
+ 'PRESENCIAL',
+ 300.00,
+ 'DEBITO',
+ TRUE,
+ TIMESTAMP '2025-02-10 09:30:00',
+ 40,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 12
+(TIMESTAMP '2025-02-10 10:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drcameron'),
+ 2,
+ 'Alergia pó',
+ NULL,
+ 'Anamnese L',
+ 'Rinite',
+ 'Exame normal',
+ 'Anti-histamínico',
+ 'CONCLUIDA',
+ 'RETORNO',
+ 200.00,
+ 'CREDITO',
+ TRUE,
+ TIMESTAMP '2025-02-10 10:15:00',
+ 30,
+ TRUE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 13
+(TIMESTAMP '2025-02-11 09:30:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drforeman'),
+ 3,
+ 'Tremor',
+ NULL,
+ 'Anamnese M',
+ 'Tremor essencial',
+ 'Leve tremor',
+ NULL,
+ 'AGENDADA',
+ 'PRESENCIAL',
+ 250.00,
+ 'DEBITO',
+ FALSE,
+ NULL,
+ 30,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 14
+(TIMESTAMP '2025-02-11 11:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drchase'),
+ 4,
+ 'Náusea',
+ 'Desde ontem',
+ 'Anamnese N',
+ NULL,
+ 'Exame normal',
+ 'Ondansetrona',
+ 'CONFIRMADA',
+ 'TELECONSULTA',
+ 240.00,
+ 'PIX',
+ TRUE,
+ TIMESTAMP '2025-02-11 11:05:00',
+ 20,
+ FALSE,
+ NULL,
+ TRUE,
+ 'https://teleconsulta.medicflow/consultas/14',
+ NULL,
+ NULL),
+
+-- 15
+(TIMESTAMP '2025-02-12 08:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drhouse'),
+ 5,
+ 'Dor torácica',
+ 'Esforço físico',
+ 'Anamnese O',
+ 'Musculoesquelética',
+ 'Dor à palpação',
+ NULL,
+ 'CONCLUIDA',
+ 'PRESENCIAL',
+ 320.00,
+ 'CREDITO',
+ TRUE,
+ TIMESTAMP '2025-02-12 08:20:00',
+ 40,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 16
+(TIMESTAMP '2025-02-12 09:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drcameron'),
+ 6,
+ 'Urticária',
+ NULL,
+ 'Anamnese P',
+ NULL,
+ 'Pápulas',
+ 'Anti-histamínico',
+ 'CONCLUIDA',
+ 'PRESENCIAL',
+ 260.00,
+ 'DEBITO',
+ TRUE,
+ TIMESTAMP '2025-02-12 09:05:00',
+ 30,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 17
+(TIMESTAMP '2025-02-13 13:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drforeman'),
+ 7,
+ 'Parestesia',
+ NULL,
+ 'Anamnese Q',
+ 'Ansiedade',
+ 'Exame normal',
+ NULL,
+ 'EM_ATENDIMENTO',
+ 'RETORNO',
+ 180.00,
+ 'PIX',
+ FALSE,
+ NULL,
+ 30,
+ TRUE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 18
+(TIMESTAMP '2025-02-13 14:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drchase'),
+ 8,
+ 'Sinusite',
+ 'Secreção espessa',
+ 'Anamnese R',
+ 'Sinusite bacteriana',
+ 'Dor seios face',
+ 'Amoxicilina',
+ 'CONCLUIDA',
+ 'PRESENCIAL',
+ 270.00,
+ 'CREDITO',
+ TRUE,
+ TIMESTAMP '2025-02-13 14:25:00',
+ 30,
+ FALSE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL),
+
+-- 19
+(TIMESTAMP '2025-02-14 15:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drhouse'),
+ 9,
+ 'Resfriado',
+ NULL,
+ 'Anamnese S',
+ 'Viral',
+ 'Exame normal',
+ NULL,
+ 'CONFIRMADA',
+ 'TELECONSULTA',
+ 230.00,
+ 'PIX',
+ TRUE,
+ TIMESTAMP '2025-02-14 15:03:00',
+ 20,
+ FALSE,
+ NULL,
+ TRUE,
+ 'https://teleconsulta.medicflow/consultas/19',
+ NULL,
+ NULL),
+
+-- 20
+(TIMESTAMP '2025-02-14 16:00:00',
+ (SELECT usuario_id FROM tb_medicos m JOIN tb_usuarios u ON u.id = m.usuario_id WHERE u.login = 'drcameron'),
+ 10,
+ 'Tensão pré-menstrual',
+ 'Irritabilidade',
+ 'Anamnese T',
+ NULL,
+ 'Exame normal',
+ 'Sintomáticos',
+ 'AGENDADA',
+ 'RETORNO',
+ 200.00,
+ 'DEBITO',
+ FALSE,
+ NULL,
+ 30,
+ TRUE,
+ NULL,
+ FALSE,
+ NULL,
+ NULL,
+ NULL);
+
 
 -- ---------------------------------------------------------------------
 

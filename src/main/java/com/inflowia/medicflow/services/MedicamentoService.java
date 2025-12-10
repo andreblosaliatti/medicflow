@@ -79,15 +79,12 @@ public class MedicamentoService {
         }
 
         Consulta consulta = consultaRepository
-                .findTop1ByPacienteIdOrderByDataHoraDesc(pacienteId);
-
-        if (consulta == null) {
-            throw new ResourceNotFoundException("Paciente não possui consultas.");
-        }
+                .findTopByPacienteIdOrderByDataHoraDesc(pacienteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente não possui consultas."));
 
         return consulta.getMedicamentoPrescrito()
                 .stream()
-                .map(MedicamentoPrescritoMinDTO:: new)
+                .map(MedicamentoPrescritoMinDTO::new)
                 .toList();
     }
 

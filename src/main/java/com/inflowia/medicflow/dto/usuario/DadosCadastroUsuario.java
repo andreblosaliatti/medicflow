@@ -1,40 +1,60 @@
 package com.inflowia.medicflow.dto.usuario;
 
 import com.inflowia.medicflow.dto.EnderecoDTO;
-import com.inflowia.medicflow.entities.usuario.Perfil;
-
+import com.inflowia.medicflow.entities.usuario.Role;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import org.hibernate.validator.constraints.br.CPF;
 
+import java.util.Set;
 
-public record DadosCadastroUsuario(
-        @NotBlank
-        String login,
+@Getter
+@Setter
+public class DadosCadastroUsuario {
 
-        @NotBlank
-        @Size(min = 6, max = 100)
-        String senha,
+    @NotBlank
+    private String login;
 
-        @NotBlank
-        String nome,
+    @NotBlank
+    @Size(min = 6, max = 100)
+    private String senha;
 
-        @Email
-        @NotBlank
-        String email,
+    @NotBlank
+    private String nome;
 
-        @NotBlank
-        String sobrenome,
+    @Email
+    @NotBlank
+    private String email;
 
-        @NotBlank
-        @CPF
-        String cpf,
+    @NotBlank
+    private String sobrenome;
 
-        @NotNull
-        Perfil perfil,
+    @NotBlank
+    @CPF
+    private String cpf;
 
-        @Valid
-        EnderecoDTO endereco
-        ){
-        }
+    // Agora usando ROLE ao invés de Perfil
+    private Set<Role> roles;
 
+    @Valid
+    private EnderecoDTO endereco;
+
+    public DadosCadastroUsuario() {}
+
+    public DadosCadastroUsuario(String login, String senha, String nome, String email,
+                                String sobrenome, String cpf, Set<Role> roles,
+                                EnderecoDTO endereco) {
+
+        this.login = login;
+        this.senha = senha;
+        this.nome = nome;
+        this.email = email;
+        this.sobrenome = sobrenome;
+        this.cpf = cpf;
+        this.roles = roles;
+        this.endereco = endereco;
+    }
+}

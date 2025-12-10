@@ -1,4 +1,4 @@
-package com.inflowia.medicflow.controller;
+package com.inflowia.medicflow.controllers;
 
 import com.inflowia.medicflow.dto.medicamento.MedicamentoPrescritoDTO;
 import com.inflowia.medicflow.dto.medicamento.MedicamentoPrescritoMinDTO;
@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;

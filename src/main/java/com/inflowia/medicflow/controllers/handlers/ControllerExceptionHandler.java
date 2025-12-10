@@ -1,4 +1,4 @@
-package com.inflowia.medicflow.controller.handlers;
+package com.inflowia.medicflow.controllers.handlers;
 
 import com.inflowia.medicflow.dto.CustomError;
 import com.inflowia.medicflow.dto.ValidationError;

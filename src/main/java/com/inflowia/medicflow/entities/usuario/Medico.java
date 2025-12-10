@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "medicos")
+@Table(name = "tb_medicos")
 @Getter
 @Setter
 @NoArgsConstructor

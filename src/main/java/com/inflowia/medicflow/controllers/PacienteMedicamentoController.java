@@ -1,4 +1,4 @@
-package com.inflowia.medicflow.controller;
+package com.inflowia.medicflow.controllers;
 
 import com.inflowia.medicflow.dto.medicamento.MedicamentoPrescritoMinDTO;
 import com.inflowia.medicflow.services.MedicamentoService;

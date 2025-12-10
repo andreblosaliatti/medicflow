@@ -2,11 +2,12 @@ package com.inflowia.medicflow.dto.medico;
 
 import com.inflowia.medicflow.entities.paciente.Endereco;
 import com.inflowia.medicflow.entities.usuario.Medico;
-import com.inflowia.medicflow.entities.usuario.Perfil;
+import com.inflowia.medicflow.entities.usuario.Role;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -50,14 +51,19 @@ public class MedicoDTO {
 
     private EnderecoDTO endereco;
 
+    // Agora o DTO aceita roles também
+    private Set<Role> roles;
+
     public Medico toEntity() {
         Medico medico = new Medico();
+
         medico.setLogin(this.login);
         medico.setSenha(this.senha);
         medico.setNome(this.nome);
         medico.setSobrenome(this.sobrenome);
         medico.setEmail(this.email);
         medico.setCpf(this.cpf);
+
         medico.setCrm(this.crm);
         medico.setEspecialidade(this.especialidade);
         medico.setInstituicaoFormacao(this.instituicaoFormacao);
@@ -69,11 +75,19 @@ public class MedicoDTO {
             medico.setEndereco(this.endereco.toEntity());
         }
 
-        medico.setPerfil(Perfil.MEDICO);
         medico.setAtivo(true);
+
+        // ⚠️ NÃO SETAMOS AS ROLES AQUI
+        // esse passo deve ser feito no MedicoService,
+        // usando roleRepository.getReferenceById()
+        // exatamente como no módulo de Usuários.
 
         return medico;
     }
+
+    // -----------------------------------------------------------
+    // ENDEREÇO DTO
+    // -----------------------------------------------------------
 
     @Getter
     @Setter
@@ -81,6 +95,7 @@ public class MedicoDTO {
     @AllArgsConstructor
     @Builder
     public static class EnderecoDTO {
+
         private String logradouro;
         private String numero;
         private String complemento;

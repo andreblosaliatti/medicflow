@@ -1,4 +1,4 @@
-package com.inflowia.medicflow.controller;
+package com.inflowia.medicflow.controllers;
 
 import com.inflowia.medicflow.entities.paciente.Paciente;
 import com.inflowia.medicflow.repositories.PacienteRepository;
