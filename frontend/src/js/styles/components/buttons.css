@@ -1,0 +1,15 @@
+.mf-btn{
+  border:1px solid var(--mf-border);
+  background: var(--mf-surface);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor:pointer;
+}
+
+.mf-btn--primary{
+  background: var(--mf-primary);
+  border-color: var(--mf-primary);
+  color: #0b1c26;
+  font-weight: 700;
+}
+.mf-btn--primary:hover{ filter: brightness(0.98); }
