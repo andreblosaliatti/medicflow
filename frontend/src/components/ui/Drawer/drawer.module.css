@@ -1,0 +1,104 @@
+.overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 42, 68, 0.35);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 999;
+}
+
+/* painel */
+.drawer{
+  height: 100%;
+  background: var(--mf-surface);
+  border-left: 1px solid var(--mf-border);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= HEADER ================= */
+
+.header{
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--mf-border);
+}
+
+/* variante padrão */
+.headerDefault{
+  background: var(--mf-surface);
+}
+
+/* 🔵 variante primária (Novo agendamento) */
+.headerPrimary{
+  background: linear-gradient(
+    135deg,
+    var(--mf-primary),
+    var(--mf-primary-600)
+  );
+  border-bottom: none;
+
+  /* 🔥 cobre a borda esquerda do drawer */
+  margin-left: -1px;
+  padding-left: calc(18px + 1px);
+}
+
+/* ================= TITLE ================= */
+
+.title{
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.2px;
+}
+
+.titleDefault{
+  color: var(--mf-dark);
+}
+
+.titleOnPrimary{
+  color: #ffffff;
+}
+
+/* ================= CLOSE BUTTON ================= */
+
+.close{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  cursor: pointer;
+  line-height: 1;
+  font-size: 18px;
+}
+
+/* padrão */
+.closeDefault{
+  background: var(--mf-surface);
+  border: 1px solid var(--mf-border);
+  color: var(--mf-text);
+}
+
+/* 🔵 no header azul */
+.closeOnPrimary{
+  background: #ffffff;          /* fundo branco */
+  border: 1px solid var(--mf-border);
+  color: #000000;               /* X preto */
+}
+
+/* ❌ único hover: cursor */
+.close:hover{
+  cursor: pointer;
+}
+
+/* ================= BODY ================= */
+
+.body{
+  padding: 16px;
+  overflow: auto;
+}

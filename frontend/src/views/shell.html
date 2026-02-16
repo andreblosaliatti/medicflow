@@ -1,0 +1,47 @@
+<div class="mf-app">
+  <aside class="mf-sidebar">
+    <div class="mf-brand">
+      <img class="mf-brand__logo" src="assets/img/logo-medicflow.svg" alt="MedicFlow" />
+      <span class="mf-brand__name">MedicFlow</span>
+    </div>
+
+    <nav class="mf-nav">
+      <a class="mf-nav__item" href="#/dashboard" data-nav="dashboard">Dashboard</a>
+      <a class="mf-nav__item" href="#/agenda" data-nav="agenda">Agenda</a>
+      <a class="mf-nav__item" href="#/pacientes" data-nav="pacientes">Pacientes</a>
+      <a class="mf-nav__item" href="#/consultas" data-nav="consultas">Consultas</a>
+      <a class="mf-nav__item" href="#/comunicacao" data-nav="comunicacao">Comunicação</a>
+      <a class="mf-nav__item" href="#/usuarios" data-nav="usuarios">Usuários</a>
+      <a class="mf-nav__item" href="#/configuracoes" data-nav="configuracoes">Configurações</a>
+    </nav>
+
+    <div class="mf-sidebar__footer">
+      <small class="mf-muted">v1.0.0</small>
+    </div>
+  </aside>
+
+  <div class="mf-main">
+    <header class="mf-topbar">
+      <div class="mf-topbar__search">
+        <input class="mf-input" type="search" placeholder="Buscar..." />
+      </div>
+
+      <div class="mf-topbar__right">
+        <button class="mf-iconbtn" type="button" aria-label="Notificações">🔔</button>
+
+        <div class="mf-user">
+          <div class="mf-user__avatar">JS</div>
+          <div class="mf-user__meta">
+            <div class="mf-user__name">Usuário</div>
+            <div class="mf-user__role mf-muted">Perfil</div>
+          </div>
+          <button class="mf-iconbtn" id="btnLogout" type="button" aria-label="Sair">⏻</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="view" class="mf-content">
+      <!-- views/pages/*.html entram aqui -->
+    </main>
+  </div>
+</div>

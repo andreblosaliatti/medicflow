@@ -1,0 +1,149 @@
+/* =========================================================
+   SelectField — MedicFlow (reutilizável)
+   Arquivo: src/components/form/SelectField/style.css
+   ========================================================= */
+
+.mf-select{
+  position: relative;
+  width: 100%;
+}
+
+/* label opcional do componente */
+.mf-select__label{
+  display:block;
+  margin-bottom:6px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--mf-muted);
+}
+
+/* TRIGGER (botão) — mais fino e elegante */
+.mf-select__trigger{
+  width: 100%;
+  height: var(--mf-control-height);
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+
+  padding: 0 10px;
+
+  border-radius: 10px;
+  border: 1px solid var(--mf-border);
+
+  background: rgba(246,248,251,0.55);
+  color: var(--mf-text);
+
+  cursor:pointer;
+
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+
+.mf-select__trigger:hover{
+  background: rgba(246,248,251,0.75);
+  border-color: rgba(18,167,195,0.30);
+}
+
+.mf-select__trigger:focus-visible{
+  outline:none;
+  border-color: rgba(18,167,195,0.55);
+  box-shadow: 0 0 0 4px rgba(24,198,232,0.14);
+}
+
+.mf-select__trigger:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* valor */
+.mf-select__value{
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mf-text);
+}
+
+.mf-select__value.is-placeholder{
+  color: rgba(47,58,68,0.55);
+  font-weight: 600;
+}
+
+/* chevron */
+.mf-select__chevron{
+  font-size: 16px;
+  line-height: 1;
+  opacity: .65;
+  transition: transform .15s ease;
+}
+
+.mf-select__trigger.is-open .mf-select__chevron{
+  transform: rotate(180deg);
+}
+
+/* dropdown */
+.mf-select__dropdown{
+  position:absolute;
+  z-index: 9999;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+
+  background: rgba(246,248,251,0.98); /* cinza claro “premium” */
+  border: 1px solid var(--mf-border);
+  border-radius: 12px;
+
+  box-shadow: 0 14px 34px rgba(15,42,68,0.12);
+  overflow: hidden;
+
+  padding: 6px;
+}
+
+/* opção */
+.mf-select__option{
+  width:100%;
+  text-align:left;
+
+  padding: 10px 10px;
+  border-radius: 10px;
+  border: none;
+
+  background: transparent;
+  cursor: pointer;
+
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--mf-text);
+
+  transition: background .12s ease, outline-color .12s ease;
+}
+
+.mf-select__option:hover{
+  background: rgba(24,198,232,0.10);
+}
+
+.mf-select__option.is-active{
+  background: rgba(24,198,232,0.14);
+  outline: 1px solid rgba(24,198,232,0.22);
+}
+
+/* =========================================================
+   Anti-seta duplicada (mata caret extra de CSS global)
+   ========================================================= */
+.mf-select__trigger::before,
+.mf-select__trigger::after{
+  content: none !important;
+  display: none !important;
+}
+
+.mf-select__trigger{
+  height: 36px;                 /* ✅ casa com input */
+  border-radius: 12px;
+  border: 1px solid var(--mf-border);
+  background: var(--mf-surface);
+  padding: 0 12px;
+}

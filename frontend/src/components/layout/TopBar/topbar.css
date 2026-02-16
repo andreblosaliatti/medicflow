@@ -1,0 +1,135 @@
+.mf-topbar{
+  height: 64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: var(--space-4);
+  padding: 0 var(--space-6);
+  background: var(--mf-bg);
+  border-bottom: 1px solid var(--mf-border);
+}
+
+/* ✅ FALTAVA: colunas */
+.mf-topbar__left{
+  flex: 1;                 /* ocupa o espaço e empurra o user pra direita */
+  display:flex;
+  align-items:center;
+  min-width: 0;            /* evita overflow estranho */
+}
+
+.mf-topbar__right{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap: var(--space-3);
+}
+
+/* Search */
+.mf-topbar__search{
+  width: min(720px, 60%);
+  display:flex;
+  align-items:center;
+  gap: var(--space-2);
+
+  height: 40px;
+  padding: 0 var(--space-3);
+
+  border: 1px solid var(--mf-border);
+  border-radius: var(--radius-md);
+
+  background: var(--mf-surface);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.mf-topbar__search input{
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--mf-text);
+  font-size: 13px;
+}
+
+/* ✅ foco certo: só no container */
+.mf-topbar__search:focus-within{
+  border-color: var(--mf-primary-600);
+  box-shadow: 0 0 0 4px rgba(24, 198, 232, 0.18);
+}
+
+/* ===== User menu (igual ao print) ===== */
+.mf-user{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  height: 40px;
+  padding: 6px 12px;
+  
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,.12);
+  background: #fff;
+
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+
+  max-width: 260px;
+}
+
+.mf-user__name{ overflow:hidden; text-overflow:ellipsis; }
+
+
+.mf-user:hover{
+  background: #fff;
+  border-color: rgba(15,23,42,.18);
+}
+
+.mf-user:focus-visible{
+  outline: none;
+  border-color: var(--mf-primary-600);
+  box-shadow: 0 0 0 4px rgba(24,198,232,.18);
+}
+
+.mf-user__avatar{
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--mf-primary-600);
+  color: #fff;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: .4px;
+  flex-shrink: 0;
+}
+
+.mf-user__info{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  line-height: 1.15;
+  min-width: 0;
+}
+
+.mf-user__name{
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--mf-text);
+  white-space: nowrap;
+}
+
+.mf-user__role{
+  font-size: 11px;
+  color: var(--mf-muted);
+  white-space: nowrap;
+}
+
+.mf-user__chevron{
+  margin-left: auto; /* joga pra direita */
+  font-size: 12px;
+  color: rgba(15,23,42,.55);
+}

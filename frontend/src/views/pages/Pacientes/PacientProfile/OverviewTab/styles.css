@@ -1,0 +1,22 @@
+.patient-overview-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* agora o padding fica garantido no wrapper */
+.patient-overview-card{
+  display: block;
+}
+
+/* força o Card a preencher o wrapper */
+.patient-overview-card > *{
+  width: 100%;
+  height: 100%;
+}
+
+/* se o Card internamente não tem padding suficiente, aplica aqui no conteúdo */
+.patient-overview-card > *{
+  padding: 18px;
+}

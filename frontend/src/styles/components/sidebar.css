@@ -1,0 +1,83 @@
+.mf-sidebar{
+  background: var(--mf-surface);
+  border-right: 1px solid var(--mf-border);
+  padding: var(--space-6);
+  display:flex;
+  flex-direction:column;
+  gap: var(--space-5);
+}
+
+.mf-brand{
+  display:flex;
+  align-items:center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-4);
+}
+
+.mf-brand__name{
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: var(--mf-dark);
+}
+
+/* NAV */
+.mf-nav{
+  display:flex;
+  flex-direction:column;
+  gap: var(--space-2);
+}
+
+/* Item */
+.mf-nav__item{
+  position: relative; /* ✅ necessário pro ::before */
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  display:flex;
+  align-items:center;
+  gap: var(--space-3);
+
+  color: var(--mf-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+/* Hover: fundo do sistema */
+.mf-nav__item:hover{
+  background: var(--mf-bg);
+  color: var(--mf-dark);
+}
+
+/* Ativo: mesmo fundo do hover */
+.mf-nav__item.is-active{
+  background: var(--mf-bg);
+  color: var(--mf-dark);
+  font-weight: 800;
+}
+
+/* ✅ Indicador lateral (sempre visível) */
+.mf-nav__item.is-active::before{
+  content: "";
+  position: absolute;
+  left: 10px; /* ✅ não cola na borda do card */
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 999px;
+  background: var(--mf-primary-600);
+}
+
+/* Dá um “recuo” no texto quando ativo pra não ficar em cima do indicador */
+.mf-nav__item.is-active{
+  padding-left: calc(var(--space-4) + 10px);
+}
+
+/* Footer */
+.mf-sidebar__footer{
+  margin-top:auto;
+  font-size: 12px;
+  color: var(--mf-muted);
+}

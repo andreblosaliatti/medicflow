@@ -1,0 +1,74 @@
+.mf-status{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+
+  width: 120px;
+  height: 30px;
+  padding: 0 12px;
+
+  border-radius: var(--radius-mm);
+  font-weight: 900;
+  font-size: 12px;
+
+  border: 1px solid transparent;
+}
+
+/* bolinha */
+.mf-status__dot{
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+/* ===== Variantes ===== */
+
+/* Confirmada (verde) */
+.mf-status--success{
+  background: color-mix(in srgb, var(--mf-success) 14%, var(--mf-surface));
+  border-color: color-mix(in srgb, var(--mf-success) 30%, var(--mf-border));
+  color: color-mix(in srgb, var(--mf-success) 72%, var(--mf-dark));
+}
+.mf-status--success .mf-status__dot{
+  background: var(--mf-success);
+}
+
+/* Agendada (amarelo/laranja) */
+.mf-status--warning{
+  background: color-mix(in srgb, var(--mf-warning) 16%, var(--mf-surface));
+  border-color: color-mix(in srgb, var(--mf-warning) 34%, var(--mf-border));
+  color: color-mix(in srgb, var(--mf-warning) 78%, var(--mf-dark));
+}
+.mf-status--warning .mf-status__dot{
+  background: var(--mf-warning);
+}
+
+/* Em atendimento (primary) */
+.mf-status--primary{
+  background: color-mix(in srgb, var(--mf-primary) 14%, var(--mf-surface));
+  border-color: color-mix(in srgb, var(--mf-primary) 30%, var(--mf-border));
+  color: color-mix(in srgb, var(--mf-primary) 78%, var(--mf-dark));
+}
+.mf-status--primary .mf-status__dot{
+  background: var(--mf-primary);
+}
+
+/* Concluída (neutro) */
+.mf-status--default{
+  background: color-mix(in srgb, var(--mf-border) 45%, var(--mf-surface));
+  border-color: color-mix(in srgb, var(--mf-border) 85%, var(--mf-surface));
+  color: var(--mf-dark);
+}
+.mf-status--default .mf-status__dot{
+  background: var(--mf-muted);
+}
+
+/* Cancelada (vermelho) */
+.mf-status--danger{
+  background: color-mix(in srgb, var(--mf-danger) 14%, var(--mf-surface));
+  border-color: color-mix(in srgb, var(--mf-danger) 30%, var(--mf-border));
+  color: color-mix(in srgb, var(--mf-danger) 72%, var(--mf-dark));
+}
+.mf-status--danger .mf-status__dot{
+  background: var(--mf-danger);
+}

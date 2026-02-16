@@ -1,0 +1,36 @@
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  background: #f6f8fb;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-content {
+  padding: 18px 22px 28px;
+  min-width: 0;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 6px 0 14px;
+  color: #1f2a37;
+}

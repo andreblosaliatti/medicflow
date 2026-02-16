@@ -1,0 +1,55 @@
+.mf-highlight-button{
+  /* ✅ não estica sozinho */
+  width: auto;
+  flex: 0 0 auto;
+
+  height: 40px;
+  padding: 0 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: var(--mf-primary-600);
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+  white-space: nowrap;
+
+  transition: transform .08s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.mf-highlight-button:hover{
+  background: var(--mf-primary-700);
+  box-shadow: 0 10px 22px rgba(24,198,232,.22);
+  color: var(--mf-text);
+}
+
+.mf-highlight-button:active{
+  transform: translateY(1px);
+  box-shadow: 0 6px 14px rgba(24,198,232,.22);
+}
+
+.mf-highlight-button:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(24,198,232,.28);
+}
+
+.mf-highlight-button:disabled{
+  opacity: .6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ✅ garante que spans não "sumam" */
+.mf-highlight-button span{
+  display: inline-flex;
+  align-items: center;
+}

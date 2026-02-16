@@ -1,0 +1,159 @@
+.forgot-page {
+  min-height: 100vh;
+  background: #eff1f4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 28px 16px;
+  color: #2f3a45;
+}
+
+.forgot-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.forgot-help {
+  margin: 0 0 6px 0;
+  color: #5b6774;
+  font-size: 16px;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.success-placeholder {
+  height: 24px;
+}
+
+.success-row {
+  background: #e9f7ef;
+  border: 1px solid #bfe6cc;
+  color: #1f6b3b;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 15px;
+}
+
+.back-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  justify-content: center;
+}
+
+.back-wrap .line {
+  height: 1px;
+  background: #d9dde3;
+  flex: 1;
+  max-width: 120px;
+}
+
+.back-link {
+  font-size: 15px;
+  color: #2a8fe6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   AJUSTES EXCLUSIVOS DA TELA "RECUPERAR / ESQUECI SENHA"
+   (não afeta a tela de login)
+   ========================================================= */
+
+.forgot-page .auth-card {
+  max-width: 420px;
+  padding: 26px 24px 22px;
+}
+
+.forgot-page .forgot-form {
+  gap: 12px;
+}
+
+.forgot-page .text-field input {
+  height: 48px;
+}
+
+.forgot-page .primary-button {
+  height: 48px;
+  margin-top: 8px;
+}
+
+/* =========================================================
+   AJUSTES FINOS DE ESPAÇAMENTO — ESQUECI MINHA SENHA
+   ========================================================= */
+
+/* Título do card */
+.forgot-page .auth-card h1,
+.forgot-page .auth-card .auth-title {
+  margin-bottom: 10px;
+}
+
+/* Texto explicativo */
+.forgot-page .forgot-help {
+  margin-bottom: 6px;
+}
+
+/* Campo de input */
+.forgot-page .text-field {
+  margin-bottom: 4px;
+}
+
+/* Botão */
+.forgot-page .primary-button {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+/* Linha + link "Voltar para login" */
+.forgot-page .back-wrap {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+/* Footer (versão) */
+.forgot-page .footer-meta {
+  margin-top: 8px;
+}
+
+/* =========================================================
+   REMOVER/REDUZIR ESPAÇADORES INVISÍVEIS NESTA TELA
+   (o grande espaço é o error-placeholder + success-placeholder)
+   ========================================================= */
+
+.forgot-page .error-placeholder {
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.forgot-page .success-placeholder {
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Se existir margem extra nas versões visíveis */
+.forgot-page .error-row,
+.forgot-page .success-row {
+  margin: 0 !important;
+}
+
+/* Agora sim, controla espaçamento só pelo gap */
+.forgot-page .forgot-form {
+  gap: 10px; /* pode usar 8px se quiser mais perto ainda */
+}
+
+/* Aproxima ainda mais botão do input */
+.forgot-page .primary-button {
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
+}

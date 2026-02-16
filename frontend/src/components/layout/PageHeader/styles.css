@@ -1,0 +1,22 @@
+.mf-pageheader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  padding: var(--space-5) var(--space-6);
+  background: var(--mf-primary);            /* ✅ branco, separado do topbar */
+  border-bottom: 1px solid var(--mf-border);
+}
+
+.mf-pageheader__title{
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--mf-dark);
+}
+
+.mf-pageheader__actions{
+  display:flex;
+  align-items:center;
+  gap: var(--space-3);
+}

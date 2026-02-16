@@ -1,0 +1,141 @@
+.mf-table-wrap{
+  border: 1px solid var(--mf-border);
+  border-radius: var(--radius-mm);
+  overflow: hidden;
+  background: var(--mf-surface);
+}
+
+/* 🔒 BLINDAGEM contra CSS global que quebra tabelas */
+.mf-table{
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--mf-surface);
+
+  display: table !important;
+}
+
+.mf-table thead{ display: table-header-group !important; }
+.mf-table tbody{ display: table-row-group !important; }
+.mf-table tr{ display: table-row !important; }
+.mf-table th,
+.mf-table td{ display: table-cell !important; }
+
+.mf-th{
+  text-align:left;
+  font-size: 12px;
+  color: var(--mf-muted);
+  font-weight: 900;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--mf-border);
+  background: var(--mf-bg);
+}
+
+.mf-td{
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--mf-border);
+  font-size: 13px;
+  color: var(--mf-text);
+}
+
+.mf-table tbody tr:hover > .mf-td{
+  background: var(--mf-bg);
+}
+
+.mf-th--right, .mf-td--right{ text-align:right; }
+.mf-th--center, .mf-td--center{ text-align:center; }
+
+.mf-mono{
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  font-weight: 900;
+  color: var(--mf-dark);
+}
+
+.mf-muted{
+  color: var(--mf-muted);
+  font-weight: 700;
+}
+
+.mf-person{
+  display:flex;
+  align-items:center;
+  gap: var(--space-3);
+  min-width:0;
+}
+
+.mf-avatar{
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(24,198,232,0.10);
+  border: 1px solid var(--mf-border);
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--mf-dark);
+}
+
+.mf-person__name{
+  font-weight: 900;
+  color: var(--mf-dark);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.mf-row-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap: var(--space-2);
+}
+
+.mf-split{
+  position: relative;
+  display: inline-flex;
+  overflow: visible;             /* ✅ importante: não cortar dropdown */
+}
+
+.mf-split__buttons{
+  display:inline-flex;
+  border-radius: 12px;
+  overflow: hidden;              /* ✅ recorta só os botões */
+  border: 1px solid rgba(18,167,195,0.25);
+  box-shadow: 0 1px 0 rgba(15,42,68,0.04);
+}
+
+.mf-split__main,
+.mf-split__caret{
+  height: 34px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 900;
+  background: var(--mf-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mf-split__main{
+  padding: 0 12px;
+}
+
+.mf-split__caret{
+  width: 36px;
+  justify-content: center;
+  background: var(--mf-primary-600);
+}
+
+.mf-split__main:hover,
+.mf-split__caret:hover{
+  filter: brightness(0.98);
+}
+
+.mf-split__main:focus-visible,
+.mf-split__caret:focus-visible{
+  outline: 0;
+  box-shadow: 0 0 0 4px rgba(24, 198, 232, 0.22);
+}

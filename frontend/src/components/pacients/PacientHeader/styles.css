@@ -1,0 +1,56 @@
+.patient-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.patient-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.patient-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--mf-border);
+  object-fit: cover;
+}
+
+.patient-title {
+  margin: 0;
+  font-size: 18px;
+  color: var(--mf-text);
+  font-weight: 800;
+}
+
+.patient-age {
+  font-weight: 700;
+  color: var(--mf-muted);
+}
+
+.patient-subtitle {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--mf-muted);
+}
+
+.patient-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* deixa o SelectField com largura de “botão” */
+.patient-actions-select {
+  min-width: 140px;
+}
+
+/* se teu SelectField permitir, isso ajuda a não ficar alto demais */
+.patient-actions-select .mf-select__trigger {
+  height: 40px;
+  border-radius: 12px;
+}

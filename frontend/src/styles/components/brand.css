@@ -1,0 +1,59 @@
+.mf-brand{
+  display:flex;
+  align-items:center;
+  gap: var(--space-3);
+}
+
+/* ===============================
+   SIDEBAR (logo dominante)
+   =============================== */
+
+.mf-brand--sidebar{
+  padding: var(--space-3) var(--space-2) var(--space-5);
+}
+
+/* 🔵 SÍMBOLO — bem maior */
+.mf-brand--sidebar .mf-brand__logo{
+  height: 56px;          /* ⬅️ AQUI está o impacto */
+  width: auto;
+  flex-shrink: 0;
+}
+
+/* 🔹 TEXTO — bem menor, só apoio */
+.mf-brand--sidebar .mf-brand__name-img{
+  height: 14px;          /* ⬅️ reduz bastante */
+  width: auto;
+  margin-top: 6px;       /* ⬅️ desce para alinhar opticamente */
+  opacity: 0.9;          /* opcional: mais elegante */
+}
+
+/* ===============================
+   HEADER / TOPBAR
+   =============================== */
+
+.mf-brand--header .mf-brand__logo{
+  height: 42px;
+}
+
+.mf-brand--header .mf-brand__name-img{
+  height: 14px;
+  margin-top: 4px;
+}
+
+/* ===============================
+   LOGIN / AUTH (impacto máximo)
+   =============================== */
+
+.mf-brand--auth{
+  justify-content:center;
+  gap: var(--space-4);
+}
+
+.mf-brand--auth .mf-brand__logo{
+  height: 72px;
+}
+
+.mf-brand--auth .mf-brand__name-img{
+  height: 22px;
+  margin-top: 6px;
+}

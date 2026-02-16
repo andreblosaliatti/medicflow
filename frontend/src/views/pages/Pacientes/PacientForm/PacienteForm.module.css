@@ -1,0 +1,202 @@
+/* =========================
+   PAGE
+   ========================= */
+.page{
+  position: relative;
+  padding-bottom: 86px;
+  padding-top: 16px;
+}
+
+.grid{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* =========================
+   CARD HEADER
+   ========================= */
+.cardHeader{
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--mf-border);
+  background: linear-gradient(
+    180deg,
+    rgba(24, 198, 232, 0.10) 0%,
+    rgba(24, 198, 232, 0.06) 100%
+  );
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.cardTitle{
+  margin: 0;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--mf-dark);
+}
+
+/* =========================
+   FORM GRID
+   ========================= */
+.formGrid{
+  padding: 14px 16px 16px 16px;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px 14px;
+}
+
+.field{ grid-column: span 12; }
+
+.span1{ grid-column: span 1; }
+.span2{ grid-column: span 2; }
+.span3{ grid-column: span 3; }
+.span4{ grid-column: span 4; }
+.span5{ grid-column: span 5; }
+.span6{ grid-column: span 6; }
+.span7{ grid-column: span 7; }
+.span8{ grid-column: span 8; }
+.span9{ grid-column: span 9; }
+.span10{ grid-column: span 10; }
+.span11{ grid-column: span 11; }
+.span12{ grid-column: span 12; }
+
+@media (max-width: 900px){
+  .formGrid{
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .span1,.span2,.span3,.span4,.span5,.span6,
+  .span7,.span8,.span9,.span10,.span11,.span12{
+    grid-column: span 6;
+  }
+}
+
+.switchControl{
+  position: relative;
+
+  /* igual ao input */
+  height: var(--mf-control-height, 44px);
+  min-height: var(--mf-control-height, 44px);
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(17,24,39,.14);
+  background: rgba(255,255,255,.9);
+  margin-top: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+
+/* label interno que NÃO altera layout */
+.switchControl::before{
+  content: attr(data-label);
+  position: absolute;
+  left: 12px;
+
+  top: 50%;
+  transform: translateY(-50%);
+
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--text, #0f172a);
+  pointer-events: none;
+}
+
+/* foco igual input */
+.switchControl:focus-within{
+  border-color: rgba(17,24,39,.35);
+  box-shadow: 0 0 0 4px rgba(17,24,39,.08);
+}
+
+/* switch */
+.switch{
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(17,24,39,.14);
+  background: #eef2f7;
+  position: relative;
+  cursor: pointer;
+  transition: 150ms ease;
+}
+
+.switch.on{
+  background: rgba(24, 198, 232, 0.22);
+  border-color: rgba(24, 198, 232, 0.55);
+}
+
+.knob{
+  position:absolute;
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.95);
+  border: 1px solid rgba(17,24,39,.14);
+  transition: 150ms ease;
+}
+
+.switch.on .knob{
+  left: 21px;
+  border-color: rgba(24, 198, 232, 0.55);
+}
+
+/* =========================
+   ACTIONS BAR
+   ========================= */
+
+.actionsBar{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  background: rgba(246, 248, 251, 0.92);
+  border-top: 1px solid var(--mf-border);
+  backdrop-filter: blur(8px);
+  z-index: 30;
+}
+
+.actionsInner{
+  width: min(1120px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 14px 0;
+
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap: 10px;
+}
+
+.linkBtn{
+  appearance: none;
+  border: 1px solid var(--mf-border);
+  background: var(--mf-surface);
+  color: var(--mf-dark);
+  font-weight: 900;
+
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+
+  cursor: pointer;
+  transition: 150ms ease;
+}
+
+.linkBtn:hover{
+  background: rgba(15, 42, 68, 0.04);
+}
+
+.linkBtn:active{
+  transform: translateY(1px);
+}
+
+.linkBtn:focus-visible{
+  outline: 3px solid rgba(24, 198, 232, 0.25);
+  outline-offset: 2px;
+}

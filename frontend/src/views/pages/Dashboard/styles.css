@@ -1,0 +1,150 @@
+.doctor-dashboard .page-content{
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Agenda: permite tabela encostar sem “double padding” visual */
+.doctor-dashboard .dash-card--flush{
+  padding-bottom: 0; /* o Card já tem padding; a tabela vai cuidar */
+}
+
+/* Cabeçalho dentro do card */
+.doctor-dashboard .panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.doctor-dashboard .panel-head--between{
+  justify-content: space-between;
+}
+
+.doctor-dashboard .panel-title{
+  display:flex;
+  align-items:center;
+  gap: var(--space-3);
+  font-weight: 900;
+  color: var(--mf-dark);
+}
+
+.doctor-dashboard .panel-icon{
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: var(--mf-bg);
+  border: 1px solid var(--mf-border);
+}
+
+/* Link do header do painel */
+.doctor-dashboard .link-btn{
+  border: 0;
+  background: transparent;
+  color: var(--mf-primary-600);
+  font-weight: 900;
+  font-size: 13px;
+  cursor:pointer;
+  padding: 8px 10px;
+  border-radius: 999px;
+}
+
+.doctor-dashboard .link-btn:hover{
+  background: var(--mf-bg);
+}
+
+/* ===== Resumo ===== */
+.doctor-dashboard .dash-stats{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 1100px){
+  .doctor-dashboard .dash-stats{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px){
+  .doctor-dashboard .dash-stats{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Tabela ===== */
+.doctor-dashboard .table-wrap{
+  margin-top: var(--space-2);
+  /* se o Card estiver com padding e você quiser tabela “full width”,
+     dá pra usar margin negativo; por enquanto deixo clean */
+}
+
+.doctor-dashboard .table{
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.doctor-dashboard .table thead th{
+  text-align: left;
+  font-size: 12px;
+  color: var(--mf-muted);
+  font-weight: 900;
+  padding: 12px 0;
+}
+
+.doctor-dashboard .table tbody td{
+  padding: 14px 0;
+  border-top: 1px solid var(--mf-border);
+}
+
+.doctor-dashboard .table-empty{
+  padding: 16px 0;
+  color: var(--mf-muted);
+}
+
+/* ===== Bottom ===== */
+.doctor-dashboard .dash-bottom{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  align-items: stretch;
+}
+
+.doctor-dashboard .quick-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.doctor-dashboard .quick-tile{
+  border: 1px solid var(--mf-border);
+  background: var(--mf-surface);
+  border-radius: var(--radius-md);
+  height: 44px;
+  padding: 0 var(--space-4);
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap: var(--space-3);
+
+  font-weight: 900;
+  font-size: 13px;
+  color: var(--mf-dark);
+}
+
+.doctor-dashboard .quick-tile:hover{
+  background: var(--mf-bg);
+}
+
+@media (max-width: 1100px){
+  .doctor-dashboard .dash-bottom{
+    grid-template-columns: 1fr;
+  }
+}

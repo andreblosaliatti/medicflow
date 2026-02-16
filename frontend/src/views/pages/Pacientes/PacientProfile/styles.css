@@ -1,0 +1,65 @@
+/* Página principal */
+
+.patient-profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Área onde o conteúdo da tab é renderizado */
+.patient-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Grid da visão geral */
+.patient-overview-grid {
+display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Cards dentro da visão geral */
+.patient-overview-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--mf-text);
+}
+
+.patient-overview-card p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: var(--mf-text);
+}
+
+.patient-overview-card{
+  padding: 18px 18px;
+}
+
+
+
+/* Subinformações mais suaves */
+.patient-overview-card span {
+  color: var(--mf-muted);
+}
+
+.patient-overview-card + .patient-overview-card{
+  margin-top: 0;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+  .patient-overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .patient-profile-page {
+    padding: 16px;
+  }
+}

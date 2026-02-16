@@ -1,0 +1,87 @@
+.wrap {
+  height: calc(100vh - 220px);
+}
+
+/* Ajuste leve de tipografia do calendário */
+:global(.rbc-toolbar) {
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+/* Eventos por status (cores via tokens do sistema) */
+.evConfirmed {
+  background: rgba(32, 201, 151, 0.18) !important;
+  border: 1px solid rgba(32, 201, 151, 0.35) !important;
+  color: var(--mf-text) !important;
+}
+
+.evPending {
+  background: rgba(255, 176, 32, 0.18) !important;
+  border: 1px solid rgba(255, 176, 32, 0.35) !important;
+  color: var(--mf-text) !important;
+}
+
+.evCanceled {
+  background: rgba(255, 90, 95, 0.16) !important;
+  border: 1px solid rgba(255, 90, 95, 0.32) !important;
+  color: var(--mf-text) !important;
+  opacity: 0.85;
+}
+
+/* ================================
+   Toolbar - botões de visualização
+   (CSS Modules -> usar :global)
+   ================================ */
+
+.wrap :global(.rbc-toolbar button) {
+  background: #fff;
+  border: 1px solid var(--mf-border);
+  color: var(--mf-text);
+  padding: 6px 14px;
+  font-size: 14px;
+  border-radius: 0;
+  transition: all .15s ease;
+}
+
+/* bordas arredondadas só nas pontas */
+.wrap :global(.rbc-toolbar .rbc-btn-group button:first-child) {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.wrap :global(.rbc-toolbar .rbc-btn-group button:last-child) {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* hover */
+.wrap :global(.rbc-toolbar button:hover) {
+  background: rgba(24, 198, 232, 0.12);
+  color: var(--mf-text);
+}
+
+/* 🔥 botão ativo (Mês / Semana / Dia / Lista) */
+.wrap :global(.rbc-toolbar button.rbc-active) {
+  background: rgba(24, 198, 232, 0.22);
+  color: var(--mf-text);
+  border-color: rgba(24, 198, 232, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(24, 198, 232, 0.25);
+}
+
+/* ✅ AQUI está o bug do "cinza até clicar fora":
+   o navegador aplica :active/:focus com estilo padrão.
+   Força o ativo a ficar azul mesmo em active/focus. */
+.wrap :global(.rbc-toolbar button.rbc-active:active),
+.wrap :global(.rbc-toolbar button.rbc-active:focus),
+.wrap :global(.rbc-toolbar button.rbc-active:focus-visible) {
+  background: rgba(24, 198, 232, 0.22) !important;
+  border-color: rgba(24, 198, 232, 0.45) !important;
+  box-shadow: inset 0 0 0 1px rgba(24, 198, 232, 0.25) !important;
+  outline: none !important;
+}
+
+/* remove foco feio (para os demais botões) */
+.wrap :global(.rbc-toolbar button:focus) {
+  outline: none;
+}
+

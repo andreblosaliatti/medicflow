@@ -1,0 +1,142 @@
+.history-card__header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom: 12px;
+}
+
+.history-card__title{
+  margin:0;
+  font-size:16px;
+  font-weight:800;
+  color: var(--mf-text);
+}
+
+.history-card__link{
+  border:none;
+  background:transparent;
+  color: var(--mf-primary-600);
+  font-weight:700;
+  cursor:pointer;
+  padding:6px 8px;
+  border-radius:10px;
+}
+
+.history-card__link:hover{
+  background: rgba(24,198,232,0.08);
+}
+
+.history-table-wrap{
+  border:1px solid var(--mf-border);
+  border-radius:14px;
+  overflow:hidden;
+  background: var(--mf-surface);
+}
+
+.history-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+
+.history-table thead th{
+  text-align:left;
+  color: var(--mf-muted);
+  font-weight:700;
+  padding:12px 14px;
+  background: rgba(246,248,251,0.6);
+  border-bottom:1px solid var(--mf-border);
+}
+
+.history-table tbody td{
+  padding:12px 14px;
+  border-bottom:1px solid var(--mf-border);
+  color: var(--mf-text);
+}
+
+.history-table tbody tr:last-child td{
+  border-bottom:none;
+}
+
+.col-actions{
+  width: 160px;
+  text-align: right;
+}
+
+.row-actions{
+  display:inline-block;
+  min-width: 120px;
+}
+
+/* status pills */
+.status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:700;
+  border:1px solid var(--mf-border);
+}
+
+.status-pill.is-success{
+  background: rgba(32,201,151,0.12);
+  color: var(--mf-success);
+  border-color: rgba(32,201,151,0.25);
+}
+
+.status-pill.is-danger{
+  background: rgba(255,90,90,0.12);
+  color: var(--mf-danger);
+  border-color: rgba(255,90,90,0.25);
+}
+
+.status-pill.is-muted{
+  background: rgba(108,119,133,0.10);
+  color: var(--mf-muted);
+  border-color: rgba(108,119,133,0.20);
+}
+
+.history-empty{
+  text-align:center;
+  color: var(--mf-muted);
+  padding: 18px 14px;
+}
+
+.history-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top: 12px;
+  color: var(--mf-muted);
+  font-size: 13px;
+}
+
+.history-footer__pager{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.pager-btn{
+  width:34px;
+  height:34px;
+  border-radius:12px;
+  border:1px solid var(--mf-border);
+  background: var(--mf-surface);
+  color: var(--mf-text);
+  cursor:pointer;
+}
+
+.pager-btn:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+.pager-page{
+  font-weight:700;
+  color: var(--mf-text);
+}

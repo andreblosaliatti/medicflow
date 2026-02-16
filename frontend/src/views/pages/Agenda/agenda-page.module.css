@@ -1,0 +1,137 @@
+.page{
+  display: grid;
+  gap: 14px;
+}
+
+.grid{
+  display: grid;
+  gap: 12px;
+}
+
+/* Título de seção */
+.sectionTitle{
+  font-weight: 800;
+  font-size: .95rem;
+  color: rgba(15, 23, 42, .75);
+  margin-bottom: 10px;
+}
+
+/* filtros */
+.filters{
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 140px;
+  gap: 10px;
+  align-items: center;
+}
+
+.searchRow{
+  margin-top: 10px;
+  display: grid;
+}
+
+/* legenda */
+.legend{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dotConfirmed{ background: rgba(32, 201, 151, 0.85); }
+.dotPending{ background: rgba(255, 176, 32, 0.9); }
+.dotCanceled{ background: rgba(255, 90, 95, 0.85); }
+
+/* ✅ Card do calendário: clipa cantos e evita “borda apagada” */
+.calendarCard{
+  padding: 0;
+  overflow: hidden; /* 🔥 resolve cantos “apagados” */
+}
+
+/* título do card do calendário com padding próprio */
+.calendarCard .sectionTitle{
+  padding: 16px 16px 0;
+  margin-bottom: 8px;
+}
+
+/* wrapper interno com respiro */
+.calendarWrap{
+  padding: 12px 12px 14px;
+}
+
+/* ===========================
+   ✅ FIXES React Big Calendar
+   =========================== */
+
+/* RBC não deve desenhar borda externa (quem manda é o Card) */
+.calendarWrap :global(.rbc-time-view),
+.calendarWrap :global(.rbc-month-view),
+.calendarWrap :global(.rbc-agenda-view){
+  border: 0;
+}
+
+/* remove a linha “dia inteiro” (linha sem horário no topo) */
+.calendarWrap :global(.rbc-allday-cell){
+  display: none;
+}
+
+/* evita uma linha sobrando no header depois de esconder all-day */
+.calendarWrap :global(.rbc-time-header-content){
+  border-top: 1px solid var(--mf-border);
+}
+
+/* toolbar mais alinhada e limpa */
+.calendarWrap :global(.rbc-toolbar){
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* botões da toolbar (Hoje / Anterior / Próximo e tabs Mês/Semana/Dia/Lista) */
+.calendarWrap :global(.rbc-toolbar button){
+  border: 1px solid var(--mf-border);
+  background: #fff;
+  color: var(--mf-text);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.calendarWrap :global(.rbc-toolbar button:hover){
+  background: rgba(15,23,42,.04);
+}
+
+.calendarWrap :global(.rbc-toolbar button.rbc-active){
+  background: rgba(24,198,232,.10);
+  border-color: rgba(24,198,232,.35);
+}
+
+/* linhas principais um pouco mais nítidas */
+.calendarWrap :global(.rbc-time-gutter){
+  border-right: 1px solid var(--mf-border);
+}
+
+.calendarWrap :global(.rbc-time-content){
+  border-top: 1px solid var(--mf-border);
+}
+
+/* responsivo */
+@media (max-width: 980px){
+  .filters{
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 520px){
+  .filters{
+    grid-template-columns: 1fr;
+  }
+}
