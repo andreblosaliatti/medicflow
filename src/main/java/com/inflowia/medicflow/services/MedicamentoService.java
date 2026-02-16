@@ -7,7 +7,7 @@ import com.inflowia.medicflow.entities.medicamento.MedicamentoBase;
 import com.inflowia.medicflow.entities.medicamento.MedicamentoPrescrito;
 import com.inflowia.medicflow.repositories.ConsultaRepository;
 
-import com.inflowia.medicflow.repositories.MedicamentoBaseRespository;
+import com.inflowia.medicflow.repositories.MedicamentoBaseRepository;
 import com.inflowia.medicflow.repositories.MedicamentoPrescritoRepository;
 import com.inflowia.medicflow.repositories.PacienteRepository;
 import com.inflowia.medicflow.services.exceptions.DatabaseException;
@@ -35,7 +35,7 @@ public class MedicamentoService {
     private MedicamentoPrescritoRepository medicamentoRepository;
 
     @Autowired
-    private MedicamentoBaseRespository medicamentoBaseRespository;
+    private MedicamentoBaseRepository medicamentoBaseRepository;
 
     @Autowired
     private PacienteRepository pacienteRepository;
@@ -45,7 +45,7 @@ public class MedicamentoService {
         if (!consultaRepository.existsById(consultaId)) {
             throw new ResourceNotFoundException("Consulta não encontrada");
         }
-        Page<MedicamentoPrescrito> page = medicamentoRepository.findByConsultaPacienteId(consultaId, pageable);
+        Page<MedicamentoPrescrito> page = medicamentoRepository.findByConsultaId(consultaId, pageable);
         return page.map(MedicamentoPrescritoMinDTO::new);
     }
 
@@ -96,7 +96,7 @@ public class MedicamentoService {
 
         MedicamentoBase base = null;
         if (dados.getMedicamentoBaseId() != null) {
-            base = medicamentoBaseRespository.findById(dados.getMedicamentoBaseId())
+            base = medicamentoBaseRepository.findById(dados.getMedicamentoBaseId())
                     .orElseThrow(() -> new ResourceNotFoundException("Medicamento base não encontrado"));
         }
 
