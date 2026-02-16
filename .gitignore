@@ -17,3 +17,4 @@ build/
 # env/secrets
 .env
 .env.*
+*:Zone.Identifier
