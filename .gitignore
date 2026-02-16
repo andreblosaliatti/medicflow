@@ -18,3 +18,4 @@ build/
 .env
 .env.*
 *:Zone.Identifier
+backend/*.log
