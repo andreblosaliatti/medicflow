@@ -6,62 +6,8 @@ import SelectField, { type SelectOption } from "../../../../components/form/Sele
 import HighlightButton from "../../../../components/ui/HighlightButton/HighlightButton";
 
 import type { PacienteDTO, Sexo } from "../../../../mocks/db/seed";
+import { formatCPF, formatPhoneBR, type FormErrors, validatePaciente } from "./formUtils";
 import styles from "./PacienteForm.module.css";
-
-type Errors = Partial<Record<string, string>>;
-
-function onlyDigits(s: string) {
-  return (s ?? "").replace(/\D/g, "");
-}
-
-function formatCPF(v: string) {
-  const d = onlyDigits(v).slice(0, 11);
-  const a = d.slice(0, 3);
-  const b = d.slice(3, 6);
-  const c = d.slice(6, 9);
-  const e = d.slice(9, 11);
-
-  if (d.length <= 3) return a;
-  if (d.length <= 6) return `${a}.${b}`;
-  if (d.length <= 9) return `${a}.${b}.${c}`;
-  return `${a}.${b}.${c}-${e}`;
-}
-
-function formatPhoneBR(v: string) {
-  const d = onlyDigits(v).slice(0, 11);
-  const ddd = d.slice(0, 2);
-  const rest = d.slice(2);
-
-  if (d.length === 0) return "";
-  if (d.length < 3) return `(${ddd}`;
-  if (rest.length <= 4) return `(${ddd}) ${rest}`;
-  if (rest.length <= 8) return `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4)}`;
-  return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`;
-}
-
-function validate(dto: PacienteDTO): Errors {
-  const e: Errors = {};
-
-  if (!dto.primeiroNome.trim()) e.primeiroNome = "Informe o primeiro nome.";
-  if (!dto.sobrenome.trim()) e.sobrenome = "Informe o sobrenome.";
-
-  const cpfDigits = onlyDigits(dto.cpf);
-  if (cpfDigits.length !== 11) e.cpf = "CPF precisa ter 11 dígitos.";
-
-  if (!dto.dataNascimento) e.dataNascimento = "Informe a data de nascimento.";
-
-  const telDigits = onlyDigits(dto.telefone);
-  if (telDigits.length < 10) e.telefone = "Telefone inválido.";
-
-  if (dto.email && !dto.email.includes("@")) e.email = "E-mail inválido.";
-
-  const cepDigits = onlyDigits(dto.endereco.cep);
-  if (dto.endereco.cep && cepDigits.length !== 8) e["endereco.cep"] = "CEP deve ter 8 dígitos.";
-
-  if (dto.endereco.uf && dto.endereco.uf.length !== 2) e["endereco.uf"] = "UF deve ter 2 letras.";
-
-  return e;
-}
 
 export default function PacienteForm({
   value,
@@ -69,6 +15,7 @@ export default function PacienteForm({
   onSubmit,
   submitting,
   mode,
+  onCancel,
 }: {
   value: PacienteDTO;
   onChange: (next: PacienteDTO) => void;
@@ -77,7 +24,7 @@ export default function PacienteForm({
   mode: "create" | "edit";
   onCancel: () => void;
 }) {
-  const [errors, setErrors] = useState<Errors>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const sexoOptions: readonly SelectOption<Sexo>[] = useMemo(
     () => [
@@ -98,7 +45,7 @@ export default function PacienteForm({
   }
 
   function handleSubmit() {
-    const e = validate(value);
+    const e = validatePaciente(value);
     setErrors(e);
     if (Object.keys(e).length > 0) return;
     onSubmit();
@@ -168,19 +115,19 @@ export default function PacienteForm({
             </div>
 
             <div className={`${styles.field} ${styles.span2}`}>
-                <div className={styles.switchControl} data-label="Ativo">
-                    <button
-                    type="button"
-                    className={`${styles.switch} ${value.ativo ? styles.on : ""}`}
-                    onClick={() => set("ativo", !value.ativo)}
-                    aria-pressed={value.ativo}
-                    aria-label="Ativo"
-                    >
-                    <span className={styles.knob} />
-                    </button>
-                </div>
+              <div className={styles.switchControl} data-label="Ativo">
+                <button
+                  type="button"
+                  className={`${styles.switch} ${value.ativo ? styles.on : ""}`}
+                  onClick={() => set("ativo", !value.ativo)}
+                  aria-pressed={value.ativo}
+                  aria-label="Ativo"
+                >
+                  <span className={styles.knob} />
+                </button>
+              </div>
             </div>
-        </div>
+          </div>
         </Card>
 
         {/* =========================
@@ -308,7 +255,7 @@ export default function PacienteForm({
          ========================= */}
       <div className={styles.actionsBar}>
         <div className={styles.actionsInner}>
-          <button type="button" className={styles.linkBtn} onClick={() => window.history.back()}>
+          <button type="button" className={styles.linkBtn} onClick={onCancel}>
             Cancelar
           </button>
 

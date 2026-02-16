@@ -4,7 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import PacienteForm from "./PacientForm";
 
-import { emptyPaciente, type PacienteDTO } from "../../../../mocks/db/seed";;
+import { emptyPaciente, type PacienteDTO } from "../../../../mocks/db/seed";
 import { getNextPacienteId, getPacienteById, savePaciente } from "./pacientStore";
 
 type NavState = { from?: string };
@@ -48,7 +48,6 @@ export default function PacienteFormPage() {
     const current = `${location.pathname}${location.search}`;
     const from = state?.from;
 
-    // se "from" for inválido ou for a própria página, cai pra lista
     if (!from || from === current) {
       navigate("/pacientes", { replace: true });
       return;
@@ -68,7 +67,6 @@ export default function PacienteFormPage() {
         return;
       }
 
-      // edit: volta pra onde veio (se existir), senão lista
       const state = location.state as NavState | null;
       const from = state?.from;
       if (from) {
