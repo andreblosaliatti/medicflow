@@ -15,6 +15,17 @@
   color: var(--mf-dark);
 }
 
+.mf-pageheader__subtitle{
+  margin: 6px 0 0;
+  color: var(--mf-muted);
+  font-weight: 700;
+  font-size: 14px;
+}
+.mf-pageheader__icon{
+  display:inline-flex;
+  align-items:center;
+}
+
 .mf-pageheader__actions{
   display:flex;
   align-items:center;

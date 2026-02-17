@@ -10,14 +10,16 @@ import SelectField, { type SelectOption } from "../../../components/form/SelectF
 
 import { getSessionUser } from "../../../auth/session";
 
-import ConsultaFormDrawer, { type ConsultaDraft } from "../../../components/Agenda/AppointmentDetailDrawer";
-
 import type { AppointmentEvent } from "./Types";
 import type { StatusConsulta, TipoConsulta } from "../../../domain/enums/statusConsulta";
 
 import { toAppointmentEvents } from "../../../mocks/mappers";
 
 import styles from "./agenda-page.module.css";
+
+import ConsultaDrawerHost from "../../../components/Agenda/ConsultaDrawerHost";
+import { useConsultaDrawerController } from "../../../components/Agenda/useConsultaDrawerController";
+import type { ConsultaDraft } from "../../../components/Agenda/AppointmentDetailDrawer";
 
 type StatusFilter = StatusConsulta | "TODOS";
 type TypeFilter = TipoConsulta | "TODOS";
@@ -103,7 +105,7 @@ function fromEventToDraft(ev: AppointmentEvent, doctorId: string, doctorName: st
     duracaoMinutos: minutesBetween(ev.start, ev.end),
 
     tipo: ev.type,
-    status: ev.status, // ✅ status único (domain)
+    status: ev.status,
 
     motivo: ev.notes ?? "",
     teleconsulta: ev.type === "TELECONSULTA",
@@ -111,17 +113,17 @@ function fromEventToDraft(ev: AppointmentEvent, doctorId: string, doctorName: st
   };
 }
 
-function draftToEvent(d: ConsultaDraft): AppointmentEvent {
+function draftToEvent(d: ConsultaDraft, id?: string): AppointmentEvent {
   const start = new Date(d.dataHora);
   const end = new Date(start.getTime() + d.duracaoMinutos * 60000);
 
   return {
-    id: String(Date.now()),
+    id: id ?? String(Date.now()),
     patientName: d.pacienteNome || "Novo paciente",
     professionalName: d.medicoNome || "Dr. João Carvalho",
 
-    type: d.tipo, // ✅ sem conversão
-    status: d.status, // ✅ sem conversão
+    type: d.tipo,
+    status: d.status,
 
     start,
     end,
@@ -140,13 +142,17 @@ export default function AgendaPage() {
   // ✅ Fonte única: seed/mocks centralizados (mappers)
   const [allEvents, setAllEvents] = useState<AppointmentEvent[]>(() => toAppointmentEvents());
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerMode, setDrawerMode] = useState<"create" | "edit">("create");
-  const [selectedConsulta, setSelectedConsulta] = useState<ConsultaDraft | null>(null);
-
   const [status, setStatus] = useState<StatusFilter>("TODOS");
   const [type, setType] = useState<TypeFilter>("TODOS");
   const [search, setSearch] = useState("");
+
+  // ✅ Controller do Drawer (reutilizável em qualquer página)
+  const drawer = useConsultaDrawerController({
+    doctorId,
+    doctorName,
+    emptyDraft,
+    fromEventToDraft,
+  });
 
   const events = useMemo(() => {
     return allEvents.filter((e) => {
@@ -163,27 +169,6 @@ export default function AgendaPage() {
     });
   }, [allEvents, status, type, search]);
 
-  function closeDrawer() {
-    setDrawerOpen(false);
-  }
-
-  function newAppointment() {
-    setDrawerMode("create");
-    setSelectedConsulta(emptyDraft(doctorId, doctorName));
-    setDrawerOpen(true);
-  }
-
-  function openEditDrawerFromEvent(ev: AppointmentEvent) {
-    setDrawerMode("edit");
-    setSelectedConsulta(fromEventToDraft(ev, doctorId, doctorName));
-    setDrawerOpen(true);
-  }
-
-  const drawerKey =
-    drawerMode === "create"
-      ? `create-${selectedConsulta?.dataHora ?? "x"}`
-      : `edit-${selectedConsulta?.dataHora ?? "x"}`;
-
   return (
     <div className={styles.page}>
       <PageHeader
@@ -193,7 +178,7 @@ export default function AgendaPage() {
             label: "Novo agendamento",
             icon: "➕",
             variant: "primary",
-            onClick: newAppointment,
+            onClick: drawer.openCreate,
           },
         ]}
       />
@@ -238,7 +223,7 @@ export default function AgendaPage() {
             />
           </div>
 
-          {/* Legenda (ainda simplificada). Depois podemos atualizar CSS/classes para 5 status. */}
+          {/* Legenda (simplificada) */}
           <div className={styles.legend}>
             <span className={`${styles.dot} ${styles.dotConfirmed}`} />
             <span className="mf-muted">Confirmada</span>
@@ -255,25 +240,39 @@ export default function AgendaPage() {
           <div className={styles.sectionTitle}>Calendário</div>
 
           <div className={styles.calendarWrap}>
-            <CalendarView events={events} onSelectEvent={openEditDrawerFromEvent} />
+            <CalendarView events={events} onSelectEvent={drawer.openEditFromEvent} />
           </div>
         </Card>
       </div>
 
-      <ConsultaFormDrawer
-        key={drawerKey}
-        open={drawerOpen}
-        mode={drawerMode}
-        initialValue={selectedConsulta}
+      {/* ✅ Drawer único, sempre com o mesmo comportamento */}
+      <ConsultaDrawerHost
+        open={drawer.open}
+        mode={drawer.mode}
+        drawerKey={drawer.drawerKey}
+        value={drawer.value}
         doctorId={doctorId}
         doctorName={doctorName}
-        onClose={closeDrawer}
-        onSave={(data) => {
-          if (drawerMode === "create") {
+        onClose={drawer.close}
+        onSave={(data, mode) => {
+          if (mode === "create") {
             const newEv = draftToEvent(data);
             setAllEvents((prev) => [newEv, ...prev]);
+            drawer.close();
+            return;
           }
-          setDrawerOpen(false);
+
+          // ✅ EDIT REAL: atualiza pelo id do evento selecionado
+          const id = drawer.editingEventId;
+          if (!id) {
+            // sem id não existe edit (estado inconsistente)
+            drawer.close();
+            return;
+          }
+
+          const updated = draftToEvent(data, id);
+          setAllEvents((prev) => prev.map((ev) => (ev.id === id ? updated : ev)));
+          drawer.close();
         }}
       />
     </div>
