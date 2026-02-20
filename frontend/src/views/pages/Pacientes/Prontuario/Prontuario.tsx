@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 
+import AppPage from "../../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../../components/ui/Card";
 
@@ -36,21 +37,24 @@ export default function ProntuarioPage() {
 
   if (pacienteId === null || !prontuario) {
     return (
-      <div className="prontuario-page">
-        <PageHeader title="Prontuário" />
-        <Card>
-          Paciente inválido ou não encontrado.
-        </Card>
-      </div>
+      <AppPage
+        className="prontuario-page"
+        header={<PageHeader title="Prontuário" />}
+        contentClassName="prontuario-content"
+      >
+        <Card>Paciente inválido ou não encontrado.</Card>
+      </AppPage>
     );
   }
 
   const { pacienteNome, consultas } = prontuario;
 
   return (
-    <div className="prontuario-page">
-      <PageHeader title={`Prontuário — ${pacienteNome}`} />
-
+    <AppPage
+      className="prontuario-page"
+      header={<PageHeader title={`Prontuário — ${pacienteNome}`} />}
+      contentClassName="prontuario-content"
+    >
       <div className="prontuario-timeline">
         {consultas.length === 0 ? (
           <Card>Nenhuma consulta encontrada.</Card>
@@ -170,6 +174,6 @@ export default function ProntuarioPage() {
           ))
         )}
       </div>
-    </div>
+    </AppPage>
   );
 }

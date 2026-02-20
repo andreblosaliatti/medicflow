@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import AppPage from "../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import Panel from "../../../components/ui/Panel/Panel";
 
@@ -108,7 +109,9 @@ export default function PacientesPage() {
   }
 
   return (
-    <div className="mf-page" onClick={() => setOpenMenuId(null)}>
+    <AppPage
+      onClick={() => setOpenMenuId(null)}
+      header={
       <PageHeader
         title="Pacientes"
         actions={[
@@ -120,8 +123,8 @@ export default function PacientesPage() {
           },
         ]}
       />
-
-      <div className="mf-page__content">
+      }
+    >
         <Panel
           title="Lista de Pacientes"
           icon="👥"
@@ -254,7 +257,6 @@ export default function PacientesPage() {
             </div>
           </div>
         </Panel>
-      </div>
-    </div>
+    </AppPage>
   );
 }

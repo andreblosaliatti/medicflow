@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AppPage from "./../../../../components/layout/AppPage/AppPage";
 import PageHeader from "./../../../../components/layout/PageHeader/PageHeader";
 import PatientHeaderCard from "../../../../components/pacients/PacientHeader/PacientHeader";
 import PatientTabs from "./PacientTabs/PacientTab";
@@ -29,10 +30,10 @@ export default function PacientePerfil() {
   }
 
   return (
-    <>
-      <PageHeader title="Perfil do Paciente" />
-
-      <div className="patient-profile-page">
+    <AppPage
+      header={<PageHeader title="Perfil do Paciente" />}
+      contentClassName="patient-profile-page"
+    >
         <PatientHeaderCard />
 
         <PatientTabs
@@ -43,7 +44,6 @@ export default function PacientePerfil() {
         <div className="patient-tab-content">
           {renderTab()}
         </div>
-      </div>
-    </>
+    </AppPage>
   );
 }

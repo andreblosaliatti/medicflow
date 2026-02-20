@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 
 import BrandHeader from "../../../components/auth/BrandHeader";
 import AuthCard from "../../../components/auth/AuthCard";
+import AuthLinkDivider from "../../../components/auth/AuthLinkDivider";
+import AuthPageLayout from "../../../components/auth/AuthPageLayout";
 import TextField from "../../../components/auth/TextField";
 import ErrorMessage from "../../../components/auth/ErrorMessage";
 import PrimaryButton from "../../../components/ui/HighlightButton/HighlightButton";
@@ -34,11 +35,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="forgot-page">
+    <AuthPageLayout pageClassName="forgot-page">
       <BrandHeader />
 
       <AuthCard title="Esqueci minha senha">
-        <form onSubmit={onSubmit} className="forgot-form" noValidate>
+        <form onSubmit={onSubmit} className="auth-form forgot-form" noValidate>
           <p className="forgot-help">
             Informe seu e-mail para receber um link de recuperação.
           </p>
@@ -61,17 +62,11 @@ export default function ForgotPasswordPage() {
             Enviar link
           </PrimaryButton>
 
-          <div className="back-wrap">
-            <span className="line" />
-            <Link className="back-link" to="/login">
-              Voltar para o login
-            </Link>
-            <span className="line" />
-          </div>
+          <AuthLinkDivider to="/login">Voltar para o login</AuthLinkDivider>
 
           <FooterMeta version="v1.0.0" />
         </form>
       </AuthCard>
-    </div>
+    </AuthPageLayout>
   );
 }

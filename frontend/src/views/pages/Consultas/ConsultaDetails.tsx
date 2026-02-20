@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import AppPage from "../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../components/ui/Card";
 import PrimaryButton from "../../../components/ui/PrimaryButton/PrimaryButton";
@@ -20,21 +21,23 @@ export default function ConsultaDetails() {
 
   if (!consulta) {
     return (
-      <div className="consultas-page">
-        <PageHeader title="Consulta" subtitle="Não encontrada" />
-      </div>
+      <AppPage header={<PageHeader title="Consulta" subtitle="Não encontrada" />}>
+        <></>
+      </AppPage>
     );
   }
 
   return (
-    <div className="consultas-page">
-      <PageHeader
+    <AppPage
+      header={
+        <PageHeader
         title={`Consulta • ${consulta.pacienteNome}`}
         subtitle={consulta.dataHoraLabel}
         actionLabel="Editar"
         onAction={() => navigate(`/consultas/${consulta.id}/editar`)}
-      />
-
+        />
+      }
+    >
       <div className="consultas-detailsGrid">
         <Card>
           <div className="consultas-detailHeader">
@@ -105,6 +108,6 @@ export default function ConsultaDetails() {
           </div>
         </Card>
       </div>
-    </div>
+    </AppPage>
   );
 }
