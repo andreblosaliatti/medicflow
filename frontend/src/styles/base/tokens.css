@@ -33,5 +33,13 @@
   --space-6: 24px;
   --space-7: 32px;
 
-  --mf-control-height: 36px;
+  --mf-control-height: 44px;
+  --mf-radius-control: 12px;
+
+  --mf-focus-border: rgba(18,167,195,0.55);
+  --mf-focus-ring: rgba(24,198,232,0.14);
+
+  --mf-control-bg: rgba(246,248,251,0.55);
+  --mf-control-bg-hover: rgba(246,248,251,0.75);
 }
+

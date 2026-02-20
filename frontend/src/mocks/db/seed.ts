@@ -1,4 +1,9 @@
-import type { StatusConsulta, TipoConsulta, MeioPagamento, DuracaoMinutos  } from "../../domain/enums/statusConsulta";
+import type {
+  StatusConsulta,
+  TipoConsulta,
+  MeioPagamento,
+  DuracaoMinutos,
+} from "../../domain/enums/statusConsulta";
 
 export type Sexo = "MASCULINO" | "FEMININO" | "OUTRO" | "NAO_INFORMAR";
 
@@ -26,19 +31,31 @@ export type PacienteDTO = {
 
 export type ConsultaDTO = {
   id: string;
+
   pacienteId: number;
+
   medicoId: string;
   medicoNome: string;
+
   dataHora: string; // ISO local "yyyy-mm-ddTHH:mm"
   duracaoMinutos: DuracaoMinutos;
+
   tipo: TipoConsulta;
   status: StatusConsulta;
-  motivo?: string;
+
+  // ✅ agora obrigatórios (pra Create/Edit terem consistência)
+  motivo: string;
+
+  valorConsulta: number;
+  pago: boolean;
+  meioPagamento: MeioPagamento;
+
+  // ✅ faltava esse campo
+  dataPagamento: string; // "" quando não pago
+
+  // opcionais “operacionais”
   sala?: string;
   telefoneContato?: string;
-  valorConsulta?: number;
-  pago?: boolean;
-  meioPagamento?: MeioPagamento;
 };
 
 export const MEDICO_SEED = {
@@ -154,9 +171,8 @@ export const seedPacientes: PacienteDTO[] = [
   },
 ];
 
-// ✅ hoje (pelo teu contexto) é 2026-02-15, então esse seed fica perfeito para simulação.
+// ✅ seed com dataPagamento sempre definido
 export const seedConsultas: ConsultaDTO[] = [
-  // ======= HOJE =======
   {
     id: "c-2001",
     pacienteId: 1,
@@ -172,6 +188,7 @@ export const seedConsultas: ConsultaDTO[] = [
     valorConsulta: 250,
     pago: true,
     meioPagamento: "PIX",
+    dataPagamento: "2026-02-15T08:00",
   },
   {
     id: "c-2002",
@@ -188,6 +205,7 @@ export const seedConsultas: ConsultaDTO[] = [
     valorConsulta: 220,
     pago: false,
     meioPagamento: "CARTAO",
+    dataPagamento: "",
   },
   {
     id: "c-2003",
@@ -204,6 +222,7 @@ export const seedConsultas: ConsultaDTO[] = [
     valorConsulta: 180,
     pago: false,
     meioPagamento: "PIX",
+    dataPagamento: "",
   },
   {
     id: "c-2004",
@@ -220,6 +239,7 @@ export const seedConsultas: ConsultaDTO[] = [
     valorConsulta: 280,
     pago: false,
     meioPagamento: "DINHEIRO",
+    dataPagamento: "",
   },
   {
     id: "c-2005",
@@ -236,9 +256,8 @@ export const seedConsultas: ConsultaDTO[] = [
     valorConsulta: 280,
     pago: false,
     meioPagamento: "DINHEIRO",
+    dataPagamento: "",
   },
-
-  // ======= AMANHÃ / PRÓXIMAS =======
   {
     id: "c-2010",
     pacienteId: 5,
@@ -254,9 +273,8 @@ export const seedConsultas: ConsultaDTO[] = [
     valorConsulta: 220,
     pago: false,
     meioPagamento: "PIX",
+    dataPagamento: "",
   },
-
-  // ======= SEMANA / HISTÓRICO RECENTE =======
   {
     id: "c-1901",
     pacienteId: 2,
@@ -272,6 +290,7 @@ export const seedConsultas: ConsultaDTO[] = [
     valorConsulta: 250,
     pago: true,
     meioPagamento: "CARTAO",
+    dataPagamento: "2026-02-13T11:00",
   },
   {
     id: "c-1902",
@@ -288,6 +307,7 @@ export const seedConsultas: ConsultaDTO[] = [
     valorConsulta: 180,
     pago: true,
     meioPagamento: "PIX",
+    dataPagamento: "2026-02-12T14:30",
   },
   {
     id: "c-1903",
@@ -304,8 +324,9 @@ export const seedConsultas: ConsultaDTO[] = [
     valorConsulta: 220,
     pago: false,
     meioPagamento: "PIX",
+    dataPagamento: "",
   },
-]
+];
 
 export function emptyPaciente(nextId: number): PacienteDTO {
   return {
@@ -329,4 +350,4 @@ export function emptyPaciente(nextId: number): PacienteDTO {
     planoSaude: "",
     ativo: true,
   };
-};
+}

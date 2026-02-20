@@ -1,3 +1,4 @@
+
 import { useMemo } from "react";
 
 import AppPage from "../../../components/layout/AppPage/AppPage";
@@ -34,7 +35,6 @@ export default function DoctorDashboard() {
       }
       contentClassName="page-content"
     >
-        {/* ===== Resumo ===== */}
         <Card className="dash-card">
           <div className="panel-head">
             <div className="panel-title">
@@ -61,7 +61,6 @@ export default function DoctorDashboard() {
           </div>
         </Card>
 
-        {/* ===== Agenda Hoje ===== */}
         <Card className="dash-card dash-card--flush">
           <div className="panel-head panel-head--between">
             <div className="panel-title">
@@ -111,7 +110,6 @@ export default function DoctorDashboard() {
           </div>
         </Card>
 
-        {/* ===== Atalhos ===== */}
         <div className="dash-bottom">
           <Card className="dash-card">
             <div className="panel-head">

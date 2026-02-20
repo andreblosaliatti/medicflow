@@ -13,10 +13,11 @@ import ProntuarioPage from "./views/pages/Pacientes/Prontuario/Prontuario";
 import PacienteFormPage from "./views/pages/Pacientes/PacientForm/PacientFormPage";
 
 // Consultas
-import ConsultasPage from "./views/pages/Consultas/Consulta";
-import ConsultaDetails from "./views/pages/Consultas/ConsultaDetails";
-import ConsultaEdit from "./views/pages/Consultas/ConsultaEdit";
-import ConsultaNew from "./views/pages/Consultas/ConsultaNew";
+import ConsultasPage from "./views/pages/Consultas/Consultas/Consulta";
+import ConsultaDetails from "./views/pages/Consultas/ConsultaDetail/ConsultaDetails";
+import ConsultaEdit from "./views/pages/Consultas/ConsultaEdit/ConsultaEdit";
+import ConsultaNew from "./views/pages/Consultas/ConsultaEdit/ConsultaNew";
+import ConsultaAtendimento from "./views/pages/Consultas/ConsultaAtendimento/ConsultaAtendimento";
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
             <Route index element={<ConsultasPage />} />
             <Route path="nova" element={<ConsultaNew />} />
             <Route path=":id/editar" element={<ConsultaEdit />} />
+            <Route path=":id/atendimento" element={<ConsultaAtendimento />} />
             <Route path=":id" element={<ConsultaDetails />} />
           </Route>
 

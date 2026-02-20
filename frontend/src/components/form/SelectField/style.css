@@ -1,23 +1,17 @@
-/* =========================================================
-   SelectField — MedicFlow (reutilizável)
-   Arquivo: src/components/form/SelectField/style.css
-   ========================================================= */
-
 .mf-select{
   position: relative;
   width: 100%;
 }
 
-/* label opcional do componente */
 .mf-select__label{
   display:block;
   margin-bottom:6px;
   font-size:12px;
-  font-weight:600;
+  font-weight:700;
   color:var(--mf-muted);
 }
 
-/* TRIGGER (botão) — mais fino e elegante */
+/* trigger padronizado */
 .mf-select__trigger{
   width: 100%;
   height: var(--mf-control-height);
@@ -27,12 +21,12 @@
   justify-content:space-between;
   gap:10px;
 
-  padding: 0 10px;
+  padding: 0 12px;
 
-  border-radius: 10px;
+  border-radius: var(--mf-radius-control);
   border: 1px solid var(--mf-border);
 
-  background: rgba(246,248,251,0.55);
+  background: var(--mf-control-bg);
   color: var(--mf-text);
 
   cursor:pointer;
@@ -41,14 +35,14 @@
 }
 
 .mf-select__trigger:hover{
-  background: rgba(246,248,251,0.75);
+  background: var(--mf-control-bg-hover);
   border-color: rgba(18,167,195,0.30);
 }
 
 .mf-select__trigger:focus-visible{
   outline:none;
-  border-color: rgba(18,167,195,0.55);
-  box-shadow: 0 0 0 4px rgba(24,198,232,0.14);
+  border-color: var(--mf-focus-border);
+  box-shadow: 0 0 0 4px var(--mf-focus-ring);
 }
 
 .mf-select__trigger:disabled{
@@ -56,7 +50,6 @@
   cursor: not-allowed;
 }
 
-/* valor */
 .mf-select__value{
   min-width:0;
   white-space:nowrap;
@@ -64,16 +57,15 @@
   text-overflow:ellipsis;
 
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 650;
   color: var(--mf-text);
 }
 
 .mf-select__value.is-placeholder{
   color: rgba(47,58,68,0.55);
-  font-weight: 600;
+  font-weight: 650;
 }
 
-/* chevron */
 .mf-select__chevron{
   font-size: 16px;
   line-height: 1;
@@ -85,7 +77,6 @@
   transform: rotate(180deg);
 }
 
-/* dropdown */
 .mf-select__dropdown{
   position:absolute;
   z-index: 9999;
@@ -93,7 +84,7 @@
   left: 0;
   right: 0;
 
-  background: rgba(246,248,251,0.98); /* cinza claro “premium” */
+  background: rgba(246,248,251,0.98);
   border: 1px solid var(--mf-border);
   border-radius: 12px;
 
@@ -103,7 +94,6 @@
   padding: 6px;
 }
 
-/* opção */
 .mf-select__option{
   width:100%;
   text-align:left;
@@ -131,19 +121,9 @@
   outline: 1px solid rgba(24,198,232,0.22);
 }
 
-/* =========================================================
-   Anti-seta duplicada (mata caret extra de CSS global)
-   ========================================================= */
+/* anti-seta duplicada */
 .mf-select__trigger::before,
 .mf-select__trigger::after{
   content: none !important;
   display: none !important;
-}
-
-.mf-select__trigger{
-  height: 36px;                 /* ✅ casa com input */
-  border-radius: 12px;
-  border: 1px solid var(--mf-border);
-  background: var(--mf-surface);
-  padding: 0 12px;
 }

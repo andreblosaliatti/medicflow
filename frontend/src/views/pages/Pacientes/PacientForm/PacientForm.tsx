@@ -7,6 +7,7 @@ import HighlightButton from "../../../../components/ui/HighlightButton/Highlight
 
 import type { PacienteDTO, Sexo } from "../../../../mocks/db/seed";
 import { formatCPF, formatPhoneBR, type FormErrors, validatePaciente } from "./formUtils";
+import DateField from "../../../../components/form/DateField/DateField";
 import styles from "./PacienteForm.module.css";
 
 export default function PacienteForm({
@@ -94,14 +95,18 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span2} ${styles.narrow}`}>
-              <Input
-                label="Data de nascimento"
-                type="date"
+            <div className={`${styles.field} ${styles.span3}`}>
+              <label className={styles.label}>Data de nascimento</label>
+
+              <DateField
                 value={value.dataNascimento}
-                onChange={(ev) => set("dataNascimento", ev.target.value)}
-                helperText={errors.dataNascimento}
+                onChange={(v) => set("dataNascimento", v)}
+                aria-label="Data de nascimento"
               />
+
+              {errors.dataNascimento && (
+                <div className={styles.helper}>{errors.dataNascimento}</div>
+              )}
             </div>
 
             <div className={`${styles.field} ${styles.span3}`}>
