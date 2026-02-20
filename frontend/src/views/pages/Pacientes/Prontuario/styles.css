@@ -1,8 +1,9 @@
 .prontuario-page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
   margin-bottom: 20px;
+}
+
+.prontuario-content {
+  gap: 20px;
 }
 
 .prontuario-timeline {

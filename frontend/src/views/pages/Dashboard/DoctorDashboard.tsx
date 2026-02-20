@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import AppPage from "../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import StatCard from "../../../components/ui/StatCard";
 import Card from "../../../components/ui/Card";
@@ -20,7 +21,9 @@ export default function DoctorDashboard() {
   }, [consultasHoje]);
 
   return (
-    <div className="doctor-dashboard">
+    <AppPage
+      className="doctor-dashboard"
+      header={
       <PageHeader
         title="Dashboard"
         actions={[
@@ -28,8 +31,9 @@ export default function DoctorDashboard() {
           { label: "Agenda", variant: "primary", icon: "🗓️" },
         ]}
       />
-
-      <div className="page-content">
+      }
+      contentClassName="page-content"
+    >
         {/* ===== Resumo ===== */}
         <Card className="dash-card">
           <div className="panel-head">
@@ -161,7 +165,6 @@ export default function DoctorDashboard() {
             </div>
           </Card>
         </div>
-      </div>
-    </div>
+    </AppPage>
   );
 }

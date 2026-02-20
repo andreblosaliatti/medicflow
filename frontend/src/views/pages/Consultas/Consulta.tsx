@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import AppPage from "../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../components/ui/Card";
 import RowMenu from "../../../components/ui/RowMenu/RowMenu";
@@ -16,14 +17,16 @@ export default function ConsultasPage() {
   const rows: ConsultaRowModel[] = useMemo(() => toConsultasRows(), []);
 
   return (
-    <div className="consultas-page">
-      <PageHeader
+    <AppPage
+      header={
+        <PageHeader
         title="Consultas"
         subtitle="Listagem geral"
         actionLabel="Nova consulta"
         onAction={() => navigate("/consultas/nova")}
-      />
-
+        />
+      }
+    >
       <Card>
         <div className="consultas-tableWrap">
           <table className="consultas-table">
@@ -89,6 +92,6 @@ export default function ConsultasPage() {
           </table>
         </div>
       </Card>
-    </div>
+    </AppPage>
   );
 }
