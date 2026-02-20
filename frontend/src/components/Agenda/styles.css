@@ -1,0 +1,88 @@
+.consultaDrawerForm{
+  display: grid;
+  gap: 14px;
+}
+
+.consultaDrawerGrid2{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.consultaDrawerGrid3{
+  display: grid;
+  grid-template-columns: 1fr 1fr 140px;
+  gap: 12px;
+  align-items: end;
+}
+
+.consultaDrawerField{
+  display: grid;
+  gap: 8px;
+}
+
+.consultaDrawerLabel{
+  font-weight: 800;
+  font-size: .85rem;
+  color: rgba(15, 23, 42, .72);
+}
+
+.consultaDrawerTextarea{
+  min-height: 120px;
+  border: 1px solid var(--mf-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: var(--mf-surface);
+  color: var(--mf-text);
+  outline: none;
+  resize: vertical;
+  line-height: 1.35;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+
+.consultaDrawerTextarea::placeholder{
+  color: rgba(15,23,42,.45);
+}
+
+.consultaDrawerTextarea:focus{
+  border-color: var(--mf-primary-600);
+  box-shadow: 0 0 0 4px rgba(24, 198, 232, .18);
+}
+
+.consultaDrawerDivider{
+  height: 1px;
+  background: rgba(15,23,42,.08);
+  margin: 6px 0;
+}
+
+.consultaDrawerFieldInline{
+  display:flex;
+  align-items:center;
+  height: 48px;
+}
+
+.consultaDrawerCheckbox{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  font-weight: 800;
+  color: rgba(15, 23, 42, .72);
+}
+
+.consultaDrawerCheckbox input{
+  width: 18px;
+  height: 18px;
+}
+
+.consultaDrawerActions{
+  display:flex;
+  justify-content:flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+@media (max-width: 680px){
+  .consultaDrawerGrid2{ grid-template-columns: 1fr; }
+  .consultaDrawerGrid3{ grid-template-columns: 1fr; }
+}
+
