@@ -2,13 +2,13 @@
 import { useMemo, useState } from "react";
 import BrandHeader from "../../../components/auth/BrandHeader";
 import AuthCard from "../../../components/auth/AuthCard";
+import AuthLinkDivider from "../../../components/auth/AuthLinkDivider";
+import AuthPageLayout from "../../../components/auth/AuthPageLayout";
 import TextField from "../../../components/auth/TextField";
 import ErrorMessage from "../../../components/auth/ErrorMessage";
 import PrimaryButton from "../../../components/ui/HighlightButton/HighlightButton";
 import FooterMeta from "../../../components/auth/FooterMeta";
 import { MailIcon, LockIcon } from "../../../components/auth/Icons";
-import { Link } from "react-router-dom";
-
 
 import "./styles.css";
 
@@ -41,11 +41,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-page">
+    <AuthPageLayout>
       <BrandHeader />
 
       <AuthCard title="Login">
-        <form onSubmit={onSubmit} className="login-form" noValidate>
+        <form onSubmit={onSubmit} className="auth-form" noValidate>
           <TextField
             placeholder="E-mail"
             value={email}
@@ -72,17 +72,11 @@ export default function LoginPage() {
             Entrar
           </PrimaryButton>
 
-          <div className="forgot-wrap">
-            <span className="line" />
-            <Link className="forgot-link" to="/esqueci-senha">
-              Esqueci minha senha
-            </Link>
-            <span className="line" />
-          </div>
+          <AuthLinkDivider to="/esqueci-senha">Esqueci minha senha</AuthLinkDivider>
 
           <FooterMeta version="v1.0.0" />
         </form>
       </AuthCard>
-    </div>
+    </AuthPageLayout>
   );
 }
