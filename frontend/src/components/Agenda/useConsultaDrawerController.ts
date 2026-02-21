@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { AppointmentEvent } from "../../views/pages/Agenda/Types";
+import type { AppointmentEvent } from "../../views/pages/Agenda/types";
 import type { ConsultaDraft } from "./AppointmentDetailDrawer";
 
 type Mode = "create" | "edit";

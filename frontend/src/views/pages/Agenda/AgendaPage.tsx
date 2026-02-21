@@ -10,7 +10,7 @@ import SelectField, { type SelectOption } from "../../../components/form/SelectF
 
 import { getSessionUser } from "../../../auth/session";
 
-import type { AppointmentEvent } from "./Types";
+import type { AppointmentEvent } from "./types";
 import type { StatusConsulta, TipoConsulta } from "../../../domain/enums/statusConsulta";
 
 import { toAppointmentEvents } from "../../../mocks/mappers";
