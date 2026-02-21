@@ -35,6 +35,7 @@ export default function ConsultaNew() {
     valorConsulta: 0,
     pago: false,
     meioPagamento: "PIX",
+    dataPagamento: "",
   }));
 
   return (

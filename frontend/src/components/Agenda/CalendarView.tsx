@@ -3,7 +3,7 @@ import { Calendar, dateFnsLocalizer, Views, type View } from "react-big-calendar
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-import type { AppointmentEvent } from "../../views/pages/Agenda/Types";
+import type { AppointmentEvent } from "../../views/pages/Agenda/types";
 import styles from "./calendar-view.module.css";
 
 const locales = { "pt-BR": ptBR };
@@ -69,9 +69,9 @@ export default function CalendarView({ events, onSelectEvent }: Props) {
     const status = event.status;
 
     const className =
-      status === "CONFIRMADO"
+      status === "CONFIRMADA"
         ? styles.evConfirmed
-        : status === "CANCELADO"
+        : status === "CANCELADA"
         ? styles.evCanceled
         : styles.evPending;
 
