@@ -2,7 +2,7 @@ import type { Paciente } from "./types";
 
 const LS_KEY = "mf_mock_pacientes_v1";
 
-const seed: PacienteDTO[] = [
+const seed: Paciente[] = [
   {
     id: 5,
     primeiroNome: "Pedro",
@@ -47,18 +47,18 @@ const seed: PacienteDTO[] = [
   },
 ];
 
-function readLS(): PacienteDTO[] | null {
+function readLS(): Paciente[] | null {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as PacienteDTO[];
+    const parsed = JSON.parse(raw) as Paciente[];
     return Array.isArray(parsed) ? parsed : null;
   } catch {
     return null;
   }
 }
 
-function writeLS(list: PacienteDTO[]) {
+function writeLS(list: Paciente[]) {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify(list));
   } catch {
@@ -66,7 +66,7 @@ function writeLS(list: PacienteDTO[]) {
   }
 }
 
-export function getAllPacientes(): PacienteDTO[] {
+export function getAllPacientes(): Paciente[] {
   const ls = readLS();
   if (ls && ls.length > 0) return [...ls];
 
@@ -75,7 +75,7 @@ export function getAllPacientes(): PacienteDTO[] {
   return [...seed];
 }
 
-export function getPacienteById(id: number): PacienteDTO | null {
+export function getPacienteById(id: number): Paciente | null {
   const list = getAllPacientes();
   return list.find((p) => p.id === id) ?? null;
 }
@@ -86,7 +86,7 @@ export function getNextPacienteId(): number {
   return max + 1;
 }
 
-export function savePaciente(dto: PacienteDTO): PacienteDTO {
+export function savePaciente(dto: Paciente): Paciente {
   const list = getAllPacientes();
   const idx = list.findIndex((p) => p.id === dto.id);
 
