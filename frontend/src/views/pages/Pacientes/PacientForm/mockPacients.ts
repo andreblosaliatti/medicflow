@@ -1,4 +1,4 @@
-import type { PacienteDTO } from "./types";
+import type { Paciente } from "./types";
 
 const LS_KEY = "mf_mock_pacientes_v1";
 
