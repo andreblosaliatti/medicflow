@@ -47,7 +47,7 @@
 
 /* padding só no conteúdo “interno” (cards, tabelas etc.) */
 .mf-page-content{
-  padding: 18px;
+  padding: var(--space-6);
 }
 
 
