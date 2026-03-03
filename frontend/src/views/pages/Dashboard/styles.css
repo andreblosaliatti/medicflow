@@ -1,7 +1,6 @@
 .doctor-dashboard .page-content{
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
 }
 
 /* Agenda: permite tabela encostar sem “double padding” visual */

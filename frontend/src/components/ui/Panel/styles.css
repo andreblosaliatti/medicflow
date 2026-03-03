@@ -4,7 +4,6 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   padding: var(--space-5);
-  margin: var(--space-5);
 }
 
 .mf-panel__head{

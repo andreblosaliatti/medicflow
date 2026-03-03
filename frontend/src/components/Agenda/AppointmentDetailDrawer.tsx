@@ -52,6 +52,9 @@ type Props = {
   doctorId: string;
   doctorName: string;
 
+  // ✅ ADD (opcional)
+  lockPaciente?: boolean;
+
   onClose: () => void;
   onSave: (data: ConsultaDraft) => void;
 };
@@ -122,6 +125,7 @@ export default function ConsultaFormDrawer({
   initialValue,
   doctorId,
   doctorName,
+  lockPaciente,
   onClose,
   onSave,
 }: Props) {
@@ -180,6 +184,7 @@ export default function ConsultaFormDrawer({
               value={form.pacienteNome}
               onChange={(e) => set("pacienteNome", e.target.value)}
               placeholder="Nome do paciente"
+              disabled={Boolean(lockPaciente)}
             />
           </div>
 

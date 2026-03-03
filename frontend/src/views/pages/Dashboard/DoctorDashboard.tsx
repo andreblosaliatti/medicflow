@@ -33,7 +33,7 @@ export default function DoctorDashboard() {
         ]}
       />
       }
-      contentClassName="page-content"
+      contentClassName="mf-page-content"
     >
         <Card className="dash-card">
           <div className="panel-head">

@@ -4,11 +4,12 @@ import Card from "../../../../components/ui/Card";
 import Input from "../../../../components/form/Input";
 import SelectField, { type SelectOption } from "../../../../components/form/SelectField/SelectField";
 import HighlightButton from "../../../../components/ui/HighlightButton/HighlightButton";
+import DateField from "../../../../components/form/DateField/DateField";
 
 import type { PacienteDTO, Sexo } from "../../../../mocks/db/seed";
 import { formatCPF, formatPhoneBR, type FormErrors, validatePaciente } from "./formUtils";
-import DateField from "../../../../components/form/DateField/DateField";
-import styles from "./PacienteForm.module.css";
+
+import "./styles.css";
 
 export default function PacienteForm({
   value,
@@ -53,18 +54,18 @@ export default function PacienteForm({
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.grid}>
+    <div className="mf-page-content">
+      <div className="pacienteFormGrid">
         {/* =========================
             DADOS PESSOAIS
            ========================= */}
         <Card>
-          <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Dados pessoais</h2>
+          <div className="pacienteCardHeader">
+            <h2 className="pacienteCardTitle">Dados pessoais</h2>
           </div>
 
-          <div className={styles.formGrid}>
-            <div className={`${styles.field} ${styles.span3}`}>
+          <div className="pacienteFormFields">
+            <div className="pacienteField pacienteSpan3">
               <Input
                 label="Primeiro nome"
                 value={value.primeiroNome}
@@ -74,7 +75,7 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span4}`}>
+            <div className="pacienteField pacienteSpan4">
               <Input
                 label="Sobrenome"
                 value={value.sobrenome}
@@ -84,7 +85,7 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span3}`}>
+            <div className="pacienteField pacienteSpan3">
               <Input
                 label="CPF"
                 value={value.cpf}
@@ -95,8 +96,8 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span3}`}>
-              <label className={styles.label}>Data de nascimento</label>
+            <div className="pacienteField pacienteSpan3">
+              <label className="pacienteLabel">Data de nascimento</label>
 
               <DateField
                 value={value.dataNascimento}
@@ -105,11 +106,11 @@ export default function PacienteForm({
               />
 
               {errors.dataNascimento && (
-                <div className={styles.helper}>{errors.dataNascimento}</div>
+                <div className="pacienteHelper">{errors.dataNascimento}</div>
               )}
             </div>
 
-            <div className={`${styles.field} ${styles.span3}`}>
+            <div className="pacienteField pacienteSpan3">
               <SelectField<Sexo>
                 label="Sexo"
                 value={value.sexo}
@@ -119,16 +120,16 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span2}`}>
-              <div className={styles.switchControl} data-label="Ativo">
+            <div className="pacienteField pacienteSpan2">
+              <div className="pacienteSwitchControl" data-label="Ativo ">
                 <button
                   type="button"
-                  className={`${styles.switch} ${value.ativo ? styles.on : ""}`}
+                  className={`pacienteSwitch ${value.ativo ? "isOn" : ""}`}
                   onClick={() => set("ativo", !value.ativo)}
                   aria-pressed={value.ativo}
                   aria-label="Ativo"
                 >
-                  <span className={styles.knob} />
+                  <span className="pacienteKnob" />
                 </button>
               </div>
             </div>
@@ -139,12 +140,12 @@ export default function PacienteForm({
             CONTATO
            ========================= */}
         <Card>
-          <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Contato</h2>
+          <div className="pacienteCardHeader">
+            <h2 className="pacienteCardTitle">Contato</h2>
           </div>
 
-          <div className={styles.formGrid}>
-            <div className={`${styles.field} ${styles.span3}`}>
+          <div className="pacienteFormFields">
+            <div className="pacienteField pacienteSpan3">
               <Input
                 label="Telefone"
                 value={value.telefone}
@@ -155,7 +156,7 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span5}`}>
+            <div className="pacienteField pacienteSpan5">
               <Input
                 label="E-mail"
                 value={value.email}
@@ -166,7 +167,7 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span4}`}>
+            <div className="pacienteField pacienteSpan4">
               <Input
                 label="Plano de saúde"
                 value={value.planoSaude}
@@ -181,12 +182,12 @@ export default function PacienteForm({
             ENDEREÇO
            ========================= */}
         <Card>
-          <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Endereço</h2>
+          <div className="pacienteCardHeader">
+            <h2 className="pacienteCardTitle">Endereço</h2>
           </div>
 
-          <div className={styles.formGrid}>
-            <div className={`${styles.field} ${styles.span2} ${styles.narrow}`}>
+          <div className="pacienteFormFields">
+            <div className="pacienteField pacienteSpan2 pacienteNarrow">
               <Input
                 label="CEP"
                 value={value.endereco.cep}
@@ -197,7 +198,7 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span7}`}>
+            <div className="pacienteField pacienteSpan7">
               <Input
                 label="Logradouro"
                 value={value.endereco.logradouro}
@@ -206,7 +207,7 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span2} ${styles.narrow}`}>
+            <div className="pacienteField pacienteSpan2 pacienteNarrow">
               <Input
                 label="Número"
                 value={value.endereco.numero}
@@ -215,7 +216,7 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span1} ${styles.tiny}`}>
+            <div className="pacienteField pacienteSpan1 pacienteTiny">
               <Input
                 label="UF"
                 value={value.endereco.uf}
@@ -225,7 +226,7 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span4}`}>
+            <div className="pacienteField pacienteSpan4">
               <Input
                 label="Complemento"
                 value={value.endereco.complemento}
@@ -234,7 +235,7 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span4}`}>
+            <div className="pacienteField pacienteSpan4">
               <Input
                 label="Bairro"
                 value={value.endereco.bairro}
@@ -243,7 +244,7 @@ export default function PacienteForm({
               />
             </div>
 
-            <div className={`${styles.field} ${styles.span4}`}>
+            <div className="pacienteField pacienteSpan4">
               <Input
                 label="Cidade"
                 value={value.endereco.cidade}
@@ -258,9 +259,9 @@ export default function PacienteForm({
       {/* =========================
           ACTIONS BAR
          ========================= */}
-      <div className={styles.actionsBar}>
-        <div className={styles.actionsInner}>
-          <button type="button" className={styles.linkBtn} onClick={onCancel}>
+      <div className="pacienteActionsBar">
+        <div className="pacienteActionsInner">
+          <button type="button" className="pacienteLinkBtn" onClick={onCancel}>
             Cancelar
           </button>
 

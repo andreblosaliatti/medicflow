@@ -68,14 +68,13 @@ export default function ConsultaDetails() {
   };
 
   return (
-    <div className="consultas-page">
+    <>
       <PageHeader
         title={`Consulta • ${consulta.pacienteNome}`}
-        subtitle={consulta.dataHoraLabel}
         actionLabel={headerActionLabel}
-        onAction={onHeaderAction}
-      />
-
+        onAction={onHeaderAction} />
+      
+      <div className="mf-page-content">
       <div className="consultas-detailsGrid">
         <Card>
           <div className="consultas-detailHeader">
@@ -179,5 +178,6 @@ export default function ConsultaDetails() {
         </Card>
       </div>
     </div>
+    </>
   );
 }

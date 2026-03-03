@@ -161,9 +161,10 @@ export default function ConsultaEdit() {
   }
 
   return (
-    <div className="consultas-page consultas-page--form">
-      <PageHeader title="Editar consulta" subtitle={consultaId} />
+    <>
+      <PageHeader title="Editar consulta" />
 
+      <div className="mf-page-content">
       <Card>
         <div className="consultas-formWrap">
           <div className="consultas-form">
@@ -324,5 +325,6 @@ export default function ConsultaEdit() {
         </div>
       </Card>
     </div>
+    </>
   );
 }

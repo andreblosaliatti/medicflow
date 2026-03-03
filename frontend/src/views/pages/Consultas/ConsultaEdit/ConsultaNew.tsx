@@ -108,9 +108,10 @@ export default function ConsultaCreate() {
   }
 
   return (
-    <div className="consultas-page consultas-page--form">
+    <>
       <PageHeader title="Nova consulta"/>
 
+      <div className="mf-page-content">
       <Panel title="">
         <div className="consultas-formWrap">
           <div className="consultas-form">
@@ -234,5 +235,6 @@ export default function ConsultaCreate() {
         </div>
       </Panel>
     </div>
+    </>
   );
 }

@@ -10,8 +10,12 @@ type Props = {
   doctorId: string;
   doctorName: string;
 
+  // ✅ ADD (opcional)
+  lockPaciente?: boolean;
+
   onClose: () => void;
   onSave: (data: ConsultaDraft, mode: "create" | "edit") => void;
+  
 };
 
 export default function ConsultaDrawerHost({
@@ -21,6 +25,7 @@ export default function ConsultaDrawerHost({
   value,
   doctorId,
   doctorName,
+  lockPaciente,
   onClose,
   onSave,
 }: Props) {
@@ -32,6 +37,7 @@ export default function ConsultaDrawerHost({
       initialValue={value}
       doctorId={doctorId}
       doctorName={doctorName}
+      lockPaciente={lockPaciente}
       onClose={onClose}
       onSave={(data) => onSave(data, mode)}
     />

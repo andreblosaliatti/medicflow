@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../components/ui/Card";
@@ -15,11 +16,11 @@ import type { StatusConsulta, TipoConsulta } from "../../../domain/enums/statusC
 
 import { toAppointmentEvents } from "../../../mocks/mappers";
 
-import styles from "./agenda-page.module.css";
-
 import ConsultaDrawerHost from "../../../components/Agenda/ConsultaDrawerHost";
 import { useConsultaDrawerController } from "../../../components/Agenda/useConsultaDrawerController";
 import type { ConsultaDraft } from "../../../components/Agenda/AppointmentDetailDrawer";
+
+import "./styles.css";
 
 type StatusFilter = StatusConsulta | "TODOS";
 type TypeFilter = TipoConsulta | "TODOS";
@@ -134,25 +135,47 @@ function draftToEvent(d: ConsultaDraft, id?: string): AppointmentEvent {
   };
 }
 
+type NovaConsultaState = {
+  from?: string;
+  novaConsulta?: { pacienteId: string; pacienteNome: string };
+};
+
 export default function AgendaPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const user = getSessionUser();
   const doctorId = String(user.id ?? "1");
   const doctorName = user.name ?? "Dr. João Carvalho";
 
-  // ✅ Fonte única: seed/mocks centralizados (mappers)
   const [allEvents, setAllEvents] = useState<AppointmentEvent[]>(() => toAppointmentEvents());
 
   const [status, setStatus] = useState<StatusFilter>("TODOS");
   const [type, setType] = useState<TypeFilter>("TODOS");
   const [search, setSearch] = useState("");
 
-  // ✅ Controller do Drawer (reutilizável em qualquer página)
   const drawer = useConsultaDrawerController({
     doctorId,
     doctorName,
     emptyDraft,
     fromEventToDraft,
   });
+
+  // ✅ trava paciente quando vier do fluxo Pacientes -> Nova consulta
+  const [lockPaciente, setLockPaciente] = useState(false);
+
+  useEffect(() => {
+    const st = (location.state ?? {}) as NovaConsultaState;
+    const nc = st.novaConsulta;
+    if (!nc) return;
+
+    setLockPaciente(true);
+    drawer.openCreateForPaciente(nc.pacienteId, nc.pacienteNome);
+
+    // limpa state pra não reabrir ao dar refresh / voltar
+    navigate(location.pathname, { replace: true, state: { ...st, novaConsulta: undefined } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const events = useMemo(() => {
     return allEvents.filter((e) => {
@@ -170,7 +193,7 @@ export default function AgendaPage() {
   }, [allEvents, status, type, search]);
 
   return (
-    <div className={styles.page}>
+    <div className="agenda-page">
       <PageHeader
         title="Agenda"
         actions={[
@@ -178,16 +201,19 @@ export default function AgendaPage() {
             label: "Novo agendamento",
             icon: "➕",
             variant: "primary",
-            onClick: drawer.openCreate,
+            onClick: () => {
+              setLockPaciente(false);
+              drawer.openCreate();
+            },
           },
         ]}
       />
 
-      <div className={styles.grid}>
+      <div className="mf-page-content">
         <Card>
-          <div className={styles.sectionTitle}>Filtros</div>
+          <div className="agenda-sectionTitle">Filtros</div>
 
-          <div className={styles.filters}>
+          <div className="agenda-filters">
             <SelectField<StatusFilter>
               value={status}
               onChange={setStatus}
@@ -215,7 +241,7 @@ export default function AgendaPage() {
             </PrimaryButton>
           </div>
 
-          <div className={styles.searchRow}>
+          <div className="agenda-searchRow">
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -223,29 +249,27 @@ export default function AgendaPage() {
             />
           </div>
 
-          {/* Legenda (simplificada) */}
-          <div className={styles.legend}>
-            <span className={`${styles.dot} ${styles.dotConfirmed}`} />
+          <div className="agenda-legend">
+            <span className="agenda-dot agenda-dotConfirmed" />
             <span className="mf-muted">Confirmada</span>
 
-            <span className={`${styles.dot} ${styles.dotPending}`} />
+            <span className="agenda-dot agenda-dotPending" />
             <span className="mf-muted">Agendada</span>
 
-            <span className={`${styles.dot} ${styles.dotCanceled}`} />
+            <span className="agenda-dot agenda-dotCanceled" />
             <span className="mf-muted">Cancelada</span>
           </div>
         </Card>
 
-        <Card className={styles.calendarCard}>
-          <div className={styles.sectionTitle}>Calendário</div>
+        <Card className="agenda-calendarCard">
+          <div className="agenda-sectionTitle">Calendário</div>
 
-          <div className={styles.calendarWrap}>
+          <div className="agenda-calendarWrap">
             <CalendarView events={events} onSelectEvent={drawer.openEditFromEvent} />
           </div>
         </Card>
       </div>
 
-      {/* ✅ Drawer único, sempre com o mesmo comportamento */}
       <ConsultaDrawerHost
         open={drawer.open}
         mode={drawer.mode}
@@ -253,25 +277,31 @@ export default function AgendaPage() {
         value={drawer.value}
         doctorId={doctorId}
         doctorName={doctorName}
-        onClose={drawer.close}
+        lockPaciente={lockPaciente}
+        onClose={() => {
+          setLockPaciente(false);
+          drawer.close();
+        }}
         onSave={(data, mode) => {
           if (mode === "create") {
             const newEv = draftToEvent(data);
             setAllEvents((prev) => [newEv, ...prev]);
+            setLockPaciente(false);
             drawer.close();
             return;
           }
 
-          // ✅ EDIT REAL: atualiza pelo id do evento selecionado
           const id = drawer.editingEventId;
           if (!id) {
-            // sem id não existe edit (estado inconsistente)
+            setLockPaciente(false);
             drawer.close();
             return;
           }
 
           const updated = draftToEvent(data, id);
           setAllEvents((prev) => prev.map((ev) => (ev.id === id ? updated : ev)));
+
+          setLockPaciente(false);
           drawer.close();
         }}
       />

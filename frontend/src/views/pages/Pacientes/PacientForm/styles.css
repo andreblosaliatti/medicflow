@@ -1,13 +1,12 @@
 /* =========================
    PAGE
    ========================= */
-.page{
+.pacienteFormPage{
   position: relative;
   padding-bottom: 86px;
-  padding-top: 16px;
 }
 
-.grid{
+.pacienteFormGrid{
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -16,7 +15,7 @@
 /* =========================
    CARD HEADER
    ========================= */
-.cardHeader{
+.pacienteCardHeader{
   padding: 12px 16px;
   border-bottom: 1px solid var(--mf-border);
   background: linear-gradient(
@@ -28,7 +27,7 @@
   border-top-right-radius: 16px;
 }
 
-.cardTitle{
+.pacienteCardTitle{
   margin: 0;
   font-size: 15px;
   font-weight: 900;
@@ -38,43 +37,60 @@
 /* =========================
    FORM GRID
    ========================= */
-.formGrid{
+.pacienteFormFields{
   padding: 14px 16px 16px 16px;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 12px 14px;
 }
 
-.field{ grid-column: span 12; }
+.pacienteField{ grid-column: span 12; }
 
-.span1{ grid-column: span 1; }
-.span2{ grid-column: span 2; }
-.span3{ grid-column: span 3; }
-.span4{ grid-column: span 4; }
-.span5{ grid-column: span 5; }
-.span6{ grid-column: span 6; }
-.span7{ grid-column: span 7; }
-.span8{ grid-column: span 8; }
-.span9{ grid-column: span 9; }
-.span10{ grid-column: span 10; }
-.span11{ grid-column: span 11; }
-.span12{ grid-column: span 12; }
+.pacienteSpan1{ grid-column: span 1; }
+.pacienteSpan2{ grid-column: span 2; }
+.pacienteSpan3{ grid-column: span 3; }
+.pacienteSpan4{ grid-column: span 4; }
+.pacienteSpan5{ grid-column: span 5; }
+.pacienteSpan6{ grid-column: span 6; }
+.pacienteSpan7{ grid-column: span 7; }
+.pacienteSpan8{ grid-column: span 8; }
+.pacienteSpan9{ grid-column: span 9; }
+.pacienteSpan10{ grid-column: span 10; }
+.pacienteSpan11{ grid-column: span 11; }
+.pacienteSpan12{ grid-column: span 12; }
 
 @media (max-width: 900px){
-  .formGrid{
+  .pacienteFormFields{
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
-  .span1,.span2,.span3,.span4,.span5,.span6,
-  .span7,.span8,.span9,.span10,.span11,.span12{
+  .pacienteSpan1,.pacienteSpan2,.pacienteSpan3,.pacienteSpan4,.pacienteSpan5,.pacienteSpan6,
+  .pacienteSpan7,.pacienteSpan8,.pacienteSpan9,.pacienteSpan10,.pacienteSpan11,.pacienteSpan12{
     grid-column: span 6;
   }
 }
 
-.switchControl{
+.pacienteLabel{
+  display: inline-block;
+  margin: 0 0 6px 0;
+  font-weight: 900;
+  color: var(--mf-dark);
+  font-size: 13px;
+}
+
+.pacienteHelper{
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b42318;
+}
+
+/* =========================
+   SWITCH (Ativo)
+   ========================= */
+.pacienteSwitchControl{
   position: relative;
 
-  /* igual ao input */
   height: var(--mf-control-height, 44px);
   min-height: var(--mf-control-height, 44px);
   border-radius: 12px;
@@ -90,8 +106,7 @@
   transition: box-shadow .15s ease, border-color .15s ease;
 }
 
-/* label interno que NÃO altera layout */
-.switchControl::before{
+.pacienteSwitchControl::before{
   content: attr(data-label);
   position: absolute;
   left: 12px;
@@ -105,14 +120,12 @@
   pointer-events: none;
 }
 
-/* foco igual input */
-.switchControl:focus-within{
+.pacienteSwitchControl:focus-within{
   border-color: rgba(17,24,39,.35);
   box-shadow: 0 0 0 4px rgba(17,24,39,.08);
 }
 
-/* switch */
-.switch{
+.pacienteSwitch{
   width: 44px;
   height: 26px;
   border-radius: 999px;
@@ -123,12 +136,12 @@
   transition: 150ms ease;
 }
 
-.switch.on{
+.pacienteSwitch.isOn{
   background: rgba(24, 198, 232, 0.22);
   border-color: rgba(24, 198, 232, 0.55);
 }
 
-.knob{
+.pacienteKnob{
   position:absolute;
   top: 50%;
   left: 3px;
@@ -141,7 +154,7 @@
   transition: 150ms ease;
 }
 
-.switch.on .knob{
+.pacienteSwitch.isOn .pacienteKnob{
   left: 21px;
   border-color: rgba(24, 198, 232, 0.55);
 }
@@ -149,8 +162,7 @@
 /* =========================
    ACTIONS BAR
    ========================= */
-
-.actionsBar{
+.pacienteActionsBar{
   position: fixed;
   left: 0;
   right: 0;
@@ -162,7 +174,7 @@
   z-index: 30;
 }
 
-.actionsInner{
+.pacienteActionsInner{
   width: min(1120px, calc(100% - 48px));
   margin: 0 auto;
   padding: 14px 0;
@@ -173,7 +185,7 @@
   gap: 10px;
 }
 
-.linkBtn{
+.pacienteLinkBtn{
   appearance: none;
   border: 1px solid var(--mf-border);
   background: var(--mf-surface);
@@ -188,15 +200,15 @@
   transition: 150ms ease;
 }
 
-.linkBtn:hover{
+.pacienteLinkBtn:hover{
   background: rgba(15, 42, 68, 0.04);
 }
 
-.linkBtn:active{
+.pacienteLinkBtn:active{
   transform: translateY(1px);
 }
 
-.linkBtn:focus-visible{
+.pacienteLinkBtn:focus-visible{
   outline: 3px solid rgba(24, 198, 232, 0.25);
   outline-offset: 2px;
 }
