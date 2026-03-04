@@ -19,6 +19,8 @@ import ConsultaEdit from "./views/pages/Consultas/ConsultaEdit/ConsultaEdit";
 import ConsultaNew from "./views/pages/Consultas/ConsultaEdit/ConsultaNew";
 import ConsultaAtendimento from "./views/pages/Consultas/ConsultaAtendimento/ConsultaAtendimento";
 
+import PendenciasPage from "./views/pages/Pendencias";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -52,6 +54,8 @@ export default function App() {
             <Route path=":id/atendimento" element={<ConsultaAtendimento />} />
             <Route path=":id" element={<ConsultaDetails />} />
           </Route>
+
+          <Route path="/pendencias" element={<PendenciasPage />} />
 
         </Route>
 

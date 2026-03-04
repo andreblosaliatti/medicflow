@@ -1,0 +1,63 @@
+.pendencias-page{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+/* nome + subinfo (médico/sala) */
+.pendencias-person{
+  display:flex;
+  flex-direction:column;
+  line-height:1.1;
+}
+
+.pendencias-sub{
+  margin-top:2px;
+  font-size:12.5px;
+}
+
+/* prioridade (badge) */
+.pendencias-prio{
+  font-weight:900;
+}
+
+.pendencias-prio--danger{
+  border-color: rgba(239,68,68,.25);
+}
+
+.pendencias-prio--warn{
+  border-color: rgba(245,158,11,.25);
+}
+
+.pendencias-prio--muted{
+  border-color: rgba(148,163,184,.25);
+}
+
+/* botão confirmar */
+.pendencias-action{
+  height:34px;
+  padding:0 10px;
+  border-radius:10px;
+
+  border:1px solid var(--mf-border);
+  background: var(--mf-surface);
+
+  font-weight:800;
+  cursor:pointer;
+}
+
+.pendencias-action--primary{
+  border-color: rgba(59,130,246,.35);
+}
+
+/* quando não existe ação */
+.pendencias-noaction{
+  display:inline-block;
+  padding:0 10px;
+}
+
+/* tabela vazia */
+.pendencias-empty{
+  padding:18px 14px;
+  color: var(--mf-muted);
+}
