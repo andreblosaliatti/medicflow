@@ -19,6 +19,8 @@ import ConsultaEdit from "./views/pages/Consultas/ConsultaEdit/ConsultaEdit";
 import ConsultaNew from "./views/pages/Consultas/ConsultaEdit/ConsultaNew";
 import ConsultaAtendimento from "./views/pages/Consultas/ConsultaAtendimento/ConsultaAtendimento";
 
+import PrescricoesPage from "./views/pages/Pacientes/Prescricoes";
+
 import PendenciasPage from "./views/pages/Pendencias";
 
 export default function App() {
@@ -42,6 +44,7 @@ export default function App() {
             <Route index element={<PacientesPage />} />
             <Route path="novo" element={<PacienteFormPage />} />
             <Route path=":id/editar" element={<PacienteFormPage />} />
+            <Route path=":id/prescricoes" element={<PrescricoesPage />} />
             <Route path=":id/prontuario" element={<ProntuarioPage />} />
             <Route path=":id" element={<PacientProfile />} />
           </Route>

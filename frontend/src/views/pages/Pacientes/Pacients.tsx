@@ -28,6 +28,7 @@ type NavState = { from?: string };
 
 type PacienteMenuAction =
   | "PRONTUARIO"
+  | "PRESCRICOES"
   | "VER_PERFIL"
   | "EDITAR"
   | "NOVA_CONSULTA"
@@ -126,6 +127,7 @@ export default function PacientesPage() {
 
     const routes: Record<Exclude<PacienteMenuAction, "NOVA_CONSULTA">, string | null> = {
       PRONTUARIO: `/pacientes/${pacienteId}/prontuario`,
+      PRESCRICOES: `/pacientes/${pacienteId}/prescricoes`,
       VER_PERFIL: `/pacientes/${pacienteId}`,
       EDITAR: `/pacientes/${pacienteId}/editar`,
       ENVIAR_MENSAGEM: `/comunicacao?pacienteId=${encodeURIComponent(String(pacienteId))}`,
@@ -279,6 +281,7 @@ export default function PacientesPage() {
                             open={openMenuId === p.id}
                             onClose={() => setOpenMenuId(null)}
                             items={[
+                              { key: "PRESCRICOES", label: "Prescrições" },
                               { key: "VER_PERFIL", label: "Ver perfil" },
                               { key: "EDITAR", label: "Editar", tone: "primary" },
                               { key: "NOVA_CONSULTA", label: "Nova consulta" },
