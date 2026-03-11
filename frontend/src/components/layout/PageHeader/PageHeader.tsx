@@ -9,19 +9,15 @@ type Action = {
   label: string;
   variant?: "primary" | "secondary" | "highlight";
   onClick?: () => void;
-  icon?: ReactNode; // melhor que string
+  icon?: ReactNode;
   disabled?: boolean;
 };
 
 type Props = {
   title: string;
-
-  // ✅ compatibilidade com o padrão antigo
   subtitle?: string;
   actionLabel?: string;
   onAction?: () => void | Promise<void>;
-
-  // ✅ novo padrão
   actions?: Action[];
   rightSlot?: ReactNode;
 };
@@ -56,7 +52,11 @@ export default function PageHeader({
             {finalActions.map((a) => {
               const content = (
                 <>
-                  {a.icon ? <span className="mf-pageheader__icon" aria-hidden="true">{a.icon}</span> : null}
+                  {a.icon ? (
+                    <span className="mf-pageheader__icon" aria-hidden="true">
+                      {a.icon}
+                    </span>
+                  ) : null}
                   <span>{a.label}</span>
                 </>
               );
@@ -65,7 +65,11 @@ export default function PageHeader({
 
               if (a.variant === "secondary") {
                 return (
-                  <SecondaryButton key={key} onClick={a.onClick} disabled={a.disabled || !a.onClick}>
+                  <SecondaryButton
+                    key={key}
+                    onClick={a.onClick}
+                    disabled={a.disabled}
+                  >
                     {content}
                   </SecondaryButton>
                 );
@@ -73,14 +77,22 @@ export default function PageHeader({
 
               if (a.variant === "highlight") {
                 return (
-                  <HighlightButton key={key} onClick={a.onClick} disabled={a.disabled || !a.onClick}>
+                  <HighlightButton
+                    key={key}
+                    onClick={a.onClick}
+                    disabled={a.disabled}
+                  >
                     {content}
                   </HighlightButton>
                 );
               }
 
               return (
-                <PrimaryButton key={key} onClick={a.onClick} disabled={a.disabled || !a.onClick}>
+                <PrimaryButton
+                  key={key}
+                  onClick={a.onClick}
+                  disabled={a.disabled}
+                >
                   {content}
                 </PrimaryButton>
               );
