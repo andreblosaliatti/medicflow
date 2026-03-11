@@ -4,24 +4,41 @@ import { useNavigate, useParams } from "react-router-dom";
 import AppPage from "../../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import Panel from "../../../../components/ui/Panel/Panel";
+import RowMenu from "../../../../components/ui/RowMenu/RowMenu";
+import SelectField, { type SelectOption } from "../../../../components/form/SelectField/SelectField";
 
 import { TableWrap, Table, THead, TBody, Tr, Th, Td } from "../../../../components/ui/Table/Table";
-
 import { pacienteNomeById } from "../../../../mocks/mappers";
+
 import {
-  getExamesByPacienteId,
-  getMedicamentosByPacienteId,
   seedPrescricoesIfEmpty,
-  type ExameSolicitadoMock,
-  type MedicamentoPrescritoMock,
-  type StatusExame,
-  updateExame,
+  getMedicamentosByPacienteId,
+  getExamesByPacienteId,
   duplicateMedicamento,
+  updateExame,
+  type MedicamentoPrescritoMock,
+  type ExameSolicitadoMock,
+  type StatusExame,
 } from "../../../../mocks/prescricoesStorage";
 
 import "./styles.css";
 
 type Tab = "MEDICAMENTOS" | "EXAMES";
+
+type MenuAction =
+  | "OPEN_CONSULTA"
+  | "REPETIR_MED"
+  | "IMPRIMIR_MED"
+  | "SET_COLETA"
+  | "SET_RESULTADO"
+  | "CANCELAR_EXAME";
+
+const statusOptions: readonly SelectOption<StatusExame>[] = [
+  { value: "SOLICITADO", label: "SOLICITADO" },
+  { value: "AGENDADO", label: "AGENDADO" },
+  { value: "REALIZADO", label: "REALIZADO" },
+  { value: "CANCELADO", label: "CANCELADO" },
+] as const;
 
 export default function PrescricoesPage() {
   const navigate = useNavigate();
@@ -29,8 +46,8 @@ export default function PrescricoesPage() {
   const pacienteId = Number(params.id);
 
   const [tab, setTab] = useState<Tab>("MEDICAMENTOS");
+  const [menuKey, setMenuKey] = useState<string | null>(null);
 
-  // garante seed (sem depender do teu storage principal)
   useMemo(() => {
     seedPrescricoesIfEmpty();
   }, []);
@@ -50,270 +67,273 @@ export default function PrescricoesPage() {
     return getExamesByPacienteId(pacienteId);
   }, [pacienteId]);
 
+  function openConsulta(consultaId: string) {
+    navigate(`/consultas/${consultaId}`);
+  }
+
+  function refreshUI() {
+    // mock: força re-render simples sem mexer em store global
+    setTab((t) => (t === "MEDICAMENTOS" ? "EXAMES" : "MEDICAMENTOS"));
+    setTab((t) => (t === "MEDICAMENTOS" ? "EXAMES" : "MEDICAMENTOS"));
+  }
+
+  function onSelectAction(action: MenuAction, payload: { consultaId: string; medId?: number; exameId?: number }) {
+    setMenuKey(null);
+
+    if (action === "OPEN_CONSULTA") {
+      openConsulta(payload.consultaId);
+      return;
+    }
+
+    if (action === "REPETIR_MED" && payload.medId != null) {
+      duplicateMedicamento(payload.medId);
+      refreshUI();
+      return;
+    }
+
+    if (action === "IMPRIMIR_MED" && payload.medId != null) {
+      const m = medicamentos.find((x) => x.id === payload.medId);
+      if (m) printMedicamento(pacienteNome, m);
+      return;
+    }
+
+    if (action === "SET_COLETA" && payload.exameId != null) {
+      updateExame(payload.exameId, () => ({ dataColeta: new Date().toISOString() }));
+      refreshUI();
+      return;
+    }
+
+    if (action === "SET_RESULTADO" && payload.exameId != null) {
+      updateExame(payload.exameId, () => ({ dataResultado: new Date().toISOString() }));
+      refreshUI();
+      return;
+    }
+
+    if (action === "CANCELAR_EXAME" && payload.exameId != null) {
+      updateExame(payload.exameId, () => ({
+        status: "CANCELADO",
+        dataColeta: null,
+        dataResultado: null,
+      }));
+      refreshUI();
+    }
+  }
+
   return (
     <AppPage
-      header={
-        <PageHeader
-          title="Prescrições"
-          subtitle={pacienteNome}
-        />
-      }
+      onClick={() => setMenuKey(null)}
+      header={<PageHeader title="Prescrições" subtitle={pacienteNome} />}
     >
       <div className="mf-page-content prescricoes-page">
         <div className="prescricoes-tabs" role="tablist" aria-label="Prescrições">
           <button
             type="button"
-            className={tab === "MEDICAMENTOS" ? "prescricoes-tab prescricoes-tab--active" : "prescricoes-tab"}
+            className={tab === "MEDICAMENTOS" ? "quick-tile is-active" : "quick-tile"}
             onClick={() => setTab("MEDICAMENTOS")}
             role="tab"
             aria-selected={tab === "MEDICAMENTOS"}
           >
-            Medicações ({medicamentos.length})
+            💊 <span>Medicações</span>
+            <span className="prescricoes-count">{medicamentos.length}</span>
           </button>
 
           <button
             type="button"
-            className={tab === "EXAMES" ? "prescricoes-tab prescricoes-tab--active" : "prescricoes-tab"}
+            className={tab === "EXAMES" ? "quick-tile is-active" : "quick-tile"}
             onClick={() => setTab("EXAMES")}
             role="tab"
             aria-selected={tab === "EXAMES"}
           >
-            Exames ({exames.length})
+            🧪 <span>Exames</span>
+            <span className="prescricoes-count">{exames.length}</span>
           </button>
         </div>
 
         {tab === "MEDICAMENTOS" ? (
           <Panel title="Medicações prescritas" icon="💊">
-            <MedicamentosTable
-              rows={medicamentos}
-              onOpenConsulta={(consultaId) => navigate(`/consultas/${consultaId}`)}
-              onRepeat={(id) => {
-                duplicateMedicamento(id);
-                // força re-render simples (mock): troca tab ida/volta
-                setTab("EXAMES");
-                setTab("MEDICAMENTOS");
-              }}
-              onPrint={(m) => printMedicamento(pacienteNome, m)}
-            />
-            <div className="prescricoes-hint mf-muted">
-        
-            </div>
+            <TableWrap>
+              <Table>
+                <THead>
+                  <tr>
+                    <Th>Medicamento</Th>
+                    <Th style={{ width: 160 }}>Dosagem</Th>
+                    <Th style={{ width: 180 }}>Frequência</Th>
+                    <Th style={{ width: 120 }}>Via</Th>
+                    <Th style={{ width: 120 }} align="right">
+                      Ações
+                    </Th>
+                  </tr>
+                </THead>
+
+                <TBody>
+                  {medicamentos.length === 0 ? (
+                    <Tr>
+                      <Td className="prescricoes-empty" colSpan={5}>
+                        Nenhuma medicação registrada.
+                      </Td>
+                    </Tr>
+                  ) : (
+                    medicamentos.map((m) => {
+                      const key = `MED:${m.id}`;
+                      return (
+                        <Tr
+                          key={m.id}
+                          onClick={() => openConsulta(m.consultaId)}
+                          ariaLabel={`Abrir consulta da medicação ${m.nome}`}
+                        >
+                          <Td>
+                            <div className="prescricoes-main">
+                              <div className="prescricoes-title">{m.nome}</div>
+                              <div className="prescricoes-sub mf-muted">Consulta #{m.consultaId}</div>
+                            </div>
+                          </Td>
+
+                          <Td className="mf-mono">{m.dosagem || "—"}</Td>
+                          <Td>{m.frequencia || "—"}</Td>
+                          <Td>{m.via || "—"}</Td>
+
+                          <Td align="right" onClick={(e) => e.stopPropagation()}>
+                            <div className="mf-row-actions">
+                              <button
+                                type="button"
+                                className="prescricoes-more"
+                                aria-label="Ações"
+                                onClick={() => setMenuKey(menuKey === key ? null : key)}
+                              >
+                                ⋯
+                              </button>
+
+                              <RowMenu
+                                open={menuKey === key}
+                                onClose={() => setMenuKey(null)}
+                                items={[
+                                  { key: "OPEN_CONSULTA", label: "Ver consulta" },
+                                  { key: "REPETIR_MED", label: "Repetir", tone: "primary" },
+                                  { key: "IMPRIMIR_MED", label: "Imprimir" },
+                                ]}
+                                onSelect={(k) =>
+                                  onSelectAction(k as MenuAction, { consultaId: m.consultaId, medId: m.id })
+                                }
+                              />
+                            </div>
+                          </Td>
+                        </Tr>
+                      );
+                    })
+                  )}
+                </TBody>
+              </Table>
+            </TableWrap>
           </Panel>
         ) : (
           <Panel title="Exames solicitados" icon="🧪">
-            <ExamesTable
-              rows={exames}
-              onOpenConsulta={(consultaId) => navigate(`/consultas/${consultaId}`)}
-              onChangeStatus={(id, status) => {
-                // regra simples de mock:
-                // - REALIZADO seta dataColeta se vazio
-                // - CANCELADO limpa datas
-                updateExame(id, (prev) => {
-                  const now = new Date().toISOString();
-                  const next: Partial<ExameSolicitadoMock> = { status };
+            <TableWrap>
+              <Table>
+                <THead>
+                  <tr>
+                    <Th>Exame</Th>
+                    <Th style={{ width: 180 }}>Status</Th>
+                    <Th style={{ width: 160 }}>Coleta</Th>
+                    <Th style={{ width: 160 }}>Resultado</Th>
+                    <Th style={{ width: 120 }} align="right">
+                      Ações
+                    </Th>
+                  </tr>
+                </THead>
 
-                  if (status === "REALIZADO") {
-                    next.dataColeta = prev.dataColeta ?? now;
-                  }
-                  if (status === "CANCELADO") {
-                    next.dataColeta = null;
-                    next.dataResultado = null;
-                  }
-                  return next;
-                });
+                <TBody>
+                  {exames.length === 0 ? (
+                    <Tr>
+                      <Td className="prescricoes-empty" colSpan={5}>
+                        Nenhum exame registrado.
+                      </Td>
+                    </Tr>
+                  ) : (
+                    exames.map((x) => {
+                      const key = `EXA:${x.id}`;
+                      return (
+                        <Tr
+                          key={x.id}
+                          onClick={() => openConsulta(x.consultaId)}
+                          ariaLabel={`Abrir consulta do exame ${x.nome}`}
+                        >
+                          <Td>
+                            <div className="prescricoes-main">
+                              <div className="prescricoes-title">{x.nome}</div>
+                              <div className="prescricoes-sub mf-muted">Consulta #{x.consultaId}</div>
+                              {x.justificativa ? (
+                                <div className="prescricoes-sub mf-muted">Justificativa: {x.justificativa}</div>
+                              ) : null}
+                            </div>
+                          </Td>
 
-                setTab("MEDICAMENTOS");
-                setTab("EXAMES");
-              }}
-              onSetColeta={(id) => {
-                updateExame(id, () => ({ dataColeta: new Date().toISOString() }));
-                setTab("MEDICAMENTOS");
-                setTab("EXAMES");
-              }}
-              onSetResultado={(id) => {
-                updateExame(id, () => ({ dataResultado: new Date().toISOString() }));
-                setTab("MEDICAMENTOS");
-                setTab("EXAMES");
-              }}
-            />
+                          <Td onClick={(e) => e.stopPropagation()}>
+                            <SelectField<StatusExame>
+                              value={x.status}
+                              onChange={(v) => {
+                                updateExame(x.id, (prev) => {
+                                  const now = new Date().toISOString();
+                                  const next: Partial<ExameSolicitadoMock> = { status: v };
+
+                                  if (v === "REALIZADO") {
+                                    next.dataColeta = prev.dataColeta ?? now;
+                                  }
+                                  if (v === "CANCELADO") {
+                                    next.dataColeta = null;
+                                    next.dataResultado = null;
+                                  }
+                                  return next;
+                                });
+                                refreshUI();
+                              }}
+                              options={statusOptions}
+                              ariaLabel="Status do exame"
+                              className="mf-select--embedded"
+                            />
+                          </Td>
+
+                          <Td className="mf-mono">{formatISOToBR(x.dataColeta) ?? "—"}</Td>
+                          <Td className="mf-mono">{formatISOToBR(x.dataResultado) ?? "—"}</Td>
+
+                          <Td align="right" onClick={(e) => e.stopPropagation()}>
+                            <div className="mf-row-actions">
+                              <button
+                                type="button"
+                                className="prescricoes-more"
+                                aria-label="Ações"
+                                onClick={() => setMenuKey(menuKey === key ? null : key)}
+                              >
+                                ⋯
+                              </button>
+
+                              <RowMenu
+                                open={menuKey === key}
+                                onClose={() => setMenuKey(null)}
+                                items={[
+                                  { key: "OPEN_CONSULTA", label: "Ver consulta" },
+                                  { key: "SET_COLETA", label: "Marcar coleta (hoje)" },
+                                  { key: "SET_RESULTADO", label: "Marcar resultado (hoje)", tone: "primary" },
+                                  ...(x.status !== "CANCELADO"
+                                    ? [{ key: "CANCELAR_EXAME", label: "Cancelar", tone: "danger" as const }]
+                                    : []),
+                                ]}
+                                onSelect={(k) =>
+                                  onSelectAction(k as MenuAction, { consultaId: x.consultaId, exameId: x.id })
+                                }
+                              />
+                            </div>
+                          </Td>
+                        </Tr>
+                      );
+                    })
+                  )}
+                </TBody>
+              </Table>
+            </TableWrap>
           </Panel>
         )}
       </div>
     </AppPage>
-  );
-}
-
-function MedicamentosTable({
-  rows,
-  onOpenConsulta,
-  onRepeat,
-  onPrint,
-}: {
-  rows: MedicamentoPrescritoMock[];
-  onOpenConsulta: (consultaId: string) => void;
-  onRepeat: (id: number) => void;
-  onPrint: (m: MedicamentoPrescritoMock) => void;
-}) {
-  return (
-    <TableWrap>
-      <Table>
-        <THead>
-          <tr>
-            <Th>Medicamento</Th>
-            <Th style={{ width: 160 }}>Dosagem</Th>
-            <Th style={{ width: 180 }}>Frequência</Th>
-            <Th style={{ width: 120 }}>Via</Th>
-            <Th style={{ width: 220 }} align="right">
-              Ações
-            </Th>
-          </tr>
-        </THead>
-
-        <TBody>
-          {rows.length === 0 ? (
-            <Tr>
-              <Td className="prescricoes-empty" colSpan={5}>
-                Nenhuma medicação registrada.
-              </Td>
-            </Tr>
-          ) : (
-            rows.map((m) => (
-              <Tr key={m.id} onClick={() => onOpenConsulta(m.consultaId)} ariaLabel={`Abrir consulta da medicação ${m.nome}`}>
-                <Td>
-                  <div className="prescricoes-main">
-                    <div className="prescricoes-title">{m.nome}</div>
-                    <div className="prescricoes-sub mf-muted">Consulta #{m.consultaId}</div>
-                  </div>
-                </Td>
-                <Td className="mf-mono">{m.dosagem || "—"}</Td>
-                <Td>{m.frequencia || "—"}</Td>
-                <Td>{m.via || "—"}</Td>
-
-                <Td align="right" onClick={(e) => e.stopPropagation()}>
-                  <div className="prescricoes-actions">
-                    <button
-                      type="button"
-                      className="prescricoes-btn"
-                      onClick={() => onOpenConsulta(m.consultaId)}
-                    >
-                      Ver consulta
-                    </button>
-
-                    <button
-                      type="button"
-                      className="prescricoes-btn prescricoes-btn--primary"
-                      onClick={() => onRepeat(m.id)}
-                      title="Duplica a medicação (mock)"
-                    >
-                      Repetir
-                    </button>
-
-                    <button
-                      type="button"
-                      className="prescricoes-btn"
-                      onClick={() => onPrint(m)}
-                      title="Impressão mock"
-                    >
-                      Imprimir
-                    </button>
-                  </div>
-                </Td>
-              </Tr>
-            ))
-          )}
-        </TBody>
-      </Table>
-    </TableWrap>
-  );
-}
-
-function ExamesTable({
-  rows,
-  onOpenConsulta,
-  onChangeStatus,
-  onSetColeta,
-  onSetResultado,
-}: {
-  rows: ExameSolicitadoMock[];
-  onOpenConsulta: (consultaId: string) => void;
-  onChangeStatus: (id: number, status: StatusExame) => void;
-  onSetColeta: (id: number) => void;
-  onSetResultado: (id: number) => void;
-}) {
-  return (
-    <TableWrap>
-      <Table>
-        <THead>
-          <tr>
-            <Th>Exame</Th>
-            <Th style={{ width: 150 }}>Status</Th>
-            <Th style={{ width: 160 }}>Coleta</Th>
-            <Th style={{ width: 160 }}>Resultado</Th>
-            <Th style={{ width: 260 }} align="right">
-              Ações
-            </Th>
-          </tr>
-        </THead>
-
-        <TBody>
-          {rows.length === 0 ? (
-            <Tr>
-              <Td className="prescricoes-empty" colSpan={5}>
-                Nenhum exame registrado.
-              </Td>
-            </Tr>
-          ) : (
-            rows.map((x) => (
-              <Tr key={x.id} onClick={() => onOpenConsulta(x.consultaId)} ariaLabel={`Abrir consulta do exame ${x.nome}`}>
-                <Td>
-                  <div className="prescricoes-main">
-                    <div className="prescricoes-title">{x.nome}</div>
-                    <div className="prescricoes-sub mf-muted">Consulta #{x.consultaId}</div>
-                    {x.justificativa ? (
-                      <div className="prescricoes-sub mf-muted">Justificativa: {x.justificativa}</div>
-                    ) : null}
-                  </div>
-                </Td>
-
-                <Td>
-                  <select
-                    className="prescricoes-select"
-                    value={x.status}
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={(e) => onChangeStatus(x.id, e.target.value as StatusExame)}
-                    aria-label="Status do exame"
-                  >
-                    <option value="SOLICITADO">SOLICITADO</option>
-                    <option value="AGENDADO">AGENDADO</option>
-                    <option value="REALIZADO">REALIZADO</option>
-                    <option value="CANCELADO">CANCELADO</option>
-                  </select>
-                </Td>
-
-                <Td className="mf-mono">{formatISOToBR(x.dataColeta) ?? "—"}</Td>
-                <Td className="mf-mono">{formatISOToBR(x.dataResultado) ?? "—"}</Td>
-
-                <Td align="right" onClick={(e) => e.stopPropagation()}>
-                  <div className="prescricoes-actions">
-                    <button type="button" className="prescricoes-btn" onClick={() => onOpenConsulta(x.consultaId)}>
-                      Ver consulta
-                    </button>
-
-                    <button type="button" className="prescricoes-btn" onClick={() => onSetColeta(x.id)}>
-                      Marcar coleta (hoje)
-                    </button>
-
-                    <button type="button" className="prescricoes-btn prescricoes-btn--primary" onClick={() => onSetResultado(x.id)}>
-                      Marcar resultado (hoje)
-                    </button>
-                  </div>
-                </Td>
-              </Tr>
-            ))
-          )}
-        </TBody>
-      </Table>
-    </TableWrap>
   );
 }
 

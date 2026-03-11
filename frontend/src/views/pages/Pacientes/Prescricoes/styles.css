@@ -1,0 +1,82 @@
+.prescricoes-page{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+/* tabs estilo "tile" (usa teu .quick-tile se existir; se não existir, isso segura) */
+.quick-tile{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+
+  height:40px;
+  padding:0 12px;
+
+  border:1px solid var(--mf-border);
+  background: var(--mf-surface);
+  border-radius:12px;
+
+  font-weight:900;
+  cursor:pointer;
+}
+
+.quick-tile.is-active{
+  border-color: rgba(59,130,246,.35);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.10);
+}
+
+.prescricoes-tabs{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.prescricoes-count{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  min-width:22px;
+  height:22px;
+  padding:0 8px;
+
+  border-radius:999px;
+  border:1px solid var(--mf-border);
+  font-size:12px;
+  font-weight:900;
+  color: var(--mf-muted);
+}
+
+/* tabela */
+.prescricoes-main{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.prescricoes-title{
+  font-weight:900;
+}
+
+.prescricoes-sub{
+  font-size:12.5px;
+}
+
+.prescricoes-empty{
+  padding:18px 14px;
+  color: var(--mf-muted);
+}
+
+/* botão de 3 pontinhos igual padrão */
+.prescricoes-more{
+  width:36px;
+  height:34px;
+  border-radius:10px;
+
+  border:1px solid var(--mf-border);
+  background: var(--mf-surface);
+  font-size:18px;
+  line-height:1;
+  cursor:pointer;
+}
