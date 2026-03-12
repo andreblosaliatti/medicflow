@@ -1,16 +1,15 @@
 package com.inflowia.medicflow.dto.usuario;
 
 import com.inflowia.medicflow.dto.EnderecoDTO;
-import com.inflowia.medicflow.entities.usuario.Role;
+import com.inflowia.medicflow.dto.RoleDTO;
 import com.inflowia.medicflow.entities.usuario.Usuario;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -23,7 +22,7 @@ public class DadosAtualizacaoUsuario {
     @Email
     private String email;
 
-    private Set<Role> roles;
+    private Set<@Valid RoleDTO> roles;
 
     private Boolean ativo;
 
@@ -37,11 +36,10 @@ public class DadosAtualizacaoUsuario {
         this.sobrenome = entity.getSobrenome();
         this.email = entity.getEmail();
         this.ativo = entity.isAtivo();
-        this.roles = entity.getRoles();
+        this.roles = entity.getRoles().stream().map(RoleDTO::new).collect(Collectors.toSet());
 
         if (entity.getEndereco() != null) {
             this.endereco = new EnderecoDTO(entity.getEndereco());
         }
     }
 }
-

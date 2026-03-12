@@ -30,7 +30,7 @@ public class UsuarioService {
     @Autowired
     private RoleRepository roleRepository;
 
-    @Autowired(required = false)
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
@@ -58,7 +58,7 @@ public class UsuarioService {
         Usuario entity = new Usuario();
 
         entity.setLogin(dto.getLogin());
-        entity.setSenha(passwordEncoder != null ? passwordEncoder.encode(dto.getSenha()) : dto.getSenha());
+        entity.setSenha(passwordEncoder.encode(dto.getSenha()));
         entity.setNome(dto.getNome());
         entity.setSobrenome(dto.getSobrenome());
         entity.setEmail(dto.getEmail());

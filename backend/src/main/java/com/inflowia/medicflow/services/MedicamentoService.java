@@ -45,7 +45,7 @@ public class MedicamentoService {
         if (!consultaRepository.existsById(consultaId)) {
             throw new ResourceNotFoundException("Consulta não encontrada");
         }
-        Page<MedicamentoPrescrito> page = medicamentoRepository.findByConsultaPacienteId(consultaId, pageable);
+        Page<MedicamentoPrescrito> page = medicamentoRepository.findByConsultaId(consultaId, pageable);
         return page.map(MedicamentoPrescritoMinDTO::new);
     }
 

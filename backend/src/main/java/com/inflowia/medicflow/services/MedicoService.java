@@ -54,13 +54,13 @@ public class MedicoService {
 
     @Transactional(readOnly = true)
     public List<MedicoComPacientesDTO> listarTodosMedicosComPacientes() {
-        List<Medico> medicos = repository.findAll();
+        List<Medico> medicos = repository.findAllWithConsultasAndPacientes();
 
         return medicos.stream()
-                .map(medico -> {
-                    var pacientes = consultaRepository.findPacientesDistinctByMedicoId(medico.getId());
-                    return new MedicoComPacientesDTO(medico, pacientes);
-                })
+                .map(medico -> new MedicoComPacientesDTO(
+                        medico,
+                        medico.getConsultasMedico().stream().map(c -> c.getPaciente()).distinct().toList()
+                ))
                 .toList();
     }
 
