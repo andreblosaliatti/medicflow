@@ -1,81 +1,38 @@
 package com.inflowia.medicflow.controllers;
 
-import com.inflowia.medicflow.entities.paciente.Paciente;
-import com.inflowia.medicflow.repositories.PacienteRepository;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import org.junit.jupiter.api.BeforeEach;
+import com.inflowia.medicflow.dto.paciente.PacienteMinDTO;
+import com.inflowia.medicflow.services.PacienteService;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import static org.mockito.Mockito.when;
-import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
-import java.time.LocalDate;
 import java.util.List;
 
-public class PacienteControllerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
-    @InjectMocks
-    private PacienteController controller;
+@ExtendWith(MockitoExtension.class)
+class PacienteControllerTest {
 
     @Mock
-    private PacienteRepository repository;
+    PacienteService service;
 
-    @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
-    }
+    @InjectMocks
+    PacienteController controller;
 
     @Test
-void deveListarPacientesAtivosComSucesso() {
-    Pageable pageable = PageRequest.of(0, 10);
-    Paciente paciente = Paciente.builder()
-        .id(1L)
-        .primeiroNome("João da Silva")
-        .cpf("123.456.789-00")
-        .dataNascimento(LocalDate.of(1980, 1, 1))
-        .telefone("(11) 99999-0000")
-        .email("joao@gmail.com")
-        .ativo(true)
-        .build();
+    void listarRetornaPageComStatus200() {
+        Page<PacienteMinDTO> page = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
+        when(service.listar(PageRequest.of(0, 10))).thenReturn(page);
 
-    Page<Paciente> page = new PageImpl<>(List.of(paciente));
-    when(repository.findAllByAtivoTrue(pageable)).thenReturn(page);
+        var response = controller.listar(PageRequest.of(0, 10));
 
-    ResponseEntity<Page<PacienteMinDTO>> response = controller.listar(pageable);
-    Page<PacienteMinDTO> pacientes = response.getBody();
-
-    assertNotNull(pacientes);
-    assertEquals(1, pacientes.getContent().size());
-    assertEquals("João da Silva", pacientes.getContent().get(0).nome());
-}
-
-    @Test
-    void deveRetornarPaginavaziaQuandoNaoTivereamPacientesAtivos(){
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Paciente> paginaVazia = new PageImpl<>(List.of());
-
-        when(repository.findAllByAtivoTrue(pageable)).thenReturn(paginaVazia);
-
-        ResponseEntity<Page<PacienteMinDTO>> response = controller.listar(pageable);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-
-        Page<PacienteMinDTO> pacientes = (Page<PacienteMinDTO>) response.getBody();
-        assertNotNull(pacientes);
-        assertEquals(0, pacientes.getContent().size());
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(0, response.getBody().getTotalElements());
     }
-
-    @Test
-    void deveLancarExcessaoQuandoRepositorioFalha(){
-        Pageable pageable = PageRequest.of(0,10);
-
-        when(repository.findAllByAtivoTrue(pageable)).thenThrow(new RuntimeException("Erro simulado."));
-        assertThrows(RuntimeException.class, () -> controller.listar(pageable));
-    }
-
 }

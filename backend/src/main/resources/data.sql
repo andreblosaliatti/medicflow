@@ -32,25 +32,25 @@ INSERT INTO tb_usuarios
 (ativo, cpf, email, login, senha, nome, sobrenome, logradouro, numero)
 VALUES
 -- ADMIN
-(TRUE, '32844208606', 'admin@medicflow.com', 'admin',  'admin123', 'System',  'Admin',      'Rua Central', '1'),
+(TRUE, '32844208606', 'admin@medicflow.com', 'admin',  '$2a$10$7EqJtq98hPqEX7fNZaFWoOeG7i7Qx0M6QF6UVx/FuWRzE7dDzIvmW', 'System',  'Admin',      'Rua Central', '1'),
 
 -- MÉDICOS (Dr House team)
-(TRUE, '39053344705', 'dr.house@example.com',   'drhouse',   'senhaSegura#1', 'Gregory', 'House',   'Rua Médica 1', '10'),
-(TRUE, '90011122201', 'dr.cameron@example.com', 'drcameron', 'senhaSegura#2', 'Allison', 'Cameron', 'Rua Médica 2', '20'),
-(TRUE, '90011122202', 'dr.foreman@example.com', 'drforeman', 'senhaSegura#3', 'Eric',    'Foreman', 'Rua Médica 3', '30'),
-(TRUE, '90011122203', 'dr.chase@example.com',   'drchase',   'senhaSegura#4', 'Robert',  'Chase',   'Rua Médica 4', '40'),
+(TRUE, '39053344705', 'dr.house@example.com',   'drhouse',   '$2a$10$7EqJtq98hPqEX7fNZaFWoOeG7i7Qx0M6QF6UVx/FuWRzE7dDzIvmW', 'Gregory', 'House',   'Rua Médica 1', '10'),
+(TRUE, '90011122201', 'dr.cameron@example.com', 'drcameron', '$2a$10$7EqJtq98hPqEX7fNZaFWoOeG7i7Qx0M6QF6UVx/FuWRzE7dDzIvmW', 'Allison', 'Cameron', 'Rua Médica 2', '20'),
+(TRUE, '90011122202', 'dr.foreman@example.com', 'drforeman', '$2a$10$7EqJtq98hPqEX7fNZaFWoOeG7i7Qx0M6QF6UVx/FuWRzE7dDzIvmW', 'Eric',    'Foreman', 'Rua Médica 3', '30'),
+(TRUE, '90011122203', 'dr.chase@example.com',   'drchase',   '$2a$10$7EqJtq98hPqEX7fNZaFWoOeG7i7Qx0M6QF6UVx/FuWRzE7dDzIvmW', 'Robert',  'Chase',   'Rua Médica 4', '40'),
 
 -- SECRETÁRIO
-(TRUE, '12345678901', 'sec.marina@example.com', 'marina.sec', 'senha#Sec1', 'Marina', 'Silva', 'Rua Clínica 10', '100'),
+(TRUE, '12345678901', 'sec.marina@example.com', 'marina.sec', '$2a$10$7EqJtq98hPqEX7fNZaFWoOeG7i7Qx0M6QF6UVx/FuWRzE7dDzIvmW', 'Marina', 'Silva', 'Rua Clínica 10', '100'),
 
 -- ATENDENTE
-(TRUE, '12345678902', 'at.claudio@example.com', 'claudio.at', 'senha#At1', 'Claudio', 'Pereira', 'Rua Clínica 11', '200'),
+(TRUE, '12345678902', 'at.claudio@example.com', 'claudio.at', '$2a$10$7EqJtq98hPqEX7fNZaFWoOeG7i7Qx0M6QF6UVx/FuWRzE7dDzIvmW', 'Claudio', 'Pereira', 'Rua Clínica 11', '200'),
 
 -- ENFERMEIRO (subclasse)
-(TRUE, '12345678903', 'nf.juliana@example.com', 'juliana.enf', 'senha#Enf1', 'Juliana', 'Rocha', 'Rua Enfermagem 1', '300'),
+(TRUE, '12345678903', 'nf.juliana@example.com', 'juliana.enf', '$2a$10$7EqJtq98hPqEX7fNZaFWoOeG7i7Qx0M6QF6UVx/FuWRzE7dDzIvmW', 'Juliana', 'Rocha', 'Rua Enfermagem 1', '300'),
 
 -- PACIENTE
-(TRUE, '98765432100', 'pac.teste@example.com', 'paciente01', 'senha#pac1', 'Carlos', 'Santos', 'Rua Paciente 1', '500');
+(TRUE, '98765432100', 'pac.teste@example.com', 'paciente01', '$2a$10$7EqJtq98hPqEX7fNZaFWoOeG7i7Qx0M6QF6UVx/FuWRzE7dDzIvmW', 'Carlos', 'Santos', 'Rua Paciente 1', '500');
 
 -- =====================================================================
 -- ASSOCIAÇÃO DOS USUÁRIOS COM ROLES

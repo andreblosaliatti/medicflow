@@ -1,12 +1,11 @@
 package com.inflowia.medicflow.dto.usuario;
 
 import com.inflowia.medicflow.dto.EnderecoDTO;
-import com.inflowia.medicflow.entities.usuario.Role;
+import com.inflowia.medicflow.dto.RoleDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.hibernate.validator.constraints.br.CPF;
 
 import java.util.Set;
@@ -36,25 +35,8 @@ public class DadosCadastroUsuario {
     @CPF
     private String cpf;
 
-    // Agora usando ROLE ao invés de Perfil
-    private Set<Role> roles;
+    private Set<@Valid RoleDTO> roles;
 
     @Valid
     private EnderecoDTO endereco;
-
-    public DadosCadastroUsuario() {}
-
-    public DadosCadastroUsuario(String login, String senha, String nome, String email,
-                                String sobrenome, String cpf, Set<Role> roles,
-                                EnderecoDTO endereco) {
-
-        this.login = login;
-        this.senha = senha;
-        this.nome = nome;
-        this.email = email;
-        this.sobrenome = sobrenome;
-        this.cpf = cpf;
-        this.roles = roles;
-        this.endereco = endereco;
-    }
 }
