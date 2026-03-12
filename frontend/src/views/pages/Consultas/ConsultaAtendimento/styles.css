@@ -1,0 +1,152 @@
+/* Atendimento */
+
+.atd-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.atd-pill {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--mf-muted);
+  background: var(--mf-bg);
+  border: 1px solid var(--mf-border);
+  padding: 8px 10px;
+  border-radius: 999px;
+}
+
+/* Tabs */
+.atd-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 12px 0 12px;
+  border-bottom: 1px solid var(--mf-border);
+}
+
+.atd-tab {
+  border: 1px solid var(--mf-border);
+  background: var(--mf-surface);
+  color: var(--mf-text);
+  font-weight: 900;
+  font-size: 13px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.atd-tab.is-active {
+  border-color: rgba(24, 198, 232, 0.35);
+  box-shadow: 0 0 0 3px rgba(24, 198, 232, 0.12);
+}
+
+/* Panel */
+.atd-panel {
+  padding: 14px 12px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Fields */
+.atd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.atd-label {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--mf-muted);
+}
+
+.atd-textarea {
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+  border: 1px solid var(--mf-border);
+  background: var(--mf-surface);
+  border-radius: 14px;
+  padding: 12px;
+  color: var(--mf-text);
+  outline: none;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.atd-textarea:focus {
+  border-color: rgba(24, 198, 232, 0.45);
+  box-shadow: 0 0 0 3px rgba(24, 198, 232, 0.12);
+}
+
+/* Inline add */
+.atd-inlineAdd {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.atd-grow {
+  flex: 1;
+}
+
+/* List */
+.atd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.atd-empty {
+  color: var(--mf-muted);
+  font-weight: 700;
+  padding: 10px 0;
+}
+
+/* Item card */
+.atd-item {
+  border: 1px solid var(--mf-border);
+  background: var(--mf-surface);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.atd-itemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.atd-itemTitle {
+  font-weight: 900;
+  color: var(--mf-text);
+}
+
+.atd-remove {
+  border: none;
+  background: transparent;
+  color: var(--mf-danger);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.atd-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.atd-actionsBottom {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--mf-border);
+  margin-top: 6px;
+}

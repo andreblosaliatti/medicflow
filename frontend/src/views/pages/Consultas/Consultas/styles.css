@@ -1,0 +1,92 @@
+/* =========================
+   Listagem de Consultas
+   ========================= */
+
+.consultas-tableWrap{
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.consultas-table{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.consultas-table th,
+.consultas-table td{
+  padding: 14px;
+  border-bottom: 1px solid var(--mf-border);
+  background: var(--mf-surface);
+  color: var(--mf-text);
+  vertical-align: middle;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consultas-table thead th{
+  text-align: left;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--mf-muted);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.consultas-row{
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.consultas-row:hover td{
+  background: rgba(15, 42, 68, 0.02);
+}
+
+.consultas-paciente{
+  font-weight: 800;
+}
+
+.consultas-colActions{
+  width: 56px;
+}
+
+.consultas-actions{
+  position: relative;
+  width: 56px;
+  text-align: right;
+}
+
+.consultas-more{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--mf-border);
+  background: #F0F2F6;
+  color: var(--mf-text);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.consultas-more:hover{
+  background: #E8EBF2;
+}
+
+/* Responsivo: esconde colunas menos importantes */
+@media (max-width: 900px){
+  .consultas-table th:nth-child(4),
+  .consultas-table td:nth-child(4){
+    display: none;
+  }
+}
+
+@media (max-width: 720px){
+  .consultas-table th:nth-child(3),
+  .consultas-table td:nth-child(3){
+    display: none;
+  }
+}

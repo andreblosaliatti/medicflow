@@ -13,10 +13,15 @@ import ProntuarioPage from "./views/pages/Pacientes/Prontuario/Prontuario";
 import PacienteFormPage from "./views/pages/Pacientes/PacientForm/PacientFormPage";
 
 // Consultas
-import ConsultasPage from "./views/pages/Consultas/Consulta";
-import ConsultaDetails from "./views/pages/Consultas/ConsultaDetails";
-import ConsultaEdit from "./views/pages/Consultas/ConsultaEdit";
-import ConsultaNew from "./views/pages/Consultas/ConsultaNew";
+import ConsultasPage from "./views/pages/Consultas/Consultas/Consulta";
+import ConsultaDetails from "./views/pages/Consultas/ConsultaDetail/ConsultaDetails";
+import ConsultaEdit from "./views/pages/Consultas/ConsultaEdit/ConsultaEdit";
+import ConsultaNew from "./views/pages/Consultas/ConsultaEdit/ConsultaNew";
+import ConsultaAtendimento from "./views/pages/Consultas/ConsultaAtendimento/ConsultaAtendimento";
+
+import PrescricoesPage from "./views/pages/Pacientes/Prescricoes";
+
+import PendenciasPage from "./views/pages/Pendencias";
 
 export default function App() {
   return (
@@ -39,6 +44,7 @@ export default function App() {
             <Route index element={<PacientesPage />} />
             <Route path="novo" element={<PacienteFormPage />} />
             <Route path=":id/editar" element={<PacienteFormPage />} />
+            <Route path=":id/prescricoes" element={<PrescricoesPage />} />
             <Route path=":id/prontuario" element={<ProntuarioPage />} />
             <Route path=":id" element={<PacientProfile />} />
           </Route>
@@ -48,8 +54,11 @@ export default function App() {
             <Route index element={<ConsultasPage />} />
             <Route path="nova" element={<ConsultaNew />} />
             <Route path=":id/editar" element={<ConsultaEdit />} />
+            <Route path=":id/atendimento" element={<ConsultaAtendimento />} />
             <Route path=":id" element={<ConsultaDetails />} />
           </Route>
+
+          <Route path="/pendencias" element={<PendenciasPage />} />
 
         </Route>
 

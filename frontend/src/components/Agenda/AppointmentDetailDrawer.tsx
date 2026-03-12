@@ -1,27 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Drawer from "../ui/Drawer/Drawer";
-
 import SecondaryButton from "../ui/SecondaryButton/SecondaryButton";
 import HighlightButton from "../ui/HighlightButton/HighlightButton";
 import Input from "../form/Input";
-
 import SelectField from "../form/SelectField/SelectField";
+import DateTimeField from "../form/DateTimeField/DateTimeField";
 
-import type { DuracaoMinutos, MeioPagamento, StatusConsulta, TipoConsulta } from "../../domain/enums/statusConsulta";
+import type {
+  DuracaoMinutos,
+  MeioPagamento,
+  StatusConsulta,
+  TipoConsulta,
+} from "../../domain/enums/statusConsulta";
 
-import styles from "./appointment-detail-drawer.module.css";
+import "./styles.css";
 
 export type ConsultaDraft = {
-  // UI
   pacienteId: string;
   pacienteNome: string;
 
-  // do contexto (médico logado)
   medicoId: string;
   medicoNome: string;
 
-  // agendamento
   dataHora: string; // yyyy-mm-ddThh:mm
   duracaoMinutos: DuracaoMinutos;
 
@@ -35,12 +36,11 @@ export type ConsultaDraft = {
   retorno: boolean;
   dataLimiteRetorno: string;
 
-  valorConsulta: string; // string pra input
+  valorConsulta: string;
   meioPagamento: MeioPagamento;
   pago: boolean;
   dataPagamento: string;
 
-  // controle interno
   status: StatusConsulta; // sempre AGENDADA no create
 };
 
@@ -49,9 +49,11 @@ type Props = {
   mode: "create" | "edit";
   initialValue: ConsultaDraft | null;
 
-  // ✅ vem do médico logado
   doctorId: string;
   doctorName: string;
+
+  // ✅ ADD (opcional)
+  lockPaciente?: boolean;
 
   onClose: () => void;
   onSave: (data: ConsultaDraft) => void;
@@ -123,10 +125,10 @@ export default function ConsultaFormDrawer({
   initialValue,
   doctorId,
   doctorName,
+  lockPaciente,
   onClose,
   onSave,
 }: Props) {
-  // ✅ trava scroll do fundo (body) quando abrir
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -138,20 +140,14 @@ export default function ConsultaFormDrawer({
 
   const base = useMemo<ConsultaDraft>(() => {
     const v = initialValue ?? emptyDraft(doctorId, doctorName);
-
-    // garantia: médico sempre do logado
-    const next: ConsultaDraft = {
+    return {
       ...v,
       medicoId: doctorId,
       medicoNome: doctorName,
-      // no create, força status AGENDADA
       status: mode === "create" ? "AGENDADA" : v.status,
     };
-
-    return next;
   }, [initialValue, doctorId, doctorName, mode]);
 
-  // ✅ sem effect de setState: o pai deve usar `key` pra resetar quando trocar
   const [form, setForm] = useState<ConsultaDraft>(base);
 
   const title = mode === "create" ? "Novo agendamento" : "Editar agendamento";
@@ -163,12 +159,10 @@ export default function ConsultaFormDrawer({
   function submit() {
     const payload: ConsultaDraft = {
       ...form,
-      // ✅ status não é editável na UI: garante no create
       status: mode === "create" ? "AGENDADA" : form.status,
       medicoId: doctorId,
       medicoNome: doctorName,
     };
-
     onSave(payload);
   }
 
@@ -178,49 +172,41 @@ export default function ConsultaFormDrawer({
       onClose={onClose}
       title={title}
       variant="primary"
-      headerClassName={styles.drawerHeader}
-      titleClassName={styles.drawerTitle}
-      closeClassName={styles.drawerClose}
+      headerClassName="consultaDrawerHeader"
+      titleClassName="consultaDrawerTitle"
+      closeClassName="consultaDrawerClose"
     >
-      <div className={styles.form}>
-        {/* Paciente + Médico */}
-        <div className={styles.grid2}>
-          <div className={styles.field}>
-            <label className={styles.label}>Paciente</label>
+      <div className="consultaDrawerForm">
+        <div className="consultaDrawerGrid2">
+          <div className="consultaDrawerField">
+            <label className="consultaDrawerLabel">Paciente</label>
             <Input
               value={form.pacienteNome}
               onChange={(e) => set("pacienteNome", e.target.value)}
               placeholder="Nome do paciente"
+              disabled={Boolean(lockPaciente)}
             />
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.label}>Médico</label>
+          <div className="consultaDrawerField">
+            <label className="consultaDrawerLabel">Médico</label>
             <Input value={doctorName} onChange={() => {}} disabled />
           </div>
         </div>
 
-        {/* Data e duração */}
-        <div className={styles.grid2}>
-          <div className={styles.field}>
-            <label className={styles.label}>Data e hora</label>
-
-            {/* ✅ wrapper com ícone fixo (não some ao abrir o picker) */}
-            <div className={styles.dtWrap}>
-              <input
-                className={styles.nativeInput}
-                type="datetime-local"
-                value={form.dataHora}
-                onChange={(e) => set("dataHora", e.target.value)}
-              />
-              <span className={styles.dtIcon} aria-hidden="true">
-                📅
-              </span>
-            </div>
+        <div className="consultaDrawerGrid2">
+          <div className="consultaDrawerField">
+            <label className="consultaDrawerLabel">Data e hora</label>
+            <DateTimeField
+              value={form.dataHora}
+              onChange={(v) => set("dataHora", v)}
+              step={60}
+              aria-label="Data e hora"
+            />
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.label}>Duração</label>
+          <div className="consultaDrawerField">
+            <label className="consultaDrawerLabel">Duração</label>
             <SelectField<DuracaoMinutos>
               value={form.duracaoMinutos}
               onChange={(v) => set("duracaoMinutos", v)}
@@ -230,9 +216,8 @@ export default function ConsultaFormDrawer({
           </div>
         </div>
 
-        {/* Tipo */}
-        <div className={styles.field}>
-          <label className={styles.label}>Tipo</label>
+        <div className="consultaDrawerField">
+          <label className="consultaDrawerLabel">Tipo</label>
           <SelectField<TipoConsulta>
             value={form.tipo}
             onChange={(v) => {
@@ -248,8 +233,8 @@ export default function ConsultaFormDrawer({
         </div>
 
         {form.teleconsulta ? (
-          <div className={styles.field}>
-            <label className={styles.label}>Link da teleconsulta</label>
+          <div className="consultaDrawerField">
+            <label className="consultaDrawerLabel">Link da teleconsulta</label>
             <Input
               value={form.linkAcesso}
               onChange={(e) => set("linkAcesso", e.target.value)}
@@ -259,40 +244,32 @@ export default function ConsultaFormDrawer({
         ) : null}
 
         {form.retorno ? (
-          <div className={styles.field}>
-            <label className={styles.label}>Data limite para retorno</label>
-
-            <div className={styles.dtWrap}>
-              <input
-                className={styles.nativeInput}
-                type="datetime-local"
-                value={form.dataLimiteRetorno}
-                onChange={(e) => set("dataLimiteRetorno", e.target.value)}
-              />
-              <span className={styles.dtIcon} aria-hidden="true">
-                📅
-              </span>
-            </div>
+          <div className="consultaDrawerField">
+            <label className="consultaDrawerLabel">Data limite para retorno</label>
+            <DateTimeField
+              value={form.dataLimiteRetorno}
+              onChange={(v) => set("dataLimiteRetorno", v)}
+              step={60}
+              aria-label="Data limite para retorno"
+            />
           </div>
         ) : null}
 
-        {/* Motivo */}
-        <div className={styles.field}>
-          <label className={styles.label}>Motivo</label>
+        <div className="consultaDrawerField">
+          <label className="consultaDrawerLabel">Motivo</label>
           <textarea
-            className={styles.textarea}
+            className="consultaDrawerTextarea"
             value={form.motivo}
             onChange={(e) => set("motivo", e.target.value)}
             placeholder="Queixa principal / motivo..."
           />
         </div>
 
-        <div className={styles.divider} />
+        <div className="consultaDrawerDivider" />
 
-        {/* Pagamento */}
-        <div className={styles.grid3}>
-          <div className={styles.field}>
-            <label className={styles.label}>Valor (R$)</label>
+        <div className="consultaDrawerGrid3">
+          <div className="consultaDrawerField">
+            <label className="consultaDrawerLabel">Valor (R$)</label>
             <Input
               value={form.valorConsulta}
               onChange={(e) => set("valorConsulta", e.target.value)}
@@ -300,8 +277,8 @@ export default function ConsultaFormDrawer({
             />
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.label}>Meio de pagamento</label>
+          <div className="consultaDrawerField">
+            <label className="consultaDrawerLabel">Meio de pagamento</label>
             <SelectField<MeioPagamento>
               value={form.meioPagamento}
               onChange={(v) => set("meioPagamento", v)}
@@ -310,33 +287,31 @@ export default function ConsultaFormDrawer({
             />
           </div>
 
-          <div className={styles.fieldInline}>
-            <label className={styles.checkbox}>
-              <input type="checkbox" checked={form.pago} onChange={(e) => set("pago", e.target.checked)} />
+          <div className="consultaDrawerFieldInline">
+            <label className="consultaDrawerCheckbox">
+              <input
+                type="checkbox"
+                checked={form.pago}
+                onChange={(e) => set("pago", e.target.checked)}
+              />
               <span>Pago</span>
             </label>
           </div>
         </div>
 
         {form.pago ? (
-          <div className={styles.field}>
-            <label className={styles.label}>Data do pagamento</label>
-
-            <div className={styles.dtWrap}>
-              <input
-                className={styles.nativeInput}
-                type="datetime-local"
-                value={form.dataPagamento}
-                onChange={(e) => set("dataPagamento", e.target.value)}
-              />
-              <span className={styles.dtIcon} aria-hidden="true">
-                📅
-              </span>
-            </div>
+          <div className="consultaDrawerField">
+            <label className="consultaDrawerLabel">Data do pagamento</label>
+            <DateTimeField
+              value={form.dataPagamento}
+              onChange={(v) => set("dataPagamento", v)}
+              step={60}
+              aria-label="Data do pagamento"
+            />
           </div>
         ) : null}
 
-        <div className={styles.actions}>
+        <div className="consultaDrawerActions">
           <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>
           <HighlightButton onClick={submit}>Salvar</HighlightButton>
         </div>

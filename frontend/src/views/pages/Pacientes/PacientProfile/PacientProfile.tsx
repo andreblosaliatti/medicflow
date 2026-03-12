@@ -34,15 +34,15 @@ export default function PacientePerfil() {
       header={<PageHeader title="Perfil do Paciente" />}
       contentClassName="patient-profile-page"
     >
-        <PatientHeaderCard />
-
-        <PatientTabs
-          activeTab={activeTab}
-          onChange={setActiveTab}
-        />
-
-        <div className="patient-tab-content">
-          {renderTab()}
+        <div className="mf-page-content">
+          <PatientHeaderCard />
+          <PatientTabs
+            activeTab={activeTab}
+            onChange={setActiveTab}
+          />
+          <div className="patient-tab-content">
+            {renderTab()}
+          </div>
         </div>
     </AppPage>
   );

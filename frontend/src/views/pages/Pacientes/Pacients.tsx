@@ -7,13 +7,9 @@ import Panel from "../../../components/ui/Panel/Panel";
 
 import Input from "../../../components/form/Input";
 import SelectField from "../../../components/form/SelectField/SelectField";
+import RowMenu from "../../../components/ui/RowMenu/RowMenu";
 
-import PacientsRow, {
-  type PacienteModel,
-  type PacienteMenuAction,
-} from "../../../components/pacients/PacientsRow/PacientsRow";
-
-import { TableWrap, Table, THead, TBody, Th } from "../../../components/ui/Table/Table";
+import { TableWrap, Table, THead, TBody, Tr, Th, Td } from "../../../components/ui/Table/Table";
 
 import {
   ordenarOptions,
@@ -24,11 +20,29 @@ import {
   type Exibindo,
 } from "./pacientFilters";
 
-import { toPacientesRows } from "../../../mocks/mappers"; // ✅ fonte única
+import { toPacientesRows } from "../../../mocks/mappers";
 
 import "./styles.css";
 
 type NavState = { from?: string };
+
+type PacienteMenuAction =
+  | "PRONTUARIO"
+  | "PRESCRICOES"
+  | "VER_PERFIL"
+  | "EDITAR"
+  | "NOVA_CONSULTA"
+  | "ENVIAR_MENSAGEM"
+  | "ARQUIVAR";
+
+type PacienteRowModel = {
+  id: number;
+  nome: string;
+  telefone: string;
+  ultimaConsulta: string;
+  convenio: string;
+  initials?: string;
+};
 
 export default function PacientesPage() {
   const navigate = useNavigate();
@@ -47,8 +61,7 @@ export default function PacientesPage() {
   const from = `${location.pathname}${location.search}`;
   const navState: NavState = { from };
 
-  // ✅ fonte única (seed + storage via mocks)
-  const pacientesBase = useMemo(() => toPacientesRows() as PacienteModel[], []);
+  const pacientesBase = useMemo(() => toPacientesRows() as PacienteRowModel[], []);
 
   const listaFiltrada = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -68,6 +81,7 @@ export default function PacientesPage() {
       });
     }
 
+    // ainda não aplicado (mantém para não quebrar UI)
     void exibindo;
 
     data.sort((a, b) => {
@@ -86,20 +100,41 @@ export default function PacientesPage() {
   const end = Math.min(start + pageSize, total);
   const pageItems = listaFiltrada.slice(start, end);
 
+  function initials(name: string) {
+    const parts = name.trim().split(/\s+/).slice(0, 2);
+    return parts.map((p) => p[0]?.toUpperCase()).join("");
+  }
+
   function onAction(pacienteId: number, action: PacienteMenuAction) {
     setOpenMenuId(null);
 
-    const routes: Record<PacienteMenuAction, string | null> = {
+    // ✅ Nova consulta: navega para Agenda e pede abertura do drawer com paciente travado
+    if (action === "NOVA_CONSULTA") {
+      const paciente = pacientesBase.find((x) => x.id === pacienteId);
+
+      navigate("/agenda", {
+        state: {
+          from: navState.from,
+          novaConsulta: {
+            pacienteId: String(pacienteId),
+            pacienteNome: paciente?.nome ?? "",
+          },
+        },
+      });
+
+      return;
+    }
+
+    const routes: Record<Exclude<PacienteMenuAction, "NOVA_CONSULTA">, string | null> = {
       PRONTUARIO: `/pacientes/${pacienteId}/prontuario`,
+      PRESCRICOES: `/pacientes/${pacienteId}/prescricoes`,
       VER_PERFIL: `/pacientes/${pacienteId}`,
       EDITAR: `/pacientes/${pacienteId}/editar`,
-      NOVA_CONSULTA: `/agenda?pacienteId=${encodeURIComponent(String(pacienteId))}`,
       ENVIAR_MENSAGEM: `/comunicacao?pacienteId=${encodeURIComponent(String(pacienteId))}`,
       ARQUIVAR: null,
     };
 
-    const to = routes[action];
-
+    const to = routes[action as Exclude<PacienteMenuAction, "NOVA_CONSULTA">];
     if (to) {
       navigate(to, { state: navState });
       return;
@@ -112,19 +147,20 @@ export default function PacientesPage() {
     <AppPage
       onClick={() => setOpenMenuId(null)}
       header={
-      <PageHeader
-        title="Pacientes"
-        actions={[
-          {
-            label: "Novo Paciente",
-            icon: "➕",
-            variant: "primary",
-            onClick: () => navigate("/pacientes/novo", { state: navState }),
-          },
-        ]}
-      />
+        <PageHeader
+          title="Pacientes"
+          actions={[
+            {
+              label: "Novo Paciente",
+              icon: "➕",
+              variant: "primary",
+              onClick: () => navigate("/pacientes/novo", { state: navState }),
+            },
+          ]}
+        />
       }
     >
+      <div className="mf-page-content">
         <Panel
           title="Lista de Pacientes"
           icon="👥"
@@ -193,7 +229,7 @@ export default function PacientesPage() {
                   <Th style={{ width: 180 }}>Telefone</Th>
                   <Th style={{ width: 170 }}>Última Consulta</Th>
                   <Th style={{ width: 150 }}>Convênio</Th>
-                  <Th style={{ width: 110 }} align="center">
+                  <Th style={{ width: 180 }} align="right">
                     Ações
                   </Th>
                 </tr>
@@ -201,14 +237,63 @@ export default function PacientesPage() {
 
               <TBody>
                 {pageItems.map((p) => (
-                  <PacientsRow
+                  <Tr
                     key={p.id}
-                    paciente={p}
-                    menuOpen={openMenuId === p.id}
-                    onToggleMenu={(id) => setOpenMenuId((prev) => (prev === id ? null : id))}
-                    onCloseMenu={() => setOpenMenuId(null)}
-                    onAction={onAction}
-                  />
+                    onClick={() => navigate(`/pacientes/${p.id}`, { state: navState })}
+                    ariaLabel={`Abrir perfil de ${p.nome}`}
+                  >
+                    <Td>
+                      <div className="mf-person">
+                        <div className="mf-avatar" aria-hidden="true">
+                          {p.initials ?? initials(p.nome)}
+                        </div>
+                        <span className="mf-person__name">{p.nome}</span>
+                      </div>
+                    </Td>
+
+                    <Td className="mf-mono">{p.telefone}</Td>
+                    <Td className="mf-mono">{p.ultimaConsulta}</Td>
+                    <Td className="mf-muted">{p.convenio}</Td>
+
+                    <Td align="right" onClick={(e) => e.stopPropagation()}>
+                      <div className="mf-row-actions">
+                        <div className="mf-split">
+                          <div className="mf-split__buttons">
+                            <button
+                              type="button"
+                              className="mf-split__main"
+                              onClick={() => onAction(p.id, "PRONTUARIO")}
+                            >
+                              📄 <span>Prontuário</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className="mf-split__caret"
+                              aria-label="Mais ações"
+                              onClick={() => setOpenMenuId((prev) => (prev === p.id ? null : p.id))}
+                            >
+                              ▾
+                            </button>
+                          </div>
+
+                          <RowMenu
+                            open={openMenuId === p.id}
+                            onClose={() => setOpenMenuId(null)}
+                            items={[
+                              { key: "PRESCRICOES", label: "Prescrições" },
+                              { key: "VER_PERFIL", label: "Ver perfil" },
+                              { key: "EDITAR", label: "Editar", tone: "primary" },
+                              { key: "NOVA_CONSULTA", label: "Nova consulta" },
+                              { key: "ENVIAR_MENSAGEM", label: "Enviar mensagem" },
+                              { key: "ARQUIVAR", label: "Arquivar", tone: "danger" },
+                            ]}
+                            onSelect={(key) => onAction(p.id, key as PacienteMenuAction)}
+                          />
+                        </div>
+                      </div>
+                    </Td>
+                  </Tr>
                 ))}
               </TBody>
             </Table>
@@ -257,6 +342,7 @@ export default function PacientesPage() {
             </div>
           </div>
         </Panel>
+      </div>
     </AppPage>
   );
 }

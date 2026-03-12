@@ -1,6 +1,16 @@
 // src/mocks/mappers.ts
-import { getPacientes, getConsultas } from "./db/storage";
+import {
+  getPacientes,
+  getConsultas,
+  getConsultaById as getConsultaByIdFromStorage,
+  updateConsulta,
+  ensureRegistroClinico,
+  getRegistroClinicoByConsultaId,
+  upsertRegistroClinico,
+} from "./db/storage";
+
 import type { PacienteDTO, ConsultaDTO } from "./db/seed";
+import type { RegistroClinicoDTO } from "../mocks/db/registroClinico.seed";
 
 import { statusLabel } from "../domain/ui/statusLabel";
 import { statusTone } from "../domain/ui/statusTone";
@@ -19,7 +29,6 @@ function two(n: number) {
 }
 
 function ddmmyyyy(isoLocal: string): string {
-  // isoLocal esperado: "yyyy-mm-ddTHH:mm"
   const dt = new Date(isoLocal);
   if (Number.isNaN(dt.getTime())) return "—";
   return `${two(dt.getDate())}/${two(dt.getMonth() + 1)}/${dt.getFullYear()}`;
@@ -39,7 +48,6 @@ function datetimeLabel(isoLocal: string): string {
 
 function moneyBRL(v?: number): string {
   if (typeof v !== "number" || Number.isNaN(v)) return "—";
-  // sem Intl pra evitar diferenças de ambiente? pode usar Intl tranquilamente também.
   return `R$ ${v.toFixed(2)}`.replace(".", ",");
 }
 
@@ -94,10 +102,10 @@ export function toAppointmentEvents(): AppointmentEvent[] {
 // =========================
 export type ConsultaItemModel = {
   id: string;
-  hora: string; // "08:00"
+  hora: string;
   paciente: string;
   profissional: string;
-  status: string; // label de UI
+  status: string;
 };
 
 export function toConsultasHojeItems(): ConsultaItemModel[] {
@@ -111,10 +119,7 @@ export function toConsultasHojeItems(): ConsultaItemModel[] {
       const dt = new Date(c.dataHora);
       return dt.getFullYear() === y && dt.getMonth() === m && dt.getDate() === d;
     })
-    .sort(
-      (a: ConsultaDTO, b: ConsultaDTO) =>
-        new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
-    );
+    .sort((a: ConsultaDTO, b: ConsultaDTO) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime());
 
   return consultas.map((c: ConsultaDTO) => ({
     id: c.id,
@@ -143,10 +148,7 @@ export function toPacientesRows(): PacienteRowModel[] {
   function ultimaConsulta(pacienteId: number): string {
     const list = consultas
       .filter((c: ConsultaDTO) => c.pacienteId === pacienteId)
-      .sort(
-        (a: ConsultaDTO, b: ConsultaDTO) =>
-          new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime()
-      );
+      .sort((a: ConsultaDTO, b: ConsultaDTO) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime());
 
     if (!list.length) return "Nunca";
     return ddmmyyyy(list[0].dataHora);
@@ -166,7 +168,7 @@ export function toPacientesRows(): PacienteRowModel[] {
 // =========================
 export type ConsultaRowModel = {
   id: string;
-  dataHoraLabel: string; // "15/02/2026 08:00"
+  dataHoraLabel: string;
   pacienteId: number;
   pacienteNome: string;
   medicoNome: string;
@@ -184,18 +186,13 @@ export type ConsultaRowModel = {
 };
 
 export function getConsultaById(id: string): ConsultaDTO | null {
-  const consultas = getConsultas();
-  const c = consultas.find((x: ConsultaDTO) => x.id === id);
-  return c ?? null;
+  return getConsultaByIdFromStorage(id);
 }
 
 export function toConsultasRows(): ConsultaRowModel[] {
   const consultas = getConsultas()
     .slice()
-    .sort(
-      (a: ConsultaDTO, b: ConsultaDTO) =>
-        new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime()
-    );
+    .sort((a: ConsultaDTO, b: ConsultaDTO) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime());
 
   return consultas.map((c: ConsultaDTO) => ({
     id: c.id,
@@ -263,7 +260,79 @@ export function toConsultaDetailsModel(id: string): ConsultaDetailsModel | null 
 }
 
 // =========================
-// Prontuário (centralizado)
+// Atendimento (Registro Clínico) - NOVO
+// =========================
+export function iniciarAtendimento(consultaId: string): boolean {
+  const c = getConsultaById(consultaId);
+  if (!c) return false;
+  if (c.status === "CANCELADA" || c.status === "CONCLUIDA") return false;
+
+  // garante que exista registro
+  ensureRegistroClinico(consultaId);
+
+  // muda status
+  updateConsulta(consultaId, { status: "EM_ATENDIMENTO" });
+  return true;
+}
+
+export function finalizarAtendimento(consultaId: string): boolean {
+  const c = getConsultaById(consultaId);
+  if (!c) return false;
+  if (c.status === "CANCELADA") return false;
+
+  updateConsulta(consultaId, { status: "CONCLUIDA" });
+  return true;
+}
+
+export function getRegistroClinico(consultaId: string): RegistroClinicoDTO {
+  return getRegistroClinicoByConsultaId(consultaId) ?? ensureRegistroClinico(consultaId);
+}
+
+export function salvarRegistroClinico(dto: RegistroClinicoDTO): RegistroClinicoDTO {
+  return upsertRegistroClinico(dto);
+}
+
+// =========================
+// Atendimento (model para tela)
+// =========================
+export type AtendimentoModel = {
+  consultaId: string;
+
+  pacienteId: number;
+  pacienteNome: string;
+
+  medicoNome: string;
+  dataHora: string;
+  dataHoraLabel: string;
+
+  tipo: ConsultaDTO["tipo"];
+  status: ConsultaDTO["status"];
+
+  registro: RegistroClinicoDTO;
+};
+
+export function toAtendimentoModel(consultaId: string): AtendimentoModel | null {
+  const c = getConsultaById(consultaId);
+  if (!c) return null;
+
+  const registro =
+    getRegistroClinicoByConsultaId(consultaId) ?? ensureRegistroClinico(consultaId);
+
+  return {
+    consultaId: c.id,
+    pacienteId: c.pacienteId,
+    pacienteNome: pacienteNomeById(c.pacienteId),
+    medicoNome: c.medicoNome,
+    dataHora: c.dataHora,
+    dataHoraLabel: datetimeLabel(c.dataHora),
+    tipo: c.tipo,
+    status: c.status,
+    registro,
+  };
+}
+
+// =========================
+// Prontuário (agora REAL: vem do Registro Clínico)
 // =========================
 export type ProntuarioDiagnostico = {
   codigo?: string;
@@ -286,14 +355,17 @@ export type ProntuarioExame = {
 
 export type ProntuarioConsulta = {
   id: string;
-  dataHora: string; // ISO
+  dataHora: string;
   medicoNome: string;
   motivo: string;
+
   anamnese?: string;
   exameFisico?: string;
+
   diagnosticos: ProntuarioDiagnostico[];
   medicacoes: ProntuarioMedicacao[];
   exames: ProntuarioExame[];
+
   observacoesGerais?: string;
 };
 
@@ -305,74 +377,6 @@ export type ProntuarioPaciente = {
   consultas: ProntuarioConsulta[];
 };
 
-// Catálogo opcional de detalhes por consulta.
-// Se não tiver entrada, a consulta aparece com arrays vazios e só motivo/data/médico.
-const prontuarioDetalhesPorConsultaId: Record<
-  string,
-  Omit<ProntuarioConsulta, "id" | "dataHora" | "medicoNome" | "motivo">
-> = {
-  "c-1902": {
-    anamnese:
-      "Refere dor lombar com piora ao permanecer sentado. Nega febre. Sem irradiação para membros inferiores.",
-    exameFisico:
-      "Dor à palpação paravertebral lombar. Lasègue negativo. Força preservada.",
-    diagnosticos: [
-      { codigo: "M54.5", descricao: "Dor lombar baixa" },
-      { descricao: "Contratura muscular lombar" },
-    ],
-    medicacoes: [
-      { nome: "Dipirona", dose: "500 mg", posologia: "1 comprimido a cada 8h se dor", duracao: "5 dias" },
-      {
-        nome: "Ciclobenzaprina",
-        dose: "5 mg",
-        posologia: "1 comprimido à noite",
-        duracao: "7 dias",
-        observacoes: "Pode causar sonolência.",
-      },
-    ],
-    exames: [
-      { nome: "Raio-X coluna lombar", status: "SOLICITADO" },
-      { nome: "Hemograma completo", status: "SOLICITADO" },
-    ],
-    observacoesGerais: "Orientado alongamento e retorno em 7 dias.",
-  },
-  "c-1701": {
-    diagnosticos: [{ codigo: "I10", descricao: "Hipertensão essencial (primária)" }],
-    medicacoes: [
-      { nome: "Losartana", dose: "50 mg", posologia: "1 comprimido pela manhã", duracao: "Uso contínuo" },
-    ],
-    exames: [
-      { nome: "Creatinina e ureia", status: "SOLICITADO" },
-      { nome: "Potássio sérico", status: "SOLICITADO" },
-      { nome: "Eletrocardiograma", status: "SOLICITADO" },
-    ],
-    observacoesGerais: "Manter medidas de estilo de vida. Retorno em 3 meses.",
-  },
-  "c-0901": {
-    diagnosticos: [{ descricao: "Faringoamigdalite aguda" }],
-    medicacoes: [
-      { nome: "Amoxicilina", dose: "500 mg", posologia: "1 cápsula a cada 8h", duracao: "10 dias" },
-      { nome: "Ibuprofeno", dose: "400 mg", posologia: "1 comprimido a cada 8h se dor/febre", duracao: "3 dias" },
-    ],
-    exames: [{ nome: "Teste rápido para estreptococo", status: "REALIZADO" }],
-    observacoesGerais: "Hidratação e repouso vocal. Retorno se piora.",
-  },
-};
-
-function emptyDetalhes(): Omit<
-  ProntuarioConsulta,
-  "id" | "dataHora" | "medicoNome" | "motivo"
-> {
-  return {
-    anamnese: undefined,
-    exameFisico: undefined,
-    diagnosticos: [],
-    medicacoes: [],
-    exames: [],
-    observacoesGerais: undefined,
-  };
-}
-
 export function getProntuarioByPacienteId(pacienteId: number): ProntuarioPaciente | null {
   const pacientes = getPacientes();
   const consultas = getConsultas();
@@ -382,24 +386,39 @@ export function getProntuarioByPacienteId(pacienteId: number): ProntuarioPacient
 
   const list = consultas
     .filter((c: ConsultaDTO) => c.pacienteId === pacienteId)
-    .sort(
-      (a: ConsultaDTO, b: ConsultaDTO) =>
-        new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime()
-    );
+    .slice()
+    .sort((a: ConsultaDTO, b: ConsultaDTO) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime());
 
   const prontuarioConsultas: ProntuarioConsulta[] = list.map((c: ConsultaDTO) => {
-    const detalhes = prontuarioDetalhesPorConsultaId[c.id] ?? emptyDetalhes();
+    const reg = getRegistroClinicoByConsultaId(c.id);
+
+    // mantém compatibilidade com o teu tipo antigo:
+    // diagnosticos vira array (mesmo que venha texto livre)
+    const diagnosticos: ProntuarioDiagnostico[] =
+      reg?.diagnostico && reg.diagnostico.trim()
+        ? [{ descricao: reg.diagnostico.trim() }]
+        : [];
+
+    // medicações/exames ainda não estruturados no mock → mantém vazio
+    const medicacoes: ProntuarioMedicacao[] = [];
+    const exames: ProntuarioExame[] = [];
+
+    // junta observações + prescrição texto no campo que sua UI já sabe renderizar
+    const obsParts: string[] = [];
+    if (reg?.observacoes?.trim()) obsParts.push(reg.observacoes.trim());
+    if (reg?.prescricaoTexto?.trim()) obsParts.push(`Prescrição:\n${reg.prescricaoTexto.trim()}`);
 
     return {
       id: c.id,
       dataHora: c.dataHora,
       medicoNome: c.medicoNome,
       motivo: c.motivo ?? "—",
-      ...detalhes,
-      // garante arrays sempre presentes
-      diagnosticos: detalhes.diagnosticos ?? [],
-      medicacoes: detalhes.medicacoes ?? [],
-      exames: detalhes.exames ?? [],
+      anamnese: reg?.anamnese || undefined,
+      exameFisico: reg?.exameFisico || undefined,
+      diagnosticos,
+      medicacoes,
+      exames,
+      observacoesGerais: obsParts.length ? obsParts.join("\n\n") : undefined,
     };
   });
 

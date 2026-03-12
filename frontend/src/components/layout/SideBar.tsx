@@ -17,8 +17,8 @@ const items: NavItem[] = [
   { to: "/pacientes", label: "Pacientes", roles: ["MEDICO", "SECRETARIA", "ADMIN"] },
 
   { to: "/consultas", label: "Consultas", roles: ["MEDICO"] },
-  { to: "/prescricoes", label: "Prescrições", roles: ["MEDICO"] },
-    { to: "/pendencias", label: "Pendências", roles: ["MEDICO"] },
+  
+  { to: "/pendencias", label: "Pendências", roles: ["MEDICO"] },
 
   { to: "/confirmacoes", label: "Confirmações", roles: ["SECRETARIA"] },
   { to: "/atendimento", label: "Atendimento", roles: ["SECRETARIA"] },

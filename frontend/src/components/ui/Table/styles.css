@@ -139,3 +139,7 @@
   outline: 0;
   box-shadow: 0 0 0 4px rgba(24, 198, 232, 0.22);
 }
+
+.mf-tr--clickable{
+  cursor: pointer;
+}

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { AppointmentEvent } from "../../views/pages/Agenda/Types";
+import type { AppointmentEvent } from "../../views/pages/Agenda/types";
 import type { ConsultaDraft } from "./AppointmentDetailDrawer";
 
 type Mode = "create" | "edit";
@@ -20,6 +20,7 @@ type Controller = {
   drawerKey: string;
 
   openCreate: () => void;
+  openCreateForPaciente: (pacienteId: string, pacienteNome: string) => void;
   openEditFromEvent: (ev: AppointmentEvent) => void;
   close: () => void;
 
@@ -54,6 +55,18 @@ export function useConsultaDrawerController(params: Params): Controller {
     setOpen(true);
   }
 
+  function openCreateForPaciente(pacienteId: string, pacienteNome: string) {
+  setMode("create");
+  setEditingEventId(null);
+
+  const d = emptyDraft(doctorId, doctorName);
+  d.pacienteId = pacienteId;
+  d.pacienteNome = pacienteNome;
+
+  setValue(d);
+  setOpen(true);
+}
+
   const drawerKey = useMemo(() => {
     const suffix = value?.dataHora ?? "x";
     return mode === "create"
@@ -62,14 +75,15 @@ export function useConsultaDrawerController(params: Params): Controller {
   }, [mode, editingEventId, value?.dataHora]);
 
   return {
-    open,
-    mode,
-    value,
-    editingEventId,
-    drawerKey,
-    openCreate,
-    openEditFromEvent,
-    close,
-    setValue,
-  };
+  open,
+  mode,
+  value,
+  editingEventId,
+  drawerKey,
+  openCreate,
+  openCreateForPaciente,  // ✅ ADD
+  openEditFromEvent,
+  close,
+  setValue,
+};
 }

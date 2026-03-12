@@ -35,12 +35,6 @@ display:grid;
   color: var(--mf-text);
 }
 
-.patient-overview-card{
-  padding: 18px 18px;
-}
-
-
-
 /* Subinformações mais suaves */
 .patient-overview-card span {
   color: var(--mf-muted);
