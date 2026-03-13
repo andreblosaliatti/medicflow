@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.controllers;
 
+import com.inflowia.medicflow.dto.paciente.PacienteMinDTO;
 import com.inflowia.medicflow.entities.paciente.Paciente;
 import com.inflowia.medicflow.repositories.PacienteRepository;
 
@@ -52,7 +53,7 @@ void deveListarPacientesAtivosComSucesso() {
 
     assertNotNull(pacientes);
     assertEquals(1, pacientes.getContent().size());
-    assertEquals("João da Silva", pacientes.getContent().get(0).nome());
+    assertEquals("João da Silva", pacientes.getContent().get(0).getNomeCompleto());
 }
 
     @Test

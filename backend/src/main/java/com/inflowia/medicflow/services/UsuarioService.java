@@ -1,16 +1,17 @@
 package com.inflowia.medicflow.services;
 
-import com.inflowia.medicflow.dto.usuario.*;
+import com.inflowia.medicflow.dto.usuario.DadosAtualizacaoUsuario;
+import com.inflowia.medicflow.dto.usuario.DadosCadastroUsuario;
+import com.inflowia.medicflow.dto.usuario.DadosDetalhamentoUsuario;
+import com.inflowia.medicflow.dto.usuario.DadosListagemUsuario;
 import com.inflowia.medicflow.entities.usuario.Role;
 import com.inflowia.medicflow.entities.usuario.Usuario;
 import com.inflowia.medicflow.repositories.RoleRepository;
 import com.inflowia.medicflow.repositories.UsuarioRepository;
 import com.inflowia.medicflow.services.exceptions.DatabaseException;
 import com.inflowia.medicflow.services.exceptions.ResourceNotFoundException;
-
 import jakarta.persistence.EntityNotFoundException;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,16 +23,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository repository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired(required = false)
-    private PasswordEncoder passwordEncoder;
+    private final UsuarioRepository repository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public Page<DadosListagemUsuario> findAllPaged(String nome, Pageable pageable) {
@@ -58,7 +55,7 @@ public class UsuarioService {
         Usuario entity = new Usuario();
 
         entity.setLogin(dto.getLogin());
-        entity.setSenha(passwordEncoder != null ? passwordEncoder.encode(dto.getSenha()) : dto.getSenha());
+        entity.setSenha(passwordEncoder.encode(dto.getSenha()));
         entity.setNome(dto.getNome());
         entity.setSobrenome(dto.getSobrenome());
         entity.setEmail(dto.getEmail());
@@ -70,10 +67,10 @@ public class UsuarioService {
         }
 
         if (dto.getRoles() != null) {
-            Set<Role> roles =
-                    dto.getRoles().stream()
-                            .map(r -> roleRepository.getReferenceById(r.getId()))
-                            .collect(Collectors.toSet());
+            Set<Role> roles = dto.getRoles()
+                    .stream()
+                    .map(r -> roleRepository.getReferenceById(r.getId()))
+                    .collect(Collectors.toSet());
             entity.setRoles(roles);
         }
 

@@ -9,8 +9,6 @@ import com.inflowia.medicflow.repositories.ConsultaRepository;
 import com.inflowia.medicflow.repositories.MedicoRepository;
 import com.inflowia.medicflow.services.exceptions.DatabaseException;
 import com.inflowia.medicflow.services.exceptions.ResourceNotFoundException;
-import jakarta.validation.ConstraintViolationException;
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
