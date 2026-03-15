@@ -81,9 +81,11 @@ public class Consulta {
     @JoinColumn(name = "medico_id")
     private Medico medico;
 
+    @Builder.Default
     @OneToMany(mappedBy = "consulta")
     private List<MedicamentoPrescrito> medicamentoPrescrito = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "consulta")
     private List<ExameSolicitado> exameSolicitado = new ArrayList<>();
 

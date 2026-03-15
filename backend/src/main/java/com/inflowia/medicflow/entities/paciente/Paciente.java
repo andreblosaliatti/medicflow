@@ -48,6 +48,7 @@ public class Paciente {
     @Builder.Default
     private boolean ativo = true;
 
+    @Builder.Default
     @OneToMany(mappedBy = "paciente")
     private List<Consulta> consultas = new ArrayList<>();
 

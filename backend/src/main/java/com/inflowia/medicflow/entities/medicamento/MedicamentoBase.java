@@ -27,6 +27,7 @@ public class MedicamentoBase {
     private String codigoATC;
 
     @OneToMany(mappedBy = "medicamentoBase")
+    @Builder.Default
     private List<MedicamentoPrescrito> medicamentoPrescrito = new ArrayList<>();
 
 }
