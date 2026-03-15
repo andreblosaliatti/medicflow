@@ -13,7 +13,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,7 +48,9 @@ class UsuarioServiceTest {
         service.insert(dto);
 
         ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+        verify(passwordEncoder, times(1)).encode("plain123");
         verify(repository).save(captor.capture());
         assertEquals("encoded", captor.getValue().getSenha());
+        assertNotEquals("plain123", captor.getValue().getSenha());
     }
 }

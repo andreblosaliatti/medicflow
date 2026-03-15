@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,10 +31,14 @@ public class MedicoService {
     @Autowired
     private ConsultaRepository consultaRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Transactional
     public MedicoDetailsDTO cadastrar(MedicoDTO dto) {
         // aqui você poderia validar duplicidade de CRM, email, etc
         Medico medico = dto.toEntity();
+        medico.setSenha(passwordEncoder.encode(dto.getSenha()));
         Medico salvo = repository.save(medico);
         return new MedicoDetailsDTO(salvo);
     }
