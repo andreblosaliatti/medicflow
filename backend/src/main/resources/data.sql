@@ -79,6 +79,7 @@ INSERT INTO tb_usuario_role (usuario_id, role_id)
 VALUES (
     (SELECT id FROM tb_usuarios WHERE login = 'paciente01'),
     (SELECT id FROM tb_role WHERE authority = 'ROLE_PACIENTE')
+    );
 
 -- =====================================================================
 -- MÉDICOS — TABELA medicos
