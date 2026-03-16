@@ -14,17 +14,17 @@ public class MedicamentoPrescritoDTO {
 
     @NotNull(message = "Campo obrigatório")
     @Positive(message = "O medicamento base id deve ser um inteiro positivo")
-     Long medicamentoBaseId;
+    private Long medicamentoBaseId;
 
     @NotBlank(message = "Campo obrigatório")
-     String nome;
+    private String nome;
 
     @NotBlank(message = "Campo obrigatório")
-     String dosagem;
+    private String dosagem;
 
     @NotBlank(message = "Campo obrigatório")
-     String frequencia;
+    private String frequencia;
 
     @NotBlank(message = "Campo obrigatório")
-     String via;
+    private String via;
 }

@@ -8,11 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface MedicamentoPrescritoRepository extends JpaRepository<MedicamentoPrescrito, Long> {
 
-    Page<MedicamentoPrescrito> findByConsultaPacienteId(Long pacienteId, Pageable pageable);
+    Page<MedicamentoPrescrito> findAllByConsultaId(Long consultaId, Pageable pageable);
 
-    Page<MedicamentoPrescrito> findByConsultaId(Long consultaId, Pageable pageable);
+    Page<MedicamentoPrescrito> findAllByConsultaPacienteId(Long pacienteId, Pageable pageable);
 
-    @Query("SELECT obj FROM MedicamentoPrescrito obj " +
-            "WHERE UPPER(obj.nome) LIKE UPPER(CONCAT('%', :nome, '%'))")
+    @Query("""
+            SELECT obj
+            FROM MedicamentoPrescrito obj
+            WHERE UPPER(obj.nome) LIKE UPPER(CONCAT('%', :nome, '%'))
+            """)
     Page<MedicamentoPrescrito> searchByName(String nome, Pageable pageable);
 }
