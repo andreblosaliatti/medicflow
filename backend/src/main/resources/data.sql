@@ -625,38 +625,24 @@ VALUES
 
 
 -- ---------------------------------------------------------------------
-
-INSERT INTO medicamento_base (id, nome_comercial)
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Paracetamol 750mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Ibuprofeno 200mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Dipirona 500mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Amoxicilina 500mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Azitromicina 500mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Loratadina 10mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Prednisona 20mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Omeprazol 20mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Ranitidina 150mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Ondansetrona 8mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Losartana 50mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Hidroclorotiazida 25mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Metformina 850mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Glibenclamida 5mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Atorvastatina 20mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Sinvastatina 20mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'AAS 100mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Clopidogrel 75mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Salbutamol Spray' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Budesonida Inalatória' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Cetirizina 10mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Naproxeno 250mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Cefalexina 500mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Ciprofloxacino 500mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Fluconazol 150mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Diclofenaco 50mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Amoxicilina+Clav 875/125' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Albendazol 400mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Dexametasona 4mg' UNION ALL
-SELECT NEXT VALUE FOR medicamento_base_seq, 'Furosemida 40mg';
+INSERT INTO medicamento_base
+(id, nome_comercial, principio_ativo, dcb, forma_farmaceutica, dosagem_padrao, concentracao, via_administracao, ativo, controlado, codigo_atc, registro_anvisa, fabricante)
+VALUES
+(nextval('medicamento_base_seq'), 'Paracetamol 750mg', 'Paracetamol', 'Paracetamol', 'Comprimido', '750 mg', '750 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Ibuprofeno 200mg', 'Ibuprofeno', 'Ibuprofeno', 'Comprimido', '200 mg', '200 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Dipirona 500mg', 'Dipirona Monoidratada', 'Dipirona Monoidratada', 'Comprimido', '500 mg', '500 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Amoxicilina 500mg', 'Amoxicilina', 'Amoxicilina', 'Cápsula', '500 mg', '500 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Azitromicina 500mg', 'Azitromicina', 'Azitromicina', 'Comprimido', '500 mg', '500 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Loratadina 10mg', 'Loratadina', 'Loratadina', 'Comprimido', '10 mg', '10 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Omeprazol 20mg', 'Omeprazol', 'Omeprazol', 'Cápsula', '20 mg', '20 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Ondansetrona 8mg', 'Ondansetrona', 'Ondansetrona', 'Comprimido', '8 mg', '8 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Losartana 50mg', 'Losartana Potássica', 'Losartana Potássica', 'Comprimido', '50 mg', '50 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Metformina 850mg', 'Metformina', 'Cloridrato de Metformina', 'Comprimido', '850 mg', '850 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Salbutamol Spray', 'Salbutamol', 'Sulfato de Salbutamol', 'Aerossol', '100 mcg/dose', '100 mcg/dose', 'Inalatória', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Budesonida Inalatória', 'Budesonida', 'Budesonida', 'Suspensão inalatória', '200 mcg/dose', '200 mcg/dose', 'Inalatória', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Cetirizina 10mg', 'Cetirizina', 'Dicloridrato de Cetirizina', 'Comprimido', '10 mg', '10 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Cefalexina 500mg', 'Cefalexina', 'Cefalexina', 'Cápsula', '500 mg', '500 mg', 'VO', true, false, NULL, NULL, NULL),
+(nextval('medicamento_base_seq'), 'Ciprofloxacino 500mg', 'Ciprofloxacino', 'Cloridrato de Ciprofloxacino', 'Comprimido', '500 mg', '500 mg', 'VO', true, false, NULL, NULL, NULL);
 
 -- ---------------------------------------------------------------------
 

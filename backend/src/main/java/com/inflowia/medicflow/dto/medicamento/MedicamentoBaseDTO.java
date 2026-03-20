@@ -16,9 +16,9 @@ public class MedicamentoBaseDTO {
         id =  m.getId();
         dcb = m.getDcb();
         nomeComercial = m.getNomeComercial();
-        principioAtivo = m.getPricipioAtivo();
+        principioAtivo = m.getPrincipioAtivo();
         formaFarmaceutica = m.getFormaFarmaceutica();
-        dosagemPadrao = m.getDosagemPadrão();
+        dosagemPadrao = m.getDosagemPadrao();
         viaAdministracao = m.getViaAdministracao();
     }
 }
