@@ -29,7 +29,7 @@ public class MedicamentoService {
     private ConsultaRepository consultaRepository;
 
     @Autowired
-    private MedicamentoPrescritoRepository medicamentoRepository;
+    private MedicamentoPrescritoRepository medicamentoPrescritoRepository;
 
     @Autowired
     private MedicamentoBaseRepository medicamentoBaseRepository;
@@ -43,7 +43,9 @@ public class MedicamentoService {
             throw new ResourceNotFoundException("Consulta não encontrada");
         }
 
-        Page<MedicamentoPrescrito> page = medicamentoRepository.findAllByConsultaId(consultaId, pageable);
+        Page<MedicamentoPrescrito> page =
+                medicamentoPrescritoRepository.findAllByConsultaId(consultaId, pageable);
+
         return page.map(MedicamentoPrescritoMinDTO::new);
     }
 
@@ -53,21 +55,28 @@ public class MedicamentoService {
             throw new ResourceNotFoundException("Paciente não encontrado");
         }
 
-        Page<MedicamentoPrescrito> page = medicamentoRepository.findAllByConsultaPacienteId(pacienteId, pageable);
+        Page<MedicamentoPrescrito> page =
+                medicamentoPrescritoRepository.findAllByConsultaPacienteId(pacienteId, pageable);
+
         return page.map(MedicamentoPrescritoMinDTO::new);
     }
 
     @Transactional(readOnly = true)
     public MedicamentoPrescritoMinDTO findById(Long id) {
-        Optional<MedicamentoPrescrito> obj = medicamentoRepository.findById(id);
-        MedicamentoPrescrito entity = obj.orElseThrow(() -> new ResourceNotFoundException("Medicamento não encontrado"));
+        Optional<MedicamentoPrescrito> obj = medicamentoPrescritoRepository.findById(id);
+
+        MedicamentoPrescrito entity =
+                obj.orElseThrow(() -> new ResourceNotFoundException("Medicamento não encontrado"));
+
         return new MedicamentoPrescritoMinDTO(entity);
     }
 
     @Transactional(readOnly = true)
     public Page<MedicamentoPrescritoMinDTO> buscaPorNome(String nome, Pageable pageable) {
-        Page<MedicamentoPrescrito> medicamento = medicamentoRepository.searchByName(nome, pageable);
-        return medicamento.map(MedicamentoPrescritoMinDTO::new);
+        Page<MedicamentoPrescrito> page =
+                medicamentoPrescritoRepository.searchByName(nome, pageable);
+
+        return page.map(MedicamentoPrescritoMinDTO::new);
     }
 
     @Transactional(readOnly = true)
@@ -88,44 +97,75 @@ public class MedicamentoService {
 
     @Transactional
     public MedicamentoPrescritoMinDTO adicionarMedicamento(Long consultaId, MedicamentoPrescritoDTO dados) {
+
         Consulta consulta = consultaRepository.findById(consultaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada"));
 
+        if (dados.getMedicamentoBaseId() == null &&
+                (dados.getNome() == null || dados.getNome().isBlank())) {
+            throw new IllegalArgumentException("Informe o medicamento (nome ou base)");
+        }
+
+        if (dados.getDosagem() == null || dados.getDosagem().isBlank()) {
+            throw new IllegalArgumentException("Dosagem é obrigatória");
+        }
+
+        if (dados.getFrequencia() == null || dados.getFrequencia().isBlank()) {
+            throw new IllegalArgumentException("Frequência é obrigatória");
+        }
+
+        if (dados.getVia() == null || dados.getVia().isBlank()) {
+            throw new IllegalArgumentException("Via é obrigatória");
+        }
+
         MedicamentoBase base = null;
+
         if (dados.getMedicamentoBaseId() != null) {
             base = medicamentoBaseRepository.findById(dados.getMedicamentoBaseId())
                     .orElseThrow(() -> new ResourceNotFoundException("Medicamento base não encontrado"));
         }
 
+        String nome = dados.getNome();
+
+        if (base != null) {
+            nome = base.getPrincipioAtivo() != null
+                    ? base.getPrincipioAtivo()
+                    : base.getNomeComercial();
+        }
+
         MedicamentoPrescrito prescrito = MedicamentoPrescrito.builder()
                 .medicamentoBase(base)
-                .nome(dados.getNome())
+                .nome(nome)
                 .dosagem(dados.getDosagem())
                 .frequencia(dados.getFrequencia())
                 .via(dados.getVia())
                 .consulta(consulta)
                 .build();
 
+        // mantém consistência da relação
         consulta.getMedicamentoPrescrito().add(prescrito);
-        MedicamentoPrescrito salvo = medicamentoRepository.save(prescrito);
+
+        MedicamentoPrescrito salvo = medicamentoPrescritoRepository.save(prescrito);
 
         return new MedicamentoPrescritoMinDTO(salvo);
     }
 
     @Transactional(readOnly = true)
     public Page<MedicamentoPrescritoMinDTO> findAll(Pageable pageable) {
-        Page<MedicamentoPrescrito> page = medicamentoRepository.findAll(pageable);
+        Page<MedicamentoPrescrito> page =
+                medicamentoPrescritoRepository.findAll(pageable);
+
         return page.map(MedicamentoPrescritoMinDTO::new);
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id) {
-        if (!medicamentoRepository.existsById(id)) {
+        if (!medicamentoPrescritoRepository.existsById(id)) {
             throw new ResourceNotFoundException("Medicamento não encontrado");
         }
 
         try {
-            medicamentoRepository.deleteById(id);
+            medicamentoPrescritoRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException("Falha de integridade referencial");
         }

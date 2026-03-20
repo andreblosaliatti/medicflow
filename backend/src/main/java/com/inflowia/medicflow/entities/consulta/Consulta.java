@@ -82,7 +82,7 @@ public class Consulta {
     private Medico medico;
 
     @Builder.Default
-    @OneToMany(mappedBy = "consulta")
+    @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MedicamentoPrescrito> medicamentoPrescrito = new ArrayList<>();
 
     @Builder.Default

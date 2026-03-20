@@ -17,23 +17,23 @@ public class MedicamentoPrescrito {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "nome_prescrito", nullable = false)
     private String nome;
 
-    @Column(nullable = false)
+    @Column(name = "dosagem_prescrita", nullable = false)
     private String dosagem;
 
-    @Column(nullable = false)
+    @Column(name = "frequencia")
     private String frequencia;
 
-    @Column(nullable = false)
+    @Column(name = "via")
     private String via;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "consulta_id", nullable = false)
     private Consulta consulta;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "medicamento_base_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "medicamento_base_id", nullable = false)
     private MedicamentoBase medicamentoBase;
 }
