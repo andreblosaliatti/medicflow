@@ -36,10 +36,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(7);
 
         try {
-            String login = jwtService.extractUsername(jwt);
+            String username = jwtService.extractUsername(jwt);
 
-            if (login != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(login);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken =
@@ -53,8 +53,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        } catch (Exception ignored) {
-            // token inválido segue sem autenticação; a cadeia devolverá 401 nos endpoints protegidos
+
+        } catch (Exception e) {
+            // aqui eu NÃO deixaria vazio
+            // mas também não vou travar request por causa de token inválido
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);

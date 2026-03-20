@@ -30,7 +30,6 @@ public class MedicoService {
 
     @Transactional
     public MedicoDetailsDTO cadastrar(MedicoDTO dto) {
-        // aqui você poderia validar duplicidade de CRM, email, etc
         Medico medico = dto.toEntity();
         Medico salvo = repository.save(medico);
         return new MedicoDetailsDTO(salvo);
@@ -41,7 +40,6 @@ public class MedicoService {
         Page<Medico> page = repository.findAll(pageable);
         return page.map(MedicoMinDTO::new);
     }
-
 
     @Transactional(readOnly = true)
     public MedicoDetailsDTO buscarPorId(Long id) {

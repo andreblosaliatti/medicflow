@@ -83,6 +83,10 @@ public class DadosDetalhamentoUsuario {
         return cpf;
     }
 
+    public Set<RoleDTO> getRoles() {
+        return roles;
+    }
+
     public boolean isAtivo() {
         return ativo;
     }

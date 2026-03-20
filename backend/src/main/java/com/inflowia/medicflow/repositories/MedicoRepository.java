@@ -4,6 +4,7 @@ import com.inflowia.medicflow.entities.usuario.Medico;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,4 +24,7 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
     Page<Medico> findByAtivoTrue(Pageable pageable);
 
     Page<Medico> findByAtivoFalse(Pageable pageable);
+
+    @Query("SELECT DISTINCT m FROM Medico m LEFT JOIN FETCH m.consultasMedico c LEFT JOIN FETCH c.paciente")
+    List<Medico> findAllWithConsultasAndPacientes();
 }

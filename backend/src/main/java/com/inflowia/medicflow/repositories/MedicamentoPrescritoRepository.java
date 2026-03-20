@@ -8,9 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface MedicamentoPrescritoRepository extends JpaRepository<MedicamentoPrescrito, Long> {
 
-    Page<MedicamentoPrescrito> findAllByConsultaId(Long consultaId, Pageable pageable);
+    Page<MedicamentoPrescrito> findByConsultaPacienteId(Long pacienteId, Pageable pageable);
 
-    Page<MedicamentoPrescrito> findAllByConsultaPacienteId(Long pacienteId, Pageable pageable);
+    Page<MedicamentoPrescrito> findByConsultaId(Long consultaId, Pageable pageable);
 
     @Query("""
             SELECT obj

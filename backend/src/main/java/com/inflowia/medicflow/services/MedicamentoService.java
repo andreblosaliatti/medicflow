@@ -44,7 +44,7 @@ public class MedicamentoService {
         }
 
         Page<MedicamentoPrescrito> page =
-                medicamentoPrescritoRepository.findAllByConsultaId(consultaId, pageable);
+                medicamentoPrescritoRepository.findByConsultaId(consultaId, pageable);
 
         return page.map(MedicamentoPrescritoMinDTO::new);
     }
@@ -56,7 +56,7 @@ public class MedicamentoService {
         }
 
         Page<MedicamentoPrescrito> page =
-                medicamentoPrescritoRepository.findAllByConsultaPacienteId(pacienteId, pageable);
+                medicamentoPrescritoRepository.findByConsultaPacienteId(pacienteId, pageable);
 
         return page.map(MedicamentoPrescritoMinDTO::new);
     }
@@ -142,7 +142,6 @@ public class MedicamentoService {
                 .consulta(consulta)
                 .build();
 
-        // mantém consistência da relação
         consulta.getMedicamentoPrescrito().add(prescrito);
 
         MedicamentoPrescrito salvo = medicamentoPrescritoRepository.save(prescrito);

@@ -85,7 +85,7 @@ public class ConsultaService {
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id){
         if(!consultaRepository.existsById(id)){
-            throw new ResourceNotFoundException("Recurso encontrado");
+            throw new ResourceNotFoundException("Recurso não encontrado");
         }
         try {
             consultaRepository.deleteById(id);
