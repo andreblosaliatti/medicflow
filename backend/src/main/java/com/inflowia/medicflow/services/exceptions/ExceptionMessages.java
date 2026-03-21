@@ -14,6 +14,12 @@ public final class ExceptionMessages {
     public static final String ROUTE_REQUIRED = "A via de administração do medicamento é obrigatória.";
     public static final String NO_CONSULTATIONS_FOR_PATIENT = "Nenhuma consulta encontrada para o paciente informado.";
     public static final String NO_PATIENT_CONSULTATIONS = "O paciente informado não possui consultas.";
+    public static final String TELECONSULTATION_LINK_REQUIRED = "Teleconsultas devem informar um link de acesso.";
+    public static final String PAYMENT_DATE_REQUIRED = "Consultas pagas devem informar a data do pagamento.";
+    public static final String PAYMENT_DATE_NOT_ALLOWED = "Consultas não pagas não devem informar data de pagamento.";
+    public static final String PAID_CONSULTATION_INVALID_STATUS = "Consultas pagas só podem estar com status CONFIRMADA, EM_ATENDIMENTO ou CONCLUIDA.";
+    public static final String CANCELED_CONSULTATION_PRESCRIPTION_NOT_ALLOWED = "Consultas canceladas não podem receber prescrição.";
+    public static final String CANCELED_CONSULTATION_MEDICATION_NOT_ALLOWED = "Não é possível adicionar medicamentos a uma consulta cancelada.";
 
     private ExceptionMessages() {
     }

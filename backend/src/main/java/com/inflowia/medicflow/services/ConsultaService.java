@@ -12,6 +12,7 @@ import com.inflowia.medicflow.repositories.ConsultaRepository;
 import com.inflowia.medicflow.repositories.MedicoRepository;
 import com.inflowia.medicflow.repositories.PacienteRepository;
 import com.inflowia.medicflow.services.exceptions.BusinessRuleException;
+import com.inflowia.medicflow.services.validation.ConsultaDomainValidator;
 import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
 import com.inflowia.medicflow.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,13 +32,16 @@ public class ConsultaService {
     private final ConsultaRepository consultaRepository;
     private final PacienteRepository pacienteRepository;
     private final MedicoRepository medicoRepository;
+    private final ConsultaDomainValidator consultaDomainValidator;
 
     public ConsultaService(ConsultaRepository consultaRepository,
                            PacienteRepository pacienteRepository,
-                           MedicoRepository medicoRepository) {
+                           MedicoRepository medicoRepository,
+                           ConsultaDomainValidator consultaDomainValidator) {
         this.consultaRepository = consultaRepository;
         this.pacienteRepository = pacienteRepository;
         this.medicoRepository = medicoRepository;
+        this.consultaDomainValidator = consultaDomainValidator;
     }
 
     @Transactional
@@ -50,6 +54,7 @@ public class ConsultaService {
 
         Consulta entity = new Consulta();
         copyCreateDtoToEntity(dto, entity, paciente, medico);
+        consultaDomainValidator.validate(entity);
 
         entity = consultaRepository.save(entity);
         return new ConsultaDetailsDTO(entity);
@@ -74,6 +79,7 @@ public class ConsultaService {
             }
 
             copyUpdateDtoToEntity(dto, entity, paciente, medico);
+            consultaDomainValidator.validate(entity);
 
             entity = consultaRepository.save(entity);
             return new ConsultaDetailsDTO(entity);

@@ -12,7 +12,7 @@ import com.inflowia.medicflow.repositories.PacienteRepository;
 import com.inflowia.medicflow.services.exceptions.BusinessRuleException;
 import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
 import com.inflowia.medicflow.services.exceptions.ResourceNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.inflowia.medicflow.services.validation.ConsultaDomainValidator;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,17 +26,23 @@ import java.util.Optional;
 @Service
 public class MedicamentoService {
 
-    @Autowired
-    private ConsultaRepository consultaRepository;
+    private final ConsultaRepository consultaRepository;
+    private final MedicamentoPrescritoRepository medicamentoPrescritoRepository;
+    private final MedicamentoBaseRepository medicamentoBaseRepository;
+    private final PacienteRepository pacienteRepository;
+    private final ConsultaDomainValidator consultaDomainValidator;
 
-    @Autowired
-    private MedicamentoPrescritoRepository medicamentoPrescritoRepository;
-
-    @Autowired
-    private MedicamentoBaseRepository medicamentoBaseRepository;
-
-    @Autowired
-    private PacienteRepository pacienteRepository;
+    public MedicamentoService(ConsultaRepository consultaRepository,
+                              MedicamentoPrescritoRepository medicamentoPrescritoRepository,
+                              MedicamentoBaseRepository medicamentoBaseRepository,
+                              PacienteRepository pacienteRepository,
+                              ConsultaDomainValidator consultaDomainValidator) {
+        this.consultaRepository = consultaRepository;
+        this.medicamentoPrescritoRepository = medicamentoPrescritoRepository;
+        this.medicamentoBaseRepository = medicamentoBaseRepository;
+        this.pacienteRepository = pacienteRepository;
+        this.consultaDomainValidator = consultaDomainValidator;
+    }
 
     @Transactional(readOnly = true)
     public Page<MedicamentoPrescritoMinDTO> listarPorConsulta(Long consultaId, Pageable pageable) {
@@ -98,9 +104,10 @@ public class MedicamentoService {
 
     @Transactional
     public MedicamentoPrescritoMinDTO adicionarMedicamento(Long consultaId, MedicamentoPrescritoDTO dados) {
-
         Consulta consulta = consultaRepository.findById(consultaId)
                 .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Consulta")));
+
+        consultaDomainValidator.validateCanAddMedication(consulta);
 
         if (dados.getMedicamentoBaseId() == null &&
                 (dados.getNome() == null || dados.getNome().isBlank())) {
