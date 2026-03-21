@@ -12,23 +12,17 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MedicoMinDTO {
+public class MedicoSelectDTO {
 
     private Long id;
-    private String nome;
-    private String sobrenome;
     private String nomeCompleto;
     private String crm;
     private String especialidade;
-    private boolean ativo;
 
-    public MedicoMinDTO(Medico entity) {
+    public MedicoSelectDTO(Medico entity) {
         this.id = entity.getId();
-        this.nome = entity.getNome();
-        this.sobrenome = entity.getSobrenome();
         this.nomeCompleto = (entity.getNome() + " " + entity.getSobrenome()).trim();
         this.crm = entity.getCrm();
         this.especialidade = entity.getEspecialidade();
-        this.ativo = entity.isAtivo();
     }
 }

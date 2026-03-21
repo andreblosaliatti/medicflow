@@ -7,6 +7,7 @@ import com.inflowia.medicflow.dto.usuario.DadosListagemUsuario;
 import com.inflowia.medicflow.security.AccessRole;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Component
@@ -22,6 +23,7 @@ public class UsuarioMapper {
                 entity.getLogin(),
                 entity.getNome(),
                 entity.getSobrenome(),
+                buildNomeCompleto(entity),
                 entity.getEmail(),
                 entity.getCpf(),
                 extractAuthorities(entity),
@@ -40,6 +42,7 @@ public class UsuarioMapper {
                 entity.getLogin(),
                 entity.getNome(),
                 entity.getSobrenome(),
+                buildNomeCompleto(entity),
                 entity.getEmail(),
                 entity.getCpf(),
                 entity.isAtivo(),
@@ -48,9 +51,13 @@ public class UsuarioMapper {
     }
 
     private Set<String> extractAuthorities(Usuario entity) {
-        return new java.util.LinkedHashSet<>(AccessRole.toApiNames(entity.getRoles()
+        return new LinkedHashSet<>(AccessRole.toApiNames(entity.getRoles()
                 .stream()
                 .map(role -> role.getAuthority())
                 .toList()));
+    }
+
+    private String buildNomeCompleto(Usuario entity) {
+        return (entity.getNome() + " " + entity.getSobrenome()).trim();
     }
 }

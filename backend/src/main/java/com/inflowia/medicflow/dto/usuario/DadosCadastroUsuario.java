@@ -39,6 +39,8 @@ public class DadosCadastroUsuario {
 
     private Set<String> roles = new HashSet<>();
 
+    private Boolean ativo;
+
     @Valid
     private EnderecoDTO endereco;
 }

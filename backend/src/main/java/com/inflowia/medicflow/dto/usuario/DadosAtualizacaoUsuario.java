@@ -12,15 +12,14 @@ import java.util.Set;
 @Setter
 public class DadosAtualizacaoUsuario {
 
+    private String login;
     private String nome;
-
     private String sobrenome;
 
     @Email
     private String email;
 
     private Set<String> roles;
-
     private Boolean ativo;
 
     @Valid

@@ -1,12 +1,20 @@
 package com.inflowia.medicflow.dto.medico;
 
-import com.inflowia.medicflow.domain.paciente.Endereco;
 import com.inflowia.medicflow.domain.usuario.Medico;
-import com.inflowia.medicflow.domain.usuario.Role;
-import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.validator.constraints.br.CPF;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Getter
@@ -20,6 +28,7 @@ public class MedicoDTO {
     private String login;
 
     @NotBlank
+    @Size(min = 6, max = 100)
     private String senha;
 
     @NotBlank
@@ -33,6 +42,7 @@ public class MedicoDTO {
     private String email;
 
     @NotBlank
+    @CPF
     private String cpf;
 
     @NotBlank
@@ -49,45 +59,36 @@ public class MedicoDTO {
 
     private String observacoes;
 
+    @Valid
     private EnderecoDTO endereco;
 
-    // Agora o DTO aceita roles também
-    private Set<Role> roles;
+    @NotEmpty
+    @Builder.Default
+    private Set<String> roles = new LinkedHashSet<>(Set.of("MEDICO"));
 
     public Medico toEntity() {
         Medico medico = new Medico();
 
-        medico.setLogin(this.login);
-        medico.setSenha(this.senha);
-        medico.setNome(this.nome);
-        medico.setSobrenome(this.sobrenome);
-        medico.setEmail(this.email);
-        medico.setCpf(this.cpf);
+        medico.setLogin(login);
+        medico.setSenha(senha);
+        medico.setNome(nome);
+        medico.setSobrenome(sobrenome);
+        medico.setEmail(email);
+        medico.setCpf(cpf);
+        medico.setCrm(crm);
+        medico.setEspecialidade(especialidade);
+        medico.setInstituicaoFormacao(instituicaoFormacao);
+        medico.setDataFormacao(dataFormacao);
+        medico.setSexo(sexo);
+        medico.setObservacoes(observacoes);
 
-        medico.setCrm(this.crm);
-        medico.setEspecialidade(this.especialidade);
-        medico.setInstituicaoFormacao(this.instituicaoFormacao);
-        medico.setDataFormacao(this.dataFormacao);
-        medico.setSexo(this.sexo);
-        medico.setObservacoes(this.observacoes);
-
-        if (this.endereco != null) {
-            medico.setEndereco(this.endereco.toEntity());
+        if (endereco != null) {
+            medico.setEndereco(endereco.toEntity());
         }
 
         medico.setAtivo(true);
-
-        // ⚠️ NÃO SETAMOS AS ROLES AQUI
-        // esse passo deve ser feito no MedicoService,
-        // usando roleRepository.getReferenceById()
-        // exatamente como no módulo de Usuários.
-
         return medico;
     }
-
-    // -----------------------------------------------------------
-    // ENDEREÇO DTO
-    // -----------------------------------------------------------
 
     @Getter
     @Setter
@@ -104,8 +105,8 @@ public class MedicoDTO {
         private String uf;
         private String cep;
 
-        public Endereco toEntity() {
-            Endereco e = new Endereco();
+        public com.inflowia.medicflow.domain.paciente.Endereco toEntity() {
+            com.inflowia.medicflow.domain.paciente.Endereco e = new com.inflowia.medicflow.domain.paciente.Endereco();
             e.setLogradouro(logradouro);
             e.setNumero(numero);
             e.setComplemento(complemento);
@@ -116,7 +117,7 @@ public class MedicoDTO {
             return e;
         }
 
-        public static EnderecoDTO fromEntity(Endereco endereco) {
+        public static EnderecoDTO fromEntity(com.inflowia.medicflow.domain.paciente.Endereco endereco) {
             if (endereco == null) return null;
             return EnderecoDTO.builder()
                     .logradouro(endereco.getLogradouro())
