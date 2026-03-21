@@ -29,4 +29,6 @@ public class PacienteUpdateDTO {
     private LocalDate dataNascimento;
 
     private EnderecoDTO endereco;
+
+    private String planoSaude;
 }
