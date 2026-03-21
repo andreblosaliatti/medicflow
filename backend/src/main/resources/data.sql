@@ -20,7 +20,7 @@ VALUES
 INSERT INTO tb_role (authority) VALUES
     ('ROLE_ADMIN'),
     ('ROLE_MEDICO'),
-    ('ROLE_SECRETARIO'),
+    ('ROLE_SECRETARIA'),
     ('ROLE_ATENDENTE'),
     ('ROLE_ENFERMEIRO'),
     ('ROLE_PACIENTE');
@@ -61,7 +61,7 @@ VALUES
 INSERT INTO tb_usuario_role (usuario_id, role_id)
 VALUES (
     (SELECT id FROM tb_usuarios WHERE login = 'marina.sec'),
-    (SELECT id FROM tb_role WHERE authority = 'ROLE_SECRETARIO')
+    (SELECT id FROM tb_role WHERE authority = 'ROLE_SECRETARIA')
 );
 
 INSERT INTO tb_usuario_role (usuario_id, role_id)

@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Set;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -85,8 +86,10 @@ class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.id").value(usuario.getId()))
                 .andExpect(jsonPath("$.login").value("auth.user"))
                 .andExpect(jsonPath("$.nomeCompleto").value("Auth User"))
-                .andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"))
-                .andExpect(jsonPath("$.roles[1]").value("ROLE_MEDICO"))
+                .andExpect(jsonPath("$.roles[0]").value("ADMIN"))
+                .andExpect(jsonPath("$.roles[1]").value("MEDICO"))
+                .andExpect(jsonPath("$.permissions").isArray())
+                .andExpect(jsonPath("$.permissions").value(hasItem("usuarios:write")))
                 .andExpect(jsonPath("$.token").isString())
                 .andExpect(jsonPath("$.userId").doesNotExist())
                 .andExpect(jsonPath("$.type").doesNotExist());
@@ -101,8 +104,9 @@ class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.id").value(usuario.getId()))
                 .andExpect(jsonPath("$.login").value("auth.user"))
                 .andExpect(jsonPath("$.nomeCompleto").value("Auth User"))
-                .andExpect(jsonPath("$.roles[0]").value("ROLE_ADMIN"))
-                .andExpect(jsonPath("$.roles[1]").value("ROLE_MEDICO"))
+                .andExpect(jsonPath("$.roles[0]").value("ADMIN"))
+                .andExpect(jsonPath("$.roles[1]").value("MEDICO"))
+                .andExpect(jsonPath("$.permissions").value(hasItem("consultas:write")))
                 .andExpect(jsonPath("$.token").value(token));
     }
 

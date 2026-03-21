@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -28,6 +29,7 @@ public class ConsultaController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('consultas:write')")
     public ResponseEntity<ConsultaDetailsDTO> criar(
             @RequestBody @Valid ConsultaDTO dto,
             UriComponentsBuilder uriBuilder) {
@@ -41,6 +43,7 @@ public class ConsultaController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('consultas:write')")
     public ResponseEntity<ConsultaDetailsDTO> atualizar(
             @PathVariable Long id,
             @RequestBody @Valid ConsultaUpdateDTO dto) {
@@ -50,24 +53,28 @@ public class ConsultaController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('consultas:delete')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('consultas:read')")
     public ResponseEntity<ConsultaDetailsDTO> buscarPorId(@PathVariable Long id) {
         ConsultaDetailsDTO dto = service.buscarPorId(id);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('consultas:read')")
     public ResponseEntity<Page<ConsultaMinDTO>> listar(Pageable pageable) {
         Page<ConsultaMinDTO> page = service.listar(pageable);
         return ResponseEntity.ok(page);
     }
 
     @GetMapping("/paciente/{pacienteId}")
+    @PreAuthorize("hasAuthority('consultas:read')")
     public ResponseEntity<Page<ConsultaMinDTO>> listarPorPaciente(
             @PathVariable Long pacienteId,
             Pageable pageable) {
@@ -77,6 +84,7 @@ public class ConsultaController {
     }
 
     @GetMapping("/paciente/{pacienteId}/ultima")
+    @PreAuthorize("hasAuthority('consultas:read')")
     public ResponseEntity<ConsultaDetailsDTO> buscarUltimaConsultaPorPaciente(
             @PathVariable Long pacienteId) {
 
@@ -85,6 +93,7 @@ public class ConsultaController {
     }
 
     @GetMapping("/medico/{medicoId}")
+    @PreAuthorize("hasAuthority('consultas:read')")
     public ResponseEntity<Page<ConsultaMinDTO>> listarPorMedico(
             @PathVariable Long medicoId,
             Pageable pageable) {
@@ -94,6 +103,7 @@ public class ConsultaController {
     }
 
     @GetMapping("/status")
+    @PreAuthorize("hasAuthority('consultas:read')")
     public ResponseEntity<List<ConsultaMinDTO>> listarPorStatus(
             @RequestParam StatusConsulta status) {
         List<ConsultaMinDTO> list = service.listarPorStatus(status);
@@ -101,6 +111,7 @@ public class ConsultaController {
     }
 
     @GetMapping("/periodo")
+    @PreAuthorize("hasAuthority('consultas:read')")
     public ResponseEntity<List<ConsultaMinDTO>> listarPorPeriodo(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim) {

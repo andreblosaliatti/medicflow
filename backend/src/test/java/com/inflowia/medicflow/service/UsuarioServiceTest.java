@@ -75,7 +75,7 @@ class UsuarioServiceTest {
         dto.setSobrenome("Sobrenome");
         dto.setEmail("admin@test.com");
         dto.setCpf("32844208606");
-        dto.setRoles(Set.of("ROLE_ADMIN"));
+        dto.setRoles(Set.of("ADMIN"));
 
         Role adminRole = new Role(1L, "ROLE_ADMIN");
 
@@ -91,6 +91,31 @@ class UsuarioServiceTest {
         Usuario salvo = captor.getValue();
         assertTrue(salvo.isAtivo());
         assertEquals(Set.of(adminRole), salvo.getRoles());
+    }
+
+    @Test
+    void insertShouldAcceptLegacyRoleNamesAndNormalizeThem() {
+        DadosCadastroUsuario dto = new DadosCadastroUsuario();
+        dto.setLogin("secretaria");
+        dto.setSenha("plain123");
+        dto.setNome("Secretaria");
+        dto.setSobrenome("Teste");
+        dto.setEmail("secretaria@test.com");
+        dto.setCpf("61498182000");
+        dto.setRoles(Set.of("ROLE_SECRETARIO"));
+
+        Role secretariaRole = new Role(3L, "ROLE_SECRETARIA");
+
+        when(passwordEncoder.encode("plain123")).thenReturn("encoded");
+        when(roleRepository.findByAuthority("ROLE_SECRETARIA")).thenReturn(Optional.of(secretariaRole));
+        when(repository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioMapper.toDetalhamento(any(Usuario.class))).thenReturn(new DadosDetalhamentoUsuario());
+
+        service.insert(dto);
+
+        ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
+        verify(repository).save(captor.capture());
+        assertEquals(Set.of(secretariaRole), captor.getValue().getRoles());
     }
 
     @Test

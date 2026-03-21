@@ -11,6 +11,7 @@ import com.inflowia.medicflow.exception.ResourceNotFoundException;
 import com.inflowia.medicflow.mappers.UsuarioMapper;
 import com.inflowia.medicflow.repository.RoleRepository;
 import com.inflowia.medicflow.repository.UsuarioRepository;
+import com.inflowia.medicflow.security.AccessRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -125,7 +126,7 @@ public class UsuarioService {
 
         Set<Role> resolvedRoles = new HashSet<>();
 
-        for (String authority : roleAuthorities) {
+        for (String authority : AccessRole.toCanonicalAuthorities(roleAuthorities)) {
             Role role = roleRepository.findByAuthority(authority)
                     .orElseThrow(() -> new ResourceNotFoundException("Role não encontrada: " + authority));
             resolvedRoles.add(role);

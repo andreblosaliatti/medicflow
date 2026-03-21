@@ -26,9 +26,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         Usuario usuario = usuarioRepository.findByLoginIgnoreCase(login)
                 .orElseThrow(() -> new UsernameNotFoundException(ExceptionMessages.INVALID_LOGIN));
 
-        Set<GrantedAuthority> authorities = usuario.getRoles()
+        Set<GrantedAuthority> authorities = AuthorizationMatrix.expandAuthorities(usuario.getRoles()
                 .stream()
-                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
+                .map(role -> role.getAuthority())
+                .collect(Collectors.toSet()))
+                .stream()
+                .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
 
         return User.builder()
