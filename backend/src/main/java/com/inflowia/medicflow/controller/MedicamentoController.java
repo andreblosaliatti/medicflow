@@ -57,6 +57,15 @@ public class MedicamentoController {
         return ResponseEntity.created(uri).body(dto);
     }
 
+    @PutMapping("/{medicamentoId}")
+    @PreAuthorize("hasAuthority('medicamentos:write')")
+    public ResponseEntity<MedicamentoPrescritoMinDTO> atualizar(
+            @PathVariable Long medicamentoId,
+            @RequestBody @Valid MedicamentoPrescritoDTO dados
+    ) {
+        return ResponseEntity.ok(service.atualizarMedicamento(medicamentoId, dados));
+    }
+
     @GetMapping("/consultas/{consultaId}")
     @PreAuthorize("hasAuthority('medicamentos:read')")
     public ResponseEntity<Page<MedicamentoPrescritoMinDTO>> listarPorConsulta(
