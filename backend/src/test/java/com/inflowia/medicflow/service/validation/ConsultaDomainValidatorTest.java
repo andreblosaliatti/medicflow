@@ -53,7 +53,6 @@ class ConsultaDomainValidatorTest {
         assertEquals(ExceptionMessages.CANCELED_CONSULTATION_PRESCRIPTION_NOT_ALLOWED, exception.getMessage());
     }
 
-
     @Test
     void validateCanAddMedicationMustRejectCanceledConsulta() {
         Consulta consulta = consultaBase();
@@ -84,6 +83,21 @@ class ConsultaDomainValidatorTest {
         consulta.setDataPagamento(LocalDateTime.now());
 
         assertDoesNotThrow(() -> validator.validate(consulta));
+    }
+
+    @Test
+    void validateStatusTransitionMustAllowLegacyMappedFlow() {
+        assertDoesNotThrow(() -> validator.validateStatusTransition(StatusConsulta.AGENDADA, StatusConsulta.CONFIRMADA));
+        assertDoesNotThrow(() -> validator.validateStatusTransition(StatusConsulta.CONFIRMADA, StatusConsulta.EM_ATENDIMENTO));
+        assertDoesNotThrow(() -> validator.validateStatusTransition(StatusConsulta.EM_ATENDIMENTO, StatusConsulta.CONCLUIDA));
+    }
+
+    @Test
+    void validateStatusTransitionMustRejectSkipToConcluded() {
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class,
+                () -> validator.validateStatusTransition(StatusConsulta.AGENDADA, StatusConsulta.CONCLUIDA));
+
+        assertEquals(ExceptionMessages.CONSULTATION_STATUS_TRANSITION_NOT_ALLOWED, exception.getMessage());
     }
 
     private Consulta consultaBase() {

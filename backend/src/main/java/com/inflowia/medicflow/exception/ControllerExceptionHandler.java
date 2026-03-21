@@ -5,14 +5,17 @@ import com.inflowia.medicflow.dto.ValidationError;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -50,6 +53,13 @@ public class ControllerExceptionHandler {
         log.warn("Constraint violation [{}] {} traceId={} code={}", request.getMethod(), request.getRequestURI(), resolveTraceId(request), ErrorCodes.VALIDATION_ERROR);
         ValidationError err = buildValidationError(HttpStatus.BAD_REQUEST, ExceptionMessages.INVALID_DATA, request);
         e.getConstraintViolations().forEach(violation -> err.addError(violation.getPropertyPath().toString(), violation.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+    }
+
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class, ConversionFailedException.class})
+    public ResponseEntity<CustomError> invalidRequestFormat(Exception e, HttpServletRequest request) {
+        log.warn("Request format error [{}] {} traceId={} code={}", request.getMethod(), request.getRequestURI(), resolveTraceId(request), ErrorCodes.VALIDATION_ERROR);
+        ValidationError err = buildValidationError(HttpStatus.BAD_REQUEST, ExceptionMessages.INVALID_DATA, request);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
     }
 

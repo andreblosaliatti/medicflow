@@ -1,7 +1,6 @@
 package com.inflowia.medicflow.dto.consulta;
 
 import com.inflowia.medicflow.domain.consulta.Consulta;
-import com.inflowia.medicflow.domain.consulta.MeioPagamento;
 import com.inflowia.medicflow.domain.consulta.StatusConsulta;
 import com.inflowia.medicflow.domain.consulta.TipoConsulta;
 import lombok.AllArgsConstructor;
@@ -13,64 +12,29 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConsultaDetailsDTO {
+public class ConsultaAgendaItemDTO {
 
     private Long id;
     private LocalDateTime dataHora;
+    private Integer duracaoMinutos;
     private TipoConsulta tipo;
     private StatusConsulta status;
-
-    private Double valorConsulta;
-    private MeioPagamento meioPagamento;
-
-    private Boolean pago;
-    private LocalDateTime dataPagamento;
-
-    private Integer duracaoMinutos;
-
-    private boolean retorno;
-    private LocalDateTime dataLimiteRetorno;
-
-    private boolean teleconsulta;
+    private Boolean teleconsulta;
     private String linkAcesso;
-
-    private String planoSaude;
-    private String numeroCarteirinha;
-
-    private String motivo;
-    private String anamnese;
-    private String exameFisico;
-    private String diagnostico;
-    private String prescricao;
-    private String observacoes;
-
     private Long pacienteId;
     private String pacienteNome;
     private Long medicoId;
     private String medicoNome;
+    private String motivo;
 
-    public ConsultaDetailsDTO(Consulta entity) {
+    public ConsultaAgendaItemDTO(Consulta entity) {
         this.id = entity.getId();
         this.dataHora = entity.getDataHora();
+        this.duracaoMinutos = entity.getDuracaoMinutos();
         this.tipo = entity.getTipo();
         this.status = entity.getStatus();
-        this.valorConsulta = entity.getValorConsulta();
-        this.meioPagamento = entity.getMeioPagamento();
-        this.pago = entity.getPago();
-        this.dataPagamento = entity.getDataPagamento();
-        this.duracaoMinutos = entity.getDuracaoMinutos();
-        this.retorno = entity.isRetorno();
-        this.dataLimiteRetorno = entity.getDataLimiteRetorno();
         this.teleconsulta = entity.isTeleconsulta();
         this.linkAcesso = entity.getLinkAcesso();
-        this.planoSaude = entity.getPlanoSaude();
-        this.numeroCarteirinha = entity.getNumeroCarteirinha();
-        this.motivo = entity.getMotivo();
-        this.anamnese = entity.getAnamnese();
-        this.exameFisico = entity.getExameFisico();
-        this.diagnostico = entity.getDiagnostico();
-        this.prescricao = entity.getPrescricao();
-        this.observacoes = entity.getObservacoes();
         this.pacienteId = entity.getPaciente() != null ? entity.getPaciente().getId() : null;
         this.pacienteNome = entity.getPaciente() != null
                 ? composeName(entity.getPaciente().getPrimeiroNome(), entity.getPaciente().getSobrenome())
@@ -79,6 +43,7 @@ public class ConsultaDetailsDTO {
         this.medicoNome = entity.getMedico() != null
                 ? composeName(entity.getMedico().getNome(), entity.getMedico().getSobrenome())
                 : null;
+        this.motivo = entity.getMotivo();
     }
 
     private String composeName(String first, String second) {
