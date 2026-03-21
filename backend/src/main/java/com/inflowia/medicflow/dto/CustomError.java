@@ -4,16 +4,28 @@ import java.time.Instant;
 
 public class CustomError {
 
-    private Instant timestamp;
-    private Integer status;
-    private String error;
-    private String path;
+    private final Instant timestamp;
+    private final Integer status;
+    private final String error;
+    private final String code;
+    private final String message;
+    private final String path;
+    private final String traceId;
 
-    public CustomError(Instant timestamp, Integer status, String error, String path) {
+    public CustomError(Instant timestamp,
+                       Integer status,
+                       String error,
+                       String code,
+                       String message,
+                       String path,
+                       String traceId) {
         this.timestamp = timestamp;
         this.status = status;
         this.error = error;
+        this.code = code;
+        this.message = message;
         this.path = path;
+        this.traceId = traceId;
     }
 
     public Instant getTimestamp() {
@@ -28,7 +40,19 @@ public class CustomError {
         return error;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
     public String getPath() {
         return path;
+    }
+
+    public String getTraceId() {
+        return traceId;
     }
 }

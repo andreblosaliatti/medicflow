@@ -6,10 +6,16 @@ import java.util.List;
 
 public class ValidationError extends CustomError {
 
-    private List<FieldMessage> errors = new ArrayList<>();
+    private final List<FieldMessage> errors = new ArrayList<>();
 
-    public ValidationError(Instant timestamp, Integer status, String error, String path) {
-        super(timestamp, status, error, path);
+    public ValidationError(Instant timestamp,
+                           Integer status,
+                           String error,
+                           String code,
+                           String message,
+                           String path,
+                           String traceId) {
+        super(timestamp, status, error, code, message, path, traceId);
     }
 
     public List<FieldMessage> getErrors() {
