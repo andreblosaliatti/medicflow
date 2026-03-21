@@ -33,7 +33,7 @@ public class MedicamentoPrescrito {
     @JoinColumn(name = "consulta_id", nullable = false)
     private Consulta consulta;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "medicamento_base_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "medicamento_base_id")
     private MedicamentoBase medicamentoBase;
 }

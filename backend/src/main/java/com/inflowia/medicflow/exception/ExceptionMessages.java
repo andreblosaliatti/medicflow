@@ -9,7 +9,8 @@ public final class ExceptionMessages {
     public static final String AUTHENTICATED_USER_NOT_FOUND = "Usuário autenticado não encontrado.";
     public static final String AUTHENTICATION_REQUIRED = "Autenticação é obrigatória para acessar este recurso.";
     public static final String ACCESS_DENIED = "Você não tem permissão para realizar esta operação.";
-    public static final String MEDICATION_INFO_REQUIRED = "Informe o medicamento pelo nome ou selecione um medicamento base.";
+    public static final String MEDICATION_INFO_REQUIRED = "Informe o nome do medicamento livre ou selecione um medicamento base.";
+    public static final String MEDICATION_INFO_CONFLICT = "Informe apenas um medicamento: nome livre ou medicamento base.";
     public static final String DOSAGE_REQUIRED = "A dosagem do medicamento é obrigatória.";
     public static final String FREQUENCY_REQUIRED = "A frequência do medicamento é obrigatória.";
     public static final String ROUTE_REQUIRED = "A via de administração do medicamento é obrigatória.";

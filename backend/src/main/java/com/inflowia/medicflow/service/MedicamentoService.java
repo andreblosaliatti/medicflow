@@ -109,44 +109,14 @@ public class MedicamentoService {
 
         consultaDomainValidator.validateCanAddMedication(consulta);
 
-        if (dados.getMedicamentoBaseId() == null &&
-                (dados.getNome() == null || dados.getNome().isBlank())) {
-            throw new BusinessRuleException(ExceptionMessages.MEDICATION_INFO_REQUIRED);
-        }
-
-        if (dados.getDosagem() == null || dados.getDosagem().isBlank()) {
-            throw new BusinessRuleException(ExceptionMessages.DOSAGE_REQUIRED);
-        }
-
-        if (dados.getFrequencia() == null || dados.getFrequencia().isBlank()) {
-            throw new BusinessRuleException(ExceptionMessages.FREQUENCY_REQUIRED);
-        }
-
-        if (dados.getVia() == null || dados.getVia().isBlank()) {
-            throw new BusinessRuleException(ExceptionMessages.ROUTE_REQUIRED);
-        }
-
-        MedicamentoBase base = null;
-
-        if (dados.getMedicamentoBaseId() != null) {
-            base = medicamentoBaseRepository.findById(dados.getMedicamentoBaseId())
-                    .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Medicamento base")));
-        }
-
-        String nome = dados.getNome();
-
-        if (base != null) {
-            nome = base.getPrincipioAtivo() != null
-                    ? base.getPrincipioAtivo()
-                    : base.getNomeComercial();
-        }
+        MedicamentoResolvido medicamentoResolvido = resolverMedicamento(dados);
 
         MedicamentoPrescrito prescrito = MedicamentoPrescrito.builder()
-                .medicamentoBase(base)
-                .nome(nome)
-                .dosagem(dados.getDosagem())
-                .frequencia(dados.getFrequencia())
-                .via(dados.getVia())
+                .medicamentoBase(medicamentoResolvido.medicamentoBase())
+                .nome(medicamentoResolvido.nome())
+                .dosagem(dados.getDosagem().trim())
+                .frequencia(dados.getFrequencia().trim())
+                .via(dados.getVia().trim())
                 .consulta(consulta)
                 .build();
 
@@ -154,6 +124,25 @@ public class MedicamentoService {
 
         MedicamentoPrescrito salvo = medicamentoPrescritoRepository.save(prescrito);
 
+        return new MedicamentoPrescritoMinDTO(salvo);
+    }
+
+    @Transactional
+    public MedicamentoPrescritoMinDTO atualizarMedicamento(Long medicamentoId, MedicamentoPrescritoDTO dados) {
+        MedicamentoPrescrito prescrito = medicamentoPrescritoRepository.findById(medicamentoId)
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Medicamento")));
+
+        consultaDomainValidator.validateCanAddMedication(prescrito.getConsulta());
+
+        MedicamentoResolvido medicamentoResolvido = resolverMedicamento(dados);
+
+        prescrito.setMedicamentoBase(medicamentoResolvido.medicamentoBase());
+        prescrito.setNome(medicamentoResolvido.nome());
+        prescrito.setDosagem(dados.getDosagem().trim());
+        prescrito.setFrequencia(dados.getFrequencia().trim());
+        prescrito.setVia(dados.getVia().trim());
+
+        MedicamentoPrescrito salvo = medicamentoPrescritoRepository.save(prescrito);
         return new MedicamentoPrescritoMinDTO(salvo);
     }
 
@@ -176,5 +165,46 @@ public class MedicamentoService {
         } catch (DataIntegrityViolationException e) {
             throw new BusinessRuleException("Não é possível excluir o medicamento informado porque ele está vinculado a outros registros.");
         }
+    }
+
+    private MedicamentoResolvido resolverMedicamento(MedicamentoPrescritoDTO dados) {
+        boolean informouBase = dados.getMedicamentoBaseId() != null;
+        boolean informouNomeLivre = dados.getNome() != null && !dados.getNome().isBlank();
+
+        if (!informouBase && !informouNomeLivre) {
+            throw new BusinessRuleException(ExceptionMessages.MEDICATION_INFO_REQUIRED);
+        }
+
+        if (informouBase && informouNomeLivre) {
+            throw new BusinessRuleException(ExceptionMessages.MEDICATION_INFO_CONFLICT);
+        }
+
+        if (dados.getDosagem() == null || dados.getDosagem().isBlank()) {
+            throw new BusinessRuleException(ExceptionMessages.DOSAGE_REQUIRED);
+        }
+
+        if (dados.getFrequencia() == null || dados.getFrequencia().isBlank()) {
+            throw new BusinessRuleException(ExceptionMessages.FREQUENCY_REQUIRED);
+        }
+
+        if (dados.getVia() == null || dados.getVia().isBlank()) {
+            throw new BusinessRuleException(ExceptionMessages.ROUTE_REQUIRED);
+        }
+
+        if (informouBase) {
+            MedicamentoBase base = medicamentoBaseRepository.findById(dados.getMedicamentoBaseId())
+                    .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Medicamento base")));
+
+            String nomeResolvido = base.getPrincipioAtivo() != null && !base.getPrincipioAtivo().isBlank()
+                    ? base.getPrincipioAtivo().trim()
+                    : base.getNomeComercial().trim();
+
+            return new MedicamentoResolvido(base, nomeResolvido);
+        }
+
+        return new MedicamentoResolvido(null, dados.getNome().trim());
+    }
+
+    private record MedicamentoResolvido(MedicamentoBase medicamentoBase, String nome) {
     }
 }
