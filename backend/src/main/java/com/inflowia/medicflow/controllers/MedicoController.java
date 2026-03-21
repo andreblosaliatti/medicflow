@@ -79,7 +79,7 @@ public class MedicoController {
         return ResponseEntity.ok(atualizado);
     }
 
-    // DELETE - hard delete
+    // DELETE - inativar médico (política oficial)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.delete(id);

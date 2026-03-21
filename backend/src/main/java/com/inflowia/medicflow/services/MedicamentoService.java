@@ -52,7 +52,7 @@ public class MedicamentoService {
 
     @Transactional(readOnly = true)
     public Page<MedicamentoPrescritoMinDTO> listarHistoricoPorPaciente(Long pacienteId, Pageable pageable) {
-        if (!pacienteRepository.existsById(pacienteId)) {
+        if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
             throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
         }
 
@@ -82,7 +82,7 @@ public class MedicamentoService {
 
     @Transactional(readOnly = true)
     public List<MedicamentoPrescritoMinDTO> listarMedicacaoAtual(Long pacienteId) {
-        if (!pacienteRepository.existsById(pacienteId)) {
+        if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
             throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
         }
 

@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,5 +49,27 @@ class UsuarioServiceTest {
         ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
         verify(repository).save(captor.capture());
         assertEquals("encoded", captor.getValue().getSenha());
+    }
+
+    @Test
+    void deleteShouldInactivateUser() {
+        Usuario usuario = Usuario.builder()
+                .id(1L)
+                .login("user")
+                .senha("encoded")
+                .nome("Nome")
+                .sobrenome("Sobrenome")
+                .email("u@x.com")
+                .cpf("39053344705")
+                .ativo(true)
+                .build();
+
+        when(repository.findByIdAndAtivoTrue(1L)).thenReturn(java.util.Optional.of(usuario));
+        when(repository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.delete(1L);
+
+        assertFalse(usuario.isAtivo());
+        verify(repository).save(usuario);
     }
 }

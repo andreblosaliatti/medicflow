@@ -42,10 +42,10 @@ public class ConsultaService {
 
     @Transactional
     public ConsultaDetailsDTO criar(ConsultaDTO dto) {
-        Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
+        Paciente paciente = pacienteRepository.findByIdAndAtivoTrue(dto.getPacienteId())
                 .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
 
-        Medico medico = medicoRepository.findById(dto.getMedicoId())
+        Medico medico = medicoRepository.findByIdAndAtivoTrue(dto.getMedicoId())
                 .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Médico")));
 
         Consulta entity = new Consulta();
@@ -64,12 +64,12 @@ public class ConsultaService {
             Medico medico = null;
 
             if (dto.getPacienteId() != null) {
-                paciente = pacienteRepository.findById(dto.getPacienteId())
+                paciente = pacienteRepository.findByIdAndAtivoTrue(dto.getPacienteId())
                         .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
             }
 
             if (dto.getMedicoId() != null) {
-                medico = medicoRepository.findById(dto.getMedicoId())
+                medico = medicoRepository.findByIdAndAtivoTrue(dto.getMedicoId())
                         .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Médico")));
             }
 
@@ -111,7 +111,7 @@ public class ConsultaService {
 
     @Transactional(readOnly = true)
     public Page<ConsultaMinDTO> listarPorPaciente(Long pacienteId, Pageable pageable) {
-        if (!pacienteRepository.existsById(pacienteId)) {
+        if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
             throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
         }
         Page<Consulta> page = consultaRepository.findByPacienteId(pacienteId, pageable);
@@ -120,7 +120,7 @@ public class ConsultaService {
 
     @Transactional(readOnly = true)
     public Page<ConsultaMinDTO> listarPorMedico(Long medicoId, Pageable pageable) {
-        if (!medicoRepository.existsById(medicoId)) {
+        if (!medicoRepository.existsByIdAndAtivoTrue(medicoId)) {
             throw new ResourceNotFoundException(ExceptionMessages.notFound("Médico"));
         }
         Page<Consulta> page = consultaRepository.findByMedicoId(medicoId, pageable);
