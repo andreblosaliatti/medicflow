@@ -1,8 +1,8 @@
 package com.inflowia.medicflow.security;
 
-import com.inflowia.medicflow.entities.usuario.Usuario;
-import com.inflowia.medicflow.repositories.UsuarioRepository;
-import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
+import com.inflowia.medicflow.domain.usuario.Usuario;
+import com.inflowia.medicflow.repository.UsuarioRepository;
+import com.inflowia.medicflow.exception.ExceptionMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto;
 
-import com.inflowia.medicflow.entities.paciente.Endereco;
+import com.inflowia.medicflow.domain.paciente.Endereco;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -41,7 +41,7 @@ public record EnderecoDTO(
                 endereco.getUf(),
                 endereco.getCep()
                 );
-        
+
 }
 
         public Endereco toEntity(){

@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto;
 
-import com.inflowia.medicflow.entities.usuario.Role;
+import com.inflowia.medicflow.domain.usuario.Role;
 
 public class RoleDTO {
 

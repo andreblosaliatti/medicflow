@@ -1,7 +1,7 @@
 package com.inflowia.medicflow.dto.consulta;
-import com.inflowia.medicflow.entities.consulta.Consulta;
-import com.inflowia.medicflow.entities.consulta.StatusConsulta;
-import com.inflowia.medicflow.entities.consulta.TipoConsulta;
+import com.inflowia.medicflow.domain.consulta.Consulta;
+import com.inflowia.medicflow.domain.consulta.StatusConsulta;
+import com.inflowia.medicflow.domain.consulta.TipoConsulta;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

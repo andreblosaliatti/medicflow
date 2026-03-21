@@ -2,8 +2,8 @@ package com.inflowia.medicflow.dto.usuario;
 
 import com.inflowia.medicflow.dto.EnderecoDTO;
 import com.inflowia.medicflow.dto.RoleDTO;
-import com.inflowia.medicflow.entities.usuario.Role;
-import com.inflowia.medicflow.entities.usuario.Usuario;
+import com.inflowia.medicflow.domain.usuario.Role;
+import com.inflowia.medicflow.domain.usuario.Usuario;
 
 import java.util.Collections;
 import java.util.Set;

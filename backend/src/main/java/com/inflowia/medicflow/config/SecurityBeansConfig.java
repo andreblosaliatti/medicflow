@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.config;
 
-import com.inflowia.medicflow.observability.CorrelationIdFilter;
+import com.inflowia.medicflow.config.CorrelationIdFilter;
 import com.inflowia.medicflow.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

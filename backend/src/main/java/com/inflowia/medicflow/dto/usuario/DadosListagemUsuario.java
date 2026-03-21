@@ -1,7 +1,7 @@
 package com.inflowia.medicflow.dto.usuario;
 
 import com.inflowia.medicflow.dto.RoleDTO;
-import com.inflowia.medicflow.entities.usuario.Usuario;
+import com.inflowia.medicflow.domain.usuario.Usuario;
 import lombok.Getter;
 import lombok.Setter;
 
