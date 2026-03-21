@@ -84,7 +84,7 @@ public class UsuarioController {
     }
 
     // ------------------------------------------------------------
-    // DELETE
+    // DELETE - inativar usuário (política oficial)
     // ------------------------------------------------------------
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

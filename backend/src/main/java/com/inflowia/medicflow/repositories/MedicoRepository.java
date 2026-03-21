@@ -13,11 +13,15 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
 
     Optional<Medico> findByCrm(String crm);
 
+    Optional<Medico> findByCrmAndAtivoTrue(String crm);
+
     boolean existsByCrm(String crm);
 
     List<Medico> findByEspecialidadeIgnoreCaseContaining(String especialidade);
 
     Optional<Medico> findByCpf(String cpf);
+
+    Optional<Medico> findByCpfAndAtivoTrue(String cpf);
 
     boolean existsByCpf(String cpf);
 
@@ -25,6 +29,12 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
 
     Page<Medico> findByAtivoFalse(Pageable pageable);
 
-    @Query("SELECT DISTINCT m FROM Medico m LEFT JOIN FETCH m.consultasMedico c LEFT JOIN FETCH c.paciente")
-    List<Medico> findAllWithConsultasAndPacientes();
+    Optional<Medico> findByIdAndAtivoTrue(Long id);
+
+    boolean existsByIdAndAtivoTrue(Long id);
+
+    List<Medico> findAllByAtivoTrue();
+
+    @Query("SELECT DISTINCT m FROM Medico m LEFT JOIN FETCH m.consultasMedico c LEFT JOIN FETCH c.paciente WHERE m.ativo = true")
+    List<Medico> findAllActiveWithConsultasAndPacientes();
 }

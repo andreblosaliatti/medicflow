@@ -71,7 +71,7 @@ public class PacienteController {
         return ResponseEntity.ok(atualizado);
     }
 
-    // DELETE - desativar (soft delete)
+    // DELETE - inativar paciente (política oficial)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.delete(id);

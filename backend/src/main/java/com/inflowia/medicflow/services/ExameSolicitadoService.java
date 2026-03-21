@@ -95,7 +95,7 @@ public class ExameSolicitadoService {
 
     @Transactional(readOnly = true)
     public Page<ExameSolicitadoMinDTO> listarPorPaciente(Long pacienteId, Pageable pageable) {
-        if (!pacienteRepository.existsById(pacienteId)) {
+        if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
             throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
         }
 
@@ -108,7 +108,7 @@ public class ExameSolicitadoService {
     @Transactional(readOnly = true)
     public Page<ExameSolicitadoMinDTO> listarPorPacienteUltimaConsulta(Long pacienteId,
                                                                        Pageable pageable) {
-        if (!pacienteRepository.existsById(pacienteId)) {
+        if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
             throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
         }
 
