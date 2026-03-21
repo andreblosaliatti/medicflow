@@ -20,8 +20,10 @@ public class ExameSolicitadoMinDTO {
     private LocalDateTime dataColeta;
     private LocalDateTime dataResultado;
     private Long consultaId;
+    private Long pacienteId;
     private Long exameBaseId;
     private String exameNome;
+    private String pacienteNome;
 
     public ExameSolicitadoMinDTO(ExameSolicitado entity) {
         this.id = entity.getId().longValue();
@@ -31,7 +33,29 @@ public class ExameSolicitadoMinDTO {
         this.dataColeta = entity.getDataColeta();
         this.dataResultado = entity.getDataResultado();
         this.consultaId = entity.getConsulta() != null ? entity.getConsulta().getId() : null;
+        this.pacienteId = entity.getConsulta() != null && entity.getConsulta().getPaciente() != null
+                ? entity.getConsulta().getPaciente().getId()
+                : null;
         this.exameBaseId = entity.getExameBase() != null ? entity.getExameBase().getId() : null;
         this.exameNome = entity.getExameBase() != null ? entity.getExameBase().getNome() : null;
+        this.pacienteNome = entity.getConsulta() != null && entity.getConsulta().getPaciente() != null
+                ? composeName(
+                entity.getConsulta().getPaciente().getPrimeiroNome(),
+                entity.getConsulta().getPaciente().getSobrenome())
+                : null;
+    }
+
+    private String composeName(String first, String second) {
+        StringBuilder builder = new StringBuilder();
+        if (first != null && !first.isBlank()) {
+            builder.append(first.trim());
+        }
+        if (second != null && !second.isBlank()) {
+            if (builder.length() > 0) {
+                builder.append(" ");
+            }
+            builder.append(second.trim());
+        }
+        return builder.length() == 0 ? null : builder.toString();
     }
 }
