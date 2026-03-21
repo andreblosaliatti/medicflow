@@ -13,6 +13,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -36,15 +37,15 @@ public class AuthService {
                     )
             );
         } catch (DisabledException e) {
-            throw new BadCredentialsException("Usuário inativo");
+            throw new BadCredentialsException(ExceptionMessages.INACTIVE_USER);
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("Login ou senha inválidos");
+            throw new BadCredentialsException(ExceptionMessages.INVALID_LOGIN);
         }
 
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.getLogin());
 
         Usuario usuario = usuarioRepository.findByLoginIgnoreCase(request.getLogin())
-                .orElseThrow(() -> new BadCredentialsException("Usuário não encontrado após autenticação"));
+                .orElseThrow(() -> new BadCredentialsException(ExceptionMessages.AUTHENTICATED_USER_NOT_FOUND));
 
         String token = jwtService.generateToken(userDetails);
 

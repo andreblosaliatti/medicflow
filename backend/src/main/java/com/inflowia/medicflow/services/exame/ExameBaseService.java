@@ -3,7 +3,8 @@ package com.inflowia.medicflow.services.exame;
 import com.inflowia.medicflow.dto.exame.*;
 import com.inflowia.medicflow.entities.exame.ExameBase;
 import com.inflowia.medicflow.repositories.ExameBaseRepository;
-import com.inflowia.medicflow.services.exceptions.DatabaseException;
+import com.inflowia.medicflow.services.exceptions.BusinessRuleException;
+import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
 import com.inflowia.medicflow.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class ExameBaseService {
     @Transactional(readOnly = true)
     public ExameBaseDetailsDTO findById(Long id) {
         ExameBase entity = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Exame base não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Exame base")));
         return new ExameBaseDetailsDTO(entity);
     }
 
@@ -69,19 +70,19 @@ public class ExameBaseService {
             return new ExameBaseDetailsDTO(entity);
         }
         catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException("Exame base não encontrado");
+            throw new ResourceNotFoundException(ExceptionMessages.notFound("Exame base"));
         }
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Exame base não encontrado");
+            throw new ResourceNotFoundException(ExceptionMessages.notFound("Exame base"));
         }
         try {
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Não é possível excluir exame base com exames solicitados. Utilize a inativação (soft delete).");
+            throw new BusinessRuleException("Não é possível excluir o exame base informado porque ele possui exames solicitados vinculados. Utilize a inativação.");
         }
     }
 
