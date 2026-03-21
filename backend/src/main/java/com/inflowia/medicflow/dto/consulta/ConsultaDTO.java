@@ -1,8 +1,8 @@
 package com.inflowia.medicflow.dto.consulta;
 
-import com.inflowia.medicflow.entities.consulta.MeioPagamento;
-import com.inflowia.medicflow.entities.consulta.StatusConsulta;
-import com.inflowia.medicflow.entities.consulta.TipoConsulta;
+import com.inflowia.medicflow.domain.consulta.MeioPagamento;
+import com.inflowia.medicflow.domain.consulta.StatusConsulta;
+import com.inflowia.medicflow.domain.consulta.TipoConsulta;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

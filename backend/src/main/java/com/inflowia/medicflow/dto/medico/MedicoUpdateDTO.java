@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto.medico;
 
-import com.inflowia.medicflow.entities.paciente.Endereco;
+import com.inflowia.medicflow.domain.paciente.Endereco;
 import jakarta.validation.constraints.Email;
 import lombok.*;
 

@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto.medico;
 
-import com.inflowia.medicflow.entities.usuario.Medico;
+import com.inflowia.medicflow.domain.usuario.Medico;
 import lombok.*;
 
 @Getter

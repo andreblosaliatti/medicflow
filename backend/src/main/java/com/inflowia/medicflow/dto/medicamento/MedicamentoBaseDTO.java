@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto.medicamento;
 
-import com.inflowia.medicflow.entities.medicamento.MedicamentoBase;
+import com.inflowia.medicflow.domain.medicamento.MedicamentoBase;
 
 public class MedicamentoBaseDTO {
 

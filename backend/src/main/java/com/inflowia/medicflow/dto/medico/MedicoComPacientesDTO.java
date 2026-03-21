@@ -1,8 +1,8 @@
 package com.inflowia.medicflow.dto.medico;
 
 import com.inflowia.medicflow.dto.paciente.PacienteMinDTO;
-import com.inflowia.medicflow.entities.paciente.Paciente;
-import com.inflowia.medicflow.entities.usuario.Medico;
+import com.inflowia.medicflow.domain.paciente.Paciente;
+import com.inflowia.medicflow.domain.usuario.Medico;
 import lombok.*;
 
 import java.util.List;

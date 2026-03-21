@@ -1,8 +1,8 @@
 package com.inflowia.medicflow.dto.medico;
 
-import com.inflowia.medicflow.entities.paciente.Endereco;
-import com.inflowia.medicflow.entities.usuario.Medico;
-import com.inflowia.medicflow.entities.usuario.Role;
+import com.inflowia.medicflow.domain.paciente.Endereco;
+import com.inflowia.medicflow.domain.usuario.Medico;
+import com.inflowia.medicflow.domain.usuario.Role;
 import jakarta.validation.constraints.*;
 import lombok.*;
 

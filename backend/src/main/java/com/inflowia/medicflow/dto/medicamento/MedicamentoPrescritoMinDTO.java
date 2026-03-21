@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto.medicamento;
 
-import com.inflowia.medicflow.entities.medicamento.MedicamentoPrescrito;
+import com.inflowia.medicflow.domain.medicamento.MedicamentoPrescrito;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

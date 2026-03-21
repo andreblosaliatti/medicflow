@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto.paciente;
 
-import com.inflowia.medicflow.entities.paciente.Paciente;
+import com.inflowia.medicflow.domain.paciente.Paciente;
 import lombok.Getter;
 import com.inflowia.medicflow.dto.EnderecoDTO;
 

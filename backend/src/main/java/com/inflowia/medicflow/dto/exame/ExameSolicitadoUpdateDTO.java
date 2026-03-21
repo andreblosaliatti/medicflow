@@ -1,6 +1,6 @@
 package com.inflowia.medicflow.dto.exame;
 
-import com.inflowia.medicflow.entities.exame.StatusExame;
+import com.inflowia.medicflow.domain.exame.StatusExame;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

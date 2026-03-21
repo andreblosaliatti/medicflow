@@ -1,7 +1,7 @@
 package com.inflowia.medicflow.dto.exame;
 
-import com.inflowia.medicflow.entities.exame.ExameBase;
-import com.inflowia.medicflow.entities.exame.TipoExame;
+import com.inflowia.medicflow.domain.exame.ExameBase;
+import com.inflowia.medicflow.domain.exame.TipoExame;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
