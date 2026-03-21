@@ -32,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -75,7 +74,7 @@ class PacienteServiceTest {
                 .id(1L)
                 .primeiroNome("Maria")
                 .sobrenome("Oliveira")
-                .cpf("123.456.789-09")
+                .cpf("29537988001")
                 .telefone("(11) 99999-0000")
                 .planoSaude("Unimed")
                 .ativo(true)
@@ -103,7 +102,7 @@ class PacienteServiceTest {
                 .id(1L)
                 .primeiroNome("João")
                 .sobrenome("da Silva")
-                .cpf("123.456.789-09")
+                .cpf("38475612040")
                 .dataNascimento(LocalDate.of(1980, 1, 1))
                 .telefone("(11) 99999-0000")
                 .email("joao@gmail.com")

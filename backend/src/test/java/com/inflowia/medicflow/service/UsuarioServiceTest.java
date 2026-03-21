@@ -65,7 +65,6 @@ class UsuarioServiceTest {
         assertEquals("encoded", captor.getValue().getSenha());
     }
 
-
     @Test
     void insertShouldResolveRolesAndPersistActiveUser() {
         DadosCadastroUsuario dto = new DadosCadastroUsuario();
@@ -74,7 +73,7 @@ class UsuarioServiceTest {
         dto.setNome("Nome");
         dto.setSobrenome("Sobrenome");
         dto.setEmail("admin@test.com");
-        dto.setCpf("32844208606");
+        dto.setCpf("52998224725");
         dto.setRoles(Set.of("ADMIN"));
 
         Role adminRole = new Role(1L, "ROLE_ADMIN");
@@ -101,7 +100,7 @@ class UsuarioServiceTest {
         dto.setNome("Secretaria");
         dto.setSobrenome("Teste");
         dto.setEmail("secretaria@test.com");
-        dto.setCpf("61498182097");
+        dto.setCpf("52998224725");
         dto.setRoles(Set.of("ROLE_SECRETARIO"));
 
         Role secretariaRole = new Role(3L, "ROLE_SECRETARIA");
@@ -127,12 +126,13 @@ class UsuarioServiceTest {
                 .nome("Nome Original")
                 .sobrenome("Sobrenome Original")
                 .email("original@test.com")
-                .cpf("39053344705")
+                .cpf("38475612040")
                 .ativo(true)
                 .roles(Set.of(new Role(2L, "ROLE_MEDICO")))
                 .build();
 
-        com.inflowia.medicflow.dto.usuario.DadosAtualizacaoUsuario dto = new com.inflowia.medicflow.dto.usuario.DadosAtualizacaoUsuario();
+        com.inflowia.medicflow.dto.usuario.DadosAtualizacaoUsuario dto =
+                new com.inflowia.medicflow.dto.usuario.DadosAtualizacaoUsuario();
         dto.setNome("Nome Atualizado");
         dto.setAtivo(false);
 
