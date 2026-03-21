@@ -9,10 +9,9 @@ import java.util.List;
 @AllArgsConstructor
 public class LoginResponse {
 
-    private String token;
-    private String type;
-    private Long userId;
+    private Long id;
     private String login;
     private String nomeCompleto;
     private List<String> roles;
+    private String token;
 }
