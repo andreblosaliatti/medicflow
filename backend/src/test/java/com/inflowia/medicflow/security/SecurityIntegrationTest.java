@@ -49,6 +49,7 @@ class SecurityIntegrationTest {
 
     private String adminToken;
     private String medicoToken;
+    private String secretariaToken;
 
     @BeforeEach
     void setUp() {
@@ -57,6 +58,7 @@ class SecurityIntegrationTest {
 
         Role adminRole = roleRepository.save(new Role(null, "ROLE_ADMIN"));
         Role medicoRole = roleRepository.save(new Role(null, "ROLE_MEDICO"));
+        Role secretariaRole = roleRepository.save(new Role(null, "ROLE_SECRETARIA"));
 
         Usuario admin = Usuario.builder()
                 .login("admin.security")
@@ -80,8 +82,20 @@ class SecurityIntegrationTest {
                 .roles(Set.of(medicoRole))
                 .build();
 
+        Usuario secretaria = Usuario.builder()
+                .login("secretaria.security")
+                .senha(passwordEncoder.encode("secret123"))
+                .nome("Secretaria")
+                .sobrenome("Security")
+                .email("secretaria.security@test.com")
+                .cpf("61498182000")
+                .ativo(true)
+                .roles(Set.of(secretariaRole))
+                .build();
+
         usuarioRepository.save(admin);
         usuarioRepository.save(medico);
+        usuarioRepository.save(secretaria);
 
         adminToken = jwtService.generateToken(User.withUsername(admin.getLogin())
                 .password(admin.getSenha())
@@ -91,6 +105,11 @@ class SecurityIntegrationTest {
         medicoToken = jwtService.generateToken(User.withUsername(medico.getLogin())
                 .password(medico.getSenha())
                 .authorities("ROLE_MEDICO")
+                .build());
+
+        secretariaToken = jwtService.generateToken(User.withUsername(secretaria.getLogin())
+                .password(secretaria.getSenha())
+                .authorities("ROLE_SECRETARIA")
                 .build());
     }
 
@@ -133,6 +152,24 @@ class SecurityIntegrationTest {
                 .andExpect(jsonPath("$.result").value("ok"));
     }
 
+    @Test
+    void shouldAllowAccessWhenRoleReceivesPermissionForSpecificResource() throws Exception {
+        mockMvc.perform(get("/test-security/consultas")
+                        .header("Authorization", "Bearer " + secretariaToken)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("ok"));
+    }
+
+    @Test
+    void shouldDenyAccessWhenRoleDoesNotReceiveResourcePermission() throws Exception {
+        mockMvc.perform(get("/test-security/usuarios")
+                        .header("Authorization", "Bearer " + secretariaToken)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
+    }
+
     @TestConfiguration
     static class TestSecurityControllerConfig {
 
@@ -149,6 +186,18 @@ class SecurityIntegrationTest {
         @GetMapping("/admin")
         @PreAuthorize("hasRole('ADMIN')")
         public java.util.Map<String, String> adminOnly() {
+            return java.util.Map.of("result", "ok");
+        }
+
+        @GetMapping("/consultas")
+        @PreAuthorize("hasAuthority('consultas:read')")
+        public java.util.Map<String, String> consultasRead() {
+            return java.util.Map.of("result", "ok");
+        }
+
+        @GetMapping("/usuarios")
+        @PreAuthorize("hasAuthority('usuarios:read')")
+        public java.util.Map<String, String> usuariosRead() {
             return java.util.Map.of("result", "ok");
         }
     }

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -21,6 +22,7 @@ public class MedicamentoController {
     private MedicamentoService service;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('medicamentos:read')")
     public ResponseEntity<Page<MedicamentoPrescritoMinDTO>> findAll(
             @RequestParam(name = "nome", defaultValue = "") String nome,
             Pageable pageable
@@ -30,6 +32,7 @@ public class MedicamentoController {
     }
 
     @GetMapping("/paciente/{pacienteId}")
+    @PreAuthorize("hasAuthority('medicamentos:read')")
     public ResponseEntity<Page<MedicamentoPrescritoMinDTO>> listarHistoricoPorPaciente(
             @PathVariable Long pacienteId,
             Pageable pageable
@@ -38,6 +41,7 @@ public class MedicamentoController {
     }
 
     @PostMapping("/consultas/{consultaId}")
+    @PreAuthorize("hasAuthority('medicamentos:write')")
     public ResponseEntity<MedicamentoPrescritoMinDTO> adicionar(
             @PathVariable Long consultaId,
             @RequestBody @Valid MedicamentoPrescritoDTO dados
@@ -54,6 +58,7 @@ public class MedicamentoController {
     }
 
     @GetMapping("/consultas/{consultaId}")
+    @PreAuthorize("hasAuthority('medicamentos:read')")
     public ResponseEntity<Page<MedicamentoPrescritoMinDTO>> listarPorConsulta(
             @PathVariable Long consultaId,
             Pageable pageable
@@ -62,12 +67,14 @@ public class MedicamentoController {
     }
 
     @GetMapping("/{medicamentoId}")
+    @PreAuthorize("hasAuthority('medicamentos:read')")
     public ResponseEntity<MedicamentoPrescritoMinDTO> findById(@PathVariable Long medicamentoId) {
         MedicamentoPrescritoMinDTO dto = service.findById(medicamentoId);
         return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{medicamentoId}")
+    @PreAuthorize("hasAuthority('medicamentos:write')")
     public ResponseEntity<Void> remover(@PathVariable Long medicamentoId) {
         service.delete(medicamentoId);
         return ResponseEntity.noContent().build();

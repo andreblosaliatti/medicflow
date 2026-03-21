@@ -5,6 +5,8 @@ import com.inflowia.medicflow.dto.auth.LoginRequest;
 import com.inflowia.medicflow.dto.auth.LoginResponse;
 import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.repository.UsuarioRepository;
+import com.inflowia.medicflow.security.AccessRole;
+import com.inflowia.medicflow.security.AuthorizationMatrix;
 import com.inflowia.medicflow.security.CustomUserDetailsService;
 import com.inflowia.medicflow.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -57,11 +60,14 @@ public class AuthService {
         Usuario usuario = usuarioRepository.findByLoginIgnoreCase(login)
                 .orElseThrow(() -> new BadCredentialsException(ExceptionMessages.AUTHENTICATED_USER_NOT_FOUND));
 
-        List<String> roles = usuario.getRoles()
+        List<String> roles = AccessRole.toApiNames(usuario.getRoles()
                 .stream()
                 .map(role -> role.getAuthority())
-                .sorted()
-                .toList();
+                .toList());
+        Set<String> permissions = AuthorizationMatrix.permissionsFor(usuario.getRoles()
+                .stream()
+                .map(role -> role.getAuthority())
+                .collect(java.util.stream.Collectors.toSet()));
 
         String nomeCompleto = usuario.getNome() + " " + usuario.getSobrenome();
 
@@ -70,6 +76,7 @@ public class AuthService {
                 usuario.getLogin(),
                 nomeCompleto,
                 roles,
+                permissions.stream().sorted().toList(),
                 token
         );
     }

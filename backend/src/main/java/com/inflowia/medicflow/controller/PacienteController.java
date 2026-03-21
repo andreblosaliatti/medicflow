@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -24,6 +25,7 @@ public class PacienteController {
 
     // POST - cadastrar
     @PostMapping
+    @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<PacienteDTO> cadastrar(
             @RequestBody @Valid PacienteDTO dto,
             UriComponentsBuilder uriBuilder) {
@@ -40,6 +42,7 @@ public class PacienteController {
 
     // GET - listar
     @GetMapping
+    @PreAuthorize("hasAuthority('pacientes:read')")
     public ResponseEntity<Page<PacienteMinDTO>> listar(
             @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
 
@@ -48,6 +51,7 @@ public class PacienteController {
     }
 
     @GetMapping("/inativos")
+    @PreAuthorize("hasAuthority('pacientes:read')")
     public ResponseEntity<Page<PacienteMinDTO>> listarInativos(
             @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
 
@@ -56,6 +60,7 @@ public class PacienteController {
 
     // GET - buscar por ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('pacientes:read')")
     public ResponseEntity<PacienteDTO> buscarPorId(@PathVariable Long id) {
         PacienteDTO dto = service.buscarPorId(id);
         return ResponseEntity.ok(dto);
@@ -63,6 +68,7 @@ public class PacienteController {
 
     // PUT - atualizar
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<PacienteDTO> atualizar(
             @PathVariable Long id,
             @RequestBody @Valid PacienteUpdateDTO dto) {
@@ -73,12 +79,14 @@ public class PacienteController {
 
     // DELETE - inativar paciente (política oficial)
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/inativar")
+    @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<Void> softDelete(@PathVariable Long id) {
         service.softDelete(id);
         return ResponseEntity.noContent().build();
