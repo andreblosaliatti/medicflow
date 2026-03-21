@@ -1,7 +1,8 @@
 package com.inflowia.medicflow.controller;
 
 import com.inflowia.medicflow.dto.paciente.PacienteDTO;
-import com.inflowia.medicflow.dto.paciente.PacienteMinDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteListDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteProfileDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteUpdateDTO;
 import com.inflowia.medicflow.service.PacienteService;
 import jakarta.validation.Valid;
@@ -23,7 +24,6 @@ public class PacienteController {
     @Autowired
     private PacienteService service;
 
-    // POST - cadastrar
     @PostMapping
     @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<PacienteDTO> cadastrar(
@@ -40,25 +40,30 @@ public class PacienteController {
         return ResponseEntity.created(uri).body(salvo);
     }
 
-    // GET - listar
     @GetMapping
     @PreAuthorize("hasAuthority('pacientes:read')")
-    public ResponseEntity<Page<PacienteMinDTO>> listar(
+    public ResponseEntity<Page<PacienteListDTO>> listar(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String cpf,
+            @RequestParam(required = false) Boolean ativo,
+            @RequestParam(required = false, name = "convenio") String convenio,
             @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
 
-        Page<PacienteMinDTO> page = service.listar(pageable);
+        Page<PacienteListDTO> page = service.listar(nome, cpf, ativo, convenio, pageable);
         return ResponseEntity.ok(page);
     }
 
     @GetMapping("/inativos")
     @PreAuthorize("hasAuthority('pacientes:read')")
-    public ResponseEntity<Page<PacienteMinDTO>> listarInativos(
+    public ResponseEntity<Page<PacienteListDTO>> listarInativos(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String cpf,
+            @RequestParam(required = false, name = "convenio") String convenio,
             @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
 
-        return ResponseEntity.ok(service.listarInativos(pageable));
+        return ResponseEntity.ok(service.listarInativos(nome, cpf, convenio, pageable));
     }
 
-    // GET - buscar por ID
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('pacientes:read')")
     public ResponseEntity<PacienteDTO> buscarPorId(@PathVariable Long id) {
@@ -66,7 +71,12 @@ public class PacienteController {
         return ResponseEntity.ok(dto);
     }
 
-    // PUT - atualizar
+    @GetMapping("/{id}/perfil")
+    @PreAuthorize("hasAuthority('pacientes:read')")
+    public ResponseEntity<PacienteProfileDTO> buscarPerfil(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarPerfil(id));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<PacienteDTO> atualizar(
@@ -77,7 +87,6 @@ public class PacienteController {
         return ResponseEntity.ok(atualizado);
     }
 
-    // DELETE - inativar paciente (política oficial)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {

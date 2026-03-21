@@ -72,7 +72,14 @@ public class Paciente {
             this.dataNascimento = dados.getDataNascimento();
         }
         if (dados.getEndereco() != null) {
-            this.endereco.atualizarInformacoes(dados.getEndereco());
+            if (this.endereco == null) {
+                this.endereco = dados.getEndereco().toEntity();
+            } else {
+                this.endereco.atualizarInformacoes(dados.getEndereco());
+            }
+        }
+        if (dados.getPlanoSaude() != null) {
+            this.planoSaude = dados.getPlanoSaude();
         }
     }
 }

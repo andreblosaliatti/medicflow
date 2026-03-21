@@ -18,6 +18,8 @@ public class PacienteDetailsDTO {
     private String email;
     private String sexo;
     private EnderecoDTO endereco;
+    private String planoSaude;
+    private boolean ativo;
 
     public PacienteDetailsDTO(Paciente p) {
         this.id = p.getId();
@@ -28,6 +30,8 @@ public class PacienteDetailsDTO {
         this.telefone = p.getTelefone();
         this.email = p.getEmail();
         this.sexo = p.getSexo();
-        this.endereco = new EnderecoDTO(p.getEndereco());
+        this.endereco = p.getEndereco() != null ? new EnderecoDTO(p.getEndereco()) : null;
+        this.planoSaude = p.getPlanoSaude();
+        this.ativo = p.isAtivo();
     }
 }
