@@ -13,8 +13,25 @@ public class ConsultaEnumWebConfig implements WebMvcConfigurer {
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter((Converter<String, StatusConsulta>) StatusConsulta::fromValue);
-        registry.addConverter((Converter<String, TipoConsulta>) TipoConsulta::fromValue);
-        registry.addConverter((Converter<String, MeioPagamento>) MeioPagamento::fromValue);
+        registry.addConverter(new Converter<String, StatusConsulta>() {
+            @Override
+            public StatusConsulta convert(String source) {
+                return source == null ? null : StatusConsulta.fromValue(source);
+            }
+        });
+
+        registry.addConverter(new Converter<String, TipoConsulta>() {
+            @Override
+            public TipoConsulta convert(String source) {
+                return source == null ? null : TipoConsulta.fromValue(source);
+            }
+        });
+
+        registry.addConverter(new Converter<String, MeioPagamento>() {
+            @Override
+            public MeioPagamento convert(String source) {
+                return source == null ? null : MeioPagamento.fromValue(source);
+            }
+        });
     }
 }
