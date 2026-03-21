@@ -2,6 +2,7 @@ package com.inflowia.medicflow.security;
 
 import com.inflowia.medicflow.entities.usuario.Usuario;
 import com.inflowia.medicflow.repositories.UsuarioRepository;
+import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,7 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByLoginIgnoreCase(login)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado para login: " + login));
+                .orElseThrow(() -> new UsernameNotFoundException(ExceptionMessages.INVALID_LOGIN));
 
         Set<GrantedAuthority> authorities = usuario.getRoles()
                 .stream()

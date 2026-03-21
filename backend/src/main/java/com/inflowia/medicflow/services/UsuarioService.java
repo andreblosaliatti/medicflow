@@ -5,7 +5,8 @@ import com.inflowia.medicflow.entities.usuario.Role;
 import com.inflowia.medicflow.entities.usuario.Usuario;
 import com.inflowia.medicflow.repositories.RoleRepository;
 import com.inflowia.medicflow.repositories.UsuarioRepository;
-import com.inflowia.medicflow.services.exceptions.DatabaseException;
+import com.inflowia.medicflow.services.exceptions.BusinessRuleException;
+import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
 import com.inflowia.medicflow.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -36,14 +37,14 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public DadosDetalhamentoUsuario findById(Long id) {
         Usuario entity = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Usuário")));
         return new DadosDetalhamentoUsuario(entity);
     }
 
     @Transactional(readOnly = true)
     public DadosDetalhamentoUsuario findByCpf(String cpf) {
         Usuario entity = repository.findByCpf(cpf)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com cpf: " + cpf));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFoundBy("Usuário", "CPF", cpf)));
         return new DadosDetalhamentoUsuario(entity);
     }
 
@@ -101,19 +102,19 @@ public class UsuarioService {
             return new DadosAtualizacaoUsuario(entity);
 
         } catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException("Usuário não encontrado para atualização");
+            throw new ResourceNotFoundException(ExceptionMessages.notFound("Usuário"));
         }
     }
 
     @Transactional
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Usuário não encontrado: " + id);
+            throw new ResourceNotFoundException(ExceptionMessages.notFoundBy("Usuário", "id", String.valueOf(id)));
         }
         try {
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Violação de integridade — usuário não pode ser removido");
+            throw new BusinessRuleException("Não é possível excluir o usuário informado porque ele está vinculado a outros registros.");
         }
     }
 }

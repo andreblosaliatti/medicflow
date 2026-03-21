@@ -11,7 +11,8 @@ import com.inflowia.medicflow.entities.usuario.Medico;
 import com.inflowia.medicflow.repositories.ConsultaRepository;
 import com.inflowia.medicflow.repositories.MedicoRepository;
 import com.inflowia.medicflow.repositories.PacienteRepository;
-import com.inflowia.medicflow.services.exceptions.DatabaseException;
+import com.inflowia.medicflow.services.exceptions.BusinessRuleException;
+import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
 import com.inflowia.medicflow.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,10 +43,10 @@ public class ConsultaService {
     @Transactional
     public ConsultaDetailsDTO criar(ConsultaDTO dto) {
         Paciente paciente = pacienteRepository.findById(dto.getPacienteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
 
         Medico medico = medicoRepository.findById(dto.getMedicoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Médico não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Médico")));
 
         Consulta entity = new Consulta();
         copyCreateDtoToEntity(dto, entity, paciente, medico);
@@ -64,12 +65,12 @@ public class ConsultaService {
 
             if (dto.getPacienteId() != null) {
                 paciente = pacienteRepository.findById(dto.getPacienteId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado"));
+                        .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
             }
 
             if (dto.getMedicoId() != null) {
                 medico = medicoRepository.findById(dto.getMedicoId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Médico não encontrado"));
+                        .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Médico")));
             }
 
             copyUpdateDtoToEntity(dto, entity, paciente, medico);
@@ -78,27 +79,27 @@ public class ConsultaService {
             return new ConsultaDetailsDTO(entity);
 
         } catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException("Consulta não encontrada");
+            throw new ResourceNotFoundException(ExceptionMessages.notFound("Consulta"));
         }
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id){
         if(!consultaRepository.existsById(id)){
-            throw new ResourceNotFoundException("Recurso não encontrado");
+            throw new ResourceNotFoundException(ExceptionMessages.notFound("Consulta"));
         }
         try {
             consultaRepository.deleteById(id);
         }
         catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Falha de integridade referencial");
+            throw new BusinessRuleException("Não é possível excluir a consulta informada porque ela está vinculada a outros registros.");
         }
     }
 
     @Transactional(readOnly = true)
     public ConsultaDetailsDTO buscarPorId(Long id) {
         Consulta entity = consultaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Consulta")));
         return new ConsultaDetailsDTO(entity);
     }
 
@@ -111,7 +112,7 @@ public class ConsultaService {
     @Transactional(readOnly = true)
     public Page<ConsultaMinDTO> listarPorPaciente(Long pacienteId, Pageable pageable) {
         if (!pacienteRepository.existsById(pacienteId)) {
-            throw new ResourceNotFoundException("Paciente não encontrado");
+            throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
         }
         Page<Consulta> page = consultaRepository.findByPacienteId(pacienteId, pageable);
         return page.map(ConsultaMinDTO::new);
@@ -120,7 +121,7 @@ public class ConsultaService {
     @Transactional(readOnly = true)
     public Page<ConsultaMinDTO> listarPorMedico(Long medicoId, Pageable pageable) {
         if (!medicoRepository.existsById(medicoId)) {
-            throw new ResourceNotFoundException("Médico não encontrado");
+            throw new ResourceNotFoundException(ExceptionMessages.notFound("Médico"));
         }
         Page<Consulta> page = consultaRepository.findByMedicoId(medicoId, pageable);
         return page.map(ConsultaMinDTO::new);
@@ -129,7 +130,7 @@ public class ConsultaService {
     @Transactional(readOnly = true)
     public ConsultaDetailsDTO buscarUltimaConsultaPorPaciente(Long pacienteId) {
         Consulta consulta = consultaRepository.findTopByPacienteIdOrderByDataHoraDesc(pacienteId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nenhuma consulta encontrada para o paciente informado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.NO_CONSULTATIONS_FOR_PATIENT));
         return new ConsultaDetailsDTO(consulta);
     }
 

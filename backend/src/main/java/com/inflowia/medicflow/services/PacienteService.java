@@ -5,7 +5,8 @@ import com.inflowia.medicflow.dto.paciente.PacienteMinDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteUpdateDTO;
 import com.inflowia.medicflow.entities.paciente.Paciente;
 import com.inflowia.medicflow.repositories.PacienteRepository;
-import com.inflowia.medicflow.services.exceptions.DatabaseException;
+import com.inflowia.medicflow.services.exceptions.BusinessRuleException;
+import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
 import com.inflowia.medicflow.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -47,7 +48,7 @@ public class PacienteService {
     @Transactional(readOnly = true)
     public PacienteDTO buscarPorId(Long id) {
         Paciente paciente = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
         return new PacienteDTO(paciente);
     }
 
@@ -55,7 +56,7 @@ public class PacienteService {
     @Transactional
     public PacienteDTO atualizar(Long id, PacienteUpdateDTO dto) {
         Paciente paciente = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
 
         copiarUpdateDtoParaEntidade(dto, paciente);
 
@@ -66,13 +67,13 @@ public class PacienteService {
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id){
         if(!repository.existsById(id)){
-            throw new ResourceNotFoundException("Recurso não encontrado");
+            throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
         }
         try {
             repository.deleteById(id);
         }
         catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Falha de integridade referencial");
+            throw new BusinessRuleException("Não é possível excluir o paciente informado porque ele está vinculado a outros registros.");
         }
     }
 
@@ -80,7 +81,7 @@ public class PacienteService {
     @Transactional
     public void softDelete(Long id) {
         Paciente paciente = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
 
         paciente.setAtivo(false);
         repository.save(paciente);

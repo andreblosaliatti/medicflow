@@ -7,7 +7,8 @@ import com.inflowia.medicflow.entities.paciente.Paciente;
 import com.inflowia.medicflow.entities.usuario.Medico;
 import com.inflowia.medicflow.repositories.ConsultaRepository;
 import com.inflowia.medicflow.repositories.MedicoRepository;
-import com.inflowia.medicflow.services.exceptions.DatabaseException;
+import com.inflowia.medicflow.services.exceptions.BusinessRuleException;
+import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
 import com.inflowia.medicflow.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -44,7 +45,7 @@ public class MedicoService {
     @Transactional(readOnly = true)
     public MedicoDetailsDTO buscarPorId(Long id) {
         Medico medico = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Médico não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Médico")));
         return new MedicoDetailsDTO(medico);
     }
 
@@ -63,7 +64,7 @@ public class MedicoService {
     @Transactional
     public MedicoDetailsDTO atualizar(Long id, MedicoUpdateDTO dto) {
         Medico medico = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Médico não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Médico")));
 
         if (dto.getNome() != null) medico.setNome(dto.getNome());
         if (dto.getSobrenome() != null) medico.setSobrenome(dto.getSobrenome());
@@ -85,19 +86,19 @@ public class MedicoService {
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Médico não encontrado");
+            throw new ResourceNotFoundException(ExceptionMessages.notFound("Médico"));
         }
         try {
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Não é possível excluir médico com consultas cadastradas. Utilize a inativação (soft delete).");
+            throw new BusinessRuleException("Não é possível excluir o médico informado porque ele possui consultas cadastradas. Utilize a inativação.");
         }
     }
 
     @Transactional(readOnly = true)
     public MedicoComPacientesDTO buscarMedicoComPacientes(Long medicoId) {
         Medico medico = repository.findById(medicoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Médico não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Médico")));
 
         List<Paciente> pacientes = consultaRepository.findPacientesDistinctByMedicoId(medicoId);
 
@@ -107,7 +108,7 @@ public class MedicoService {
     @Transactional(readOnly = true)
     public List<PacienteMinDTO> listarPacientesPorMedico(Long medicoId) {
         if (!repository.existsById(medicoId)) {
-            throw new ResourceNotFoundException("Médico não encontrado");
+            throw new ResourceNotFoundException(ExceptionMessages.notFound("Médico"));
         }
 
         List<Paciente> pacientes = consultaRepository.findPacientesDistinctByMedicoId(medicoId);
