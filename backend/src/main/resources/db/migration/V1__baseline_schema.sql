@@ -168,35 +168,35 @@ CREATE TABLE IF NOT EXISTS tb_usuario_role (
     CONSTRAINT tb_usuario_role_pkey PRIMARY KEY (role_id, usuario_id)
 );
 
-ALTER TABLE ONLY tb_medicos
+ALTER TABLE tb_medicos
     ADD CONSTRAINT fklm169t4fhtljov9mg79nuhbip FOREIGN KEY (usuario_id) REFERENCES tb_usuarios(id);
 
-ALTER TABLE ONLY enfermeiros
+ALTER TABLE enfermeiros
     ADD CONSTRAINT fkkd3vxabdsysoq2y1v10o6eouh FOREIGN KEY (id) REFERENCES tb_usuarios(id);
 
-ALTER TABLE ONLY consultas
+ALTER TABLE consultas
     ADD CONSTRAINT fk8rgyvij4segs1tlhycdyfiu2n FOREIGN KEY (medico_id) REFERENCES tb_medicos(usuario_id);
 
-ALTER TABLE ONLY consultas
+ALTER TABLE consultas
     ADD CONSTRAINT fke93cdauso5jd1y4bdpox45n4t FOREIGN KEY (paciente_id) REFERENCES pacientes(id);
 
-ALTER TABLE ONLY exame_solicitado
+ALTER TABLE exame_solicitado
     ADD CONSTRAINT fkhejwn1f1dlpx4ah6ncmxqehku FOREIGN KEY (consulta_id) REFERENCES consultas(id);
 
-ALTER TABLE ONLY exame_solicitado
+ALTER TABLE exame_solicitado
     ADD CONSTRAINT fknxoullrrftd4mbsp7sv0cljy8 FOREIGN KEY (exame_base_id) REFERENCES exame_base(id);
 
-ALTER TABLE ONLY medicamento_prescrito
+ALTER TABLE medicamento_prescrito
     ADD CONSTRAINT fkpqfk7osg86whf2qd0647wween FOREIGN KEY (consulta_id) REFERENCES consultas(id);
 
-ALTER TABLE ONLY medicamento_prescrito
+ALTER TABLE medicamento_prescrito
     ADD CONSTRAINT fkg5daca85m6u284puplm2e36ne FOREIGN KEY (medicamento_base_id) REFERENCES medicamento_base(id);
 
-ALTER TABLE ONLY medicamento_prescrito
+ALTER TABLE medicamento_prescrito
     ADD CONSTRAINT fksdnvtr5if90i5s1lq8sf16nsf FOREIGN KEY (paciente_id) REFERENCES pacientes(id);
 
-ALTER TABLE ONLY tb_usuario_role
+ALTER TABLE tb_usuario_role
     ADD CONSTRAINT fkbrq9flkj5y52rn0idtyjliovr FOREIGN KEY (usuario_id) REFERENCES tb_usuarios(id);
 
-ALTER TABLE ONLY tb_usuario_role
+ALTER TABLE tb_usuario_role
     ADD CONSTRAINT fkkix4nwaehqjwnk40e2e36903j FOREIGN KEY (role_id) REFERENCES tb_role(id);
