@@ -1,6 +1,7 @@
 # OS/IDE
 .idea/
 .vscode/
+<<<<<<< HEAD
 .DS_Store
 
 # Java/Maven/Gradle
@@ -19,3 +20,12 @@ build/
 .env.*
 *:Zone.Identifier
 backend/*.log
+=======
+node_modules/
+frontend/node_modules/
+target/
+backend/target/
+dist/
+.vscode/
+.idea/
+>>>>>>> codex/hardening

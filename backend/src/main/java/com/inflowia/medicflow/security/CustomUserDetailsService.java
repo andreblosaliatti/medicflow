@@ -2,29 +2,39 @@ package com.inflowia.medicflow.security;
 
 import com.inflowia.medicflow.entities.usuario.Usuario;
 import com.inflowia.medicflow.repositories.UsuarioRepository;
+import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
+@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UsuarioRepository usuarioRepository;
 
-    public CustomUserDetailsService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
-
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByLoginIgnoreCase(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+        Usuario usuario = usuarioRepository.findByLoginIgnoreCase(login)
+                .orElseThrow(() -> new UsernameNotFoundException(ExceptionMessages.INVALID_LOGIN));
 
-        return User.withUsername(usuario.getLogin())
+        Set<GrantedAuthority> authorities = usuario.getRoles()
+                .stream()
+                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
+                .collect(Collectors.toSet());
+
+        return User.builder()
+                .username(usuario.getLogin())
                 .password(usuario.getSenha())
-                .authorities(usuario.getRoles().stream().map(r -> r.getAuthority()).toArray(String[]::new))
+                .authorities(authorities)
                 .disabled(!usuario.isAtivo())
                 .build();
     }

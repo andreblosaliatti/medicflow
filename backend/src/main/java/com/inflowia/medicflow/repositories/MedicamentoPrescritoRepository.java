@@ -12,8 +12,10 @@ public interface MedicamentoPrescritoRepository extends JpaRepository<Medicament
 
     Page<MedicamentoPrescrito> findByConsultaId(Long consultaId, Pageable pageable);
 
-    @Query("SELECT obj FROM MedicamentoPrescrito obj " +
-            "WHERE UPPER(obj.nome) LIKE UPPER(CONCAT('%', :nome, '%'))")
+    @Query("""
+            SELECT obj
+            FROM MedicamentoPrescrito obj
+            WHERE UPPER(obj.nome) LIKE UPPER(CONCAT('%', :nome, '%'))
+            """)
     Page<MedicamentoPrescrito> searchByName(String nome, Pageable pageable);
 }
-

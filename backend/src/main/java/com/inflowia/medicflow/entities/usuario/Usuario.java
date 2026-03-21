@@ -60,7 +60,7 @@ public class Usuario {
     @Embedded
     private Endereco endereco;
 
-
+    @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "tb_usuario_role",
             joinColumns = @JoinColumn(name = "usuario_id"),

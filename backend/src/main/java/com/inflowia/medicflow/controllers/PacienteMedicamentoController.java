@@ -19,7 +19,7 @@ public class PacienteMedicamentoController {
 
     @GetMapping
     public ResponseEntity<Page<MedicamentoPrescritoMinDTO>> listarTodos(@PathVariable Long pacienteId, Pageable pageable){
-        return ResponseEntity.ok(service.findByPaciente(pacienteId, pageable));
+        return ResponseEntity.ok(service.listarHistoricoPorPaciente(pacienteId, pageable));
     }
 
     @GetMapping("/atual")

@@ -1,17 +1,13 @@
 package com.inflowia.medicflow.entities.medicamento;
 
 import com.inflowia.medicflow.entities.consulta.Consulta;
-import com.inflowia.medicflow.entities.paciente.Paciente;
-
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
 
 @Entity
 @Table(name = "medicamento_prescrito")
 @Getter
-@Setter 
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,21 +17,23 @@ public class MedicamentoPrescrito {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "nome_prescrito", nullable = false)
     private String nome;
+
+    @Column(name = "dosagem_prescrita", nullable = false)
     private String dosagem;
+
+    @Column(name = "frequencia")
     private String frequencia;
+
+    @Column(name = "via")
     private String via;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "paciente_id")
-    private Paciente paciente;
-
-    @ManyToOne
-    @JoinColumn(name = "consulta_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "consulta_id", nullable = false)
     private Consulta consulta;
 
-    @ManyToOne
-    @JoinColumn(name = "medicamento_base_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "medicamento_base_id", nullable = false)
     private MedicamentoBase medicamentoBase;
-
 }
