@@ -92,6 +92,7 @@ class UsuarioControllerWebMvcTest {
                         "novo.usuario",
                         "Novo",
                         "Usuario",
+                        "Novo Usuario",
                         "novo.usuario@test.com",
                         "32844208606",
                         Set.of("ADMIN"),

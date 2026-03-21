@@ -1,16 +1,29 @@
 package com.inflowia.medicflow.controller;
 
-import com.inflowia.medicflow.dto.medico.*;
+import com.inflowia.medicflow.dto.medico.MedicoComPacientesDTO;
+import com.inflowia.medicflow.dto.medico.MedicoDTO;
+import com.inflowia.medicflow.dto.medico.MedicoDetailsDTO;
+import com.inflowia.medicflow.dto.medico.MedicoMinDTO;
+import com.inflowia.medicflow.dto.medico.MedicoSelectDTO;
+import com.inflowia.medicflow.dto.medico.MedicoUpdateDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteMinDTO;
 import com.inflowia.medicflow.service.MedicoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -18,12 +31,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/medicos")
+@RequiredArgsConstructor
 public class MedicoController {
 
-    @Autowired
-    private MedicoService service;
+    private final MedicoService service;
 
-    // POST - cadastrar médico
     @PostMapping
     @PreAuthorize("hasAuthority('medicos:write')")
     public ResponseEntity<MedicoDetailsDTO> cadastrar(
@@ -47,6 +59,22 @@ public class MedicoController {
 
         Page<MedicoMinDTO> page = service.listar(pageable);
         return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/resumo")
+    @PreAuthorize("hasAuthority('medicos:read')")
+    public ResponseEntity<List<MedicoSelectDTO>> listarResumo(
+            @RequestParam(value = "termo", required = false) String termo,
+            @RequestParam(value = "limite", defaultValue = "20") int limite) {
+        return ResponseEntity.ok(service.listarResumo(termo, limite));
+    }
+
+    @GetMapping("/autocomplete")
+    @PreAuthorize("hasAuthority('medicos:read')")
+    public ResponseEntity<List<MedicoSelectDTO>> autocomplete(
+            @RequestParam("termo") String termo,
+            @RequestParam(value = "limite", defaultValue = "10") int limite) {
+        return ResponseEntity.ok(service.listarResumo(termo, limite));
     }
 
     @GetMapping("/{id}")
@@ -77,7 +105,6 @@ public class MedicoController {
         return ResponseEntity.ok(medicos);
     }
 
-    // PUT - atualizar
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('medicos:write')")
     public ResponseEntity<MedicoDetailsDTO> atualizar(
@@ -87,13 +114,10 @@ public class MedicoController {
         return ResponseEntity.ok(atualizado);
     }
 
-    // DELETE - inativar médico (política oficial)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('medicos:write')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
-
-
 }

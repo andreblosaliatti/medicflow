@@ -33,8 +33,9 @@ public class UsuarioService {
     private final UsuarioMapper usuarioMapper;
 
     @Transactional(readOnly = true)
-    public Page<DadosListagemUsuario> findAllPaged(String nome, Pageable pageable) {
-        Page<Usuario> page = repository.findByNomeContainingIgnoreCaseAndAtivoTrue(nome, pageable);
+    public Page<DadosListagemUsuario> findAllPaged(String nome, Boolean ativo, String role, Pageable pageable) {
+        String normalizedRole = normalizeRole(role);
+        Page<Usuario> page = repository.searchForAdmin(nome == null ? "" : nome, ativo, normalizedRole, pageable);
         return page.map(usuarioMapper::toListagem);
     }
 
@@ -63,7 +64,7 @@ public class UsuarioService {
         entity.setSobrenome(dto.getSobrenome());
         entity.setEmail(dto.getEmail());
         entity.setCpf(dto.getCpf());
-        entity.setAtivo(true);
+        entity.setAtivo(dto.getAtivo() == null || dto.getAtivo());
 
         if (dto.getEndereco() != null) {
             entity.setEndereco(dto.getEndereco().toEntity());
@@ -79,26 +80,24 @@ public class UsuarioService {
     public DadosDetalhamentoUsuario update(Long id, DadosAtualizacaoUsuario dto) {
         Usuario entity = getUsuarioAtivo(id);
 
+        if (dto.getLogin() != null) {
+            entity.setLogin(dto.getLogin());
+        }
         if (dto.getNome() != null) {
             entity.setNome(dto.getNome());
         }
-
         if (dto.getSobrenome() != null) {
             entity.setSobrenome(dto.getSobrenome());
         }
-
         if (dto.getEmail() != null) {
             entity.setEmail(dto.getEmail());
         }
-
         if (dto.getAtivo() != null) {
             entity.setAtivo(dto.getAtivo());
         }
-
         if (dto.getRoles() != null) {
             entity.setRoles(resolveRoles(dto.getRoles()));
         }
-
         if (dto.getEndereco() != null) {
             entity.setEndereco(dto.getEndereco().toEntity());
         }
@@ -133,5 +132,12 @@ public class UsuarioService {
         }
 
         return resolvedRoles;
+    }
+
+    private String normalizeRole(String role) {
+        if (role == null || role.isBlank()) {
+            return null;
+        }
+        return AccessRole.fromValue(role).authority();
     }
 }
