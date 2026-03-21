@@ -5,15 +5,12 @@ import com.inflowia.medicflow.dto.paciente.PacienteMinDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteUpdateDTO;
 import com.inflowia.medicflow.entities.paciente.Paciente;
 import com.inflowia.medicflow.repositories.PacienteRepository;
-import com.inflowia.medicflow.services.exceptions.BusinessRuleException;
 import com.inflowia.medicflow.services.exceptions.ExceptionMessages;
 import com.inflowia.medicflow.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -22,7 +19,6 @@ public class PacienteService {
     @Autowired
     private PacienteRepository repository;
 
-    // POST - cadastrar
     @Transactional
     public PacienteDTO cadastrar(PacienteDTO dto) {
         Paciente entidade = new Paciente();
@@ -47,44 +43,34 @@ public class PacienteService {
 
     @Transactional(readOnly = true)
     public PacienteDTO buscarPorId(Long id) {
-        Paciente paciente = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
+        Paciente paciente = getPacienteAtivo(id);
         return new PacienteDTO(paciente);
     }
 
-    // PUT - atualizar
     @Transactional
     public PacienteDTO atualizar(Long id, PacienteUpdateDTO dto) {
-        Paciente paciente = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
-
+        Paciente paciente = getPacienteAtivo(id);
         copiarUpdateDtoParaEntidade(dto, paciente);
 
         Paciente atualizado = repository.save(paciente);
         return new PacienteDTO(atualizado);
     }
 
-    @Transactional(propagation = Propagation.SUPPORTS)
-    public void delete(Long id){
-        if(!repository.existsById(id)){
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
-        }
-        try {
-            repository.deleteById(id);
-        }
-        catch (DataIntegrityViolationException e) {
-            throw new BusinessRuleException("Não é possível excluir o paciente informado porque ele está vinculado a outros registros.");
-        }
-    }
-
-    // DELETE - desativar (soft delete)
     @Transactional
-    public void softDelete(Long id) {
-        Paciente paciente = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
-
+    public void delete(Long id) {
+        Paciente paciente = getPacienteAtivo(id);
         paciente.setAtivo(false);
         repository.save(paciente);
+    }
+
+    @Transactional
+    public void softDelete(Long id) {
+        delete(id);
+    }
+
+    private Paciente getPacienteAtivo(Long id) {
+        return repository.findByIdAndAtivoTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
     }
 
     private void copiarDtoParaEntidade(PacienteDTO dto, Paciente entidade) {
