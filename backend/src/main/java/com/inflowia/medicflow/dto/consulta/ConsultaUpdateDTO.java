@@ -1,21 +1,23 @@
 package com.inflowia.medicflow.dto.consulta;
 
-import com.inflowia.medicflow.entities.consulta.MeioPagamento;
-import com.inflowia.medicflow.entities.consulta.StatusConsulta;
-import com.inflowia.medicflow.entities.consulta.TipoConsulta;
+import com.inflowia.medicflow.domain.consulta.MeioPagamento;
+import com.inflowia.medicflow.domain.consulta.StatusConsulta;
+import com.inflowia.medicflow.domain.consulta.TipoConsulta;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
+@Builder
 public class ConsultaUpdateDTO {
 
     @FutureOrPresent(message = "A data e hora da consulta deve ser no presente ou futuro")
@@ -67,4 +69,52 @@ public class ConsultaUpdateDTO {
 
     private Long pacienteId;
     private Long medicoId;
+
+    public ConsultaUpdateDTO(
+            LocalDateTime dataHora,
+            TipoConsulta tipo,
+            StatusConsulta status,
+            Double valorConsulta,
+            MeioPagamento meioPagamento,
+            Boolean pago,
+            LocalDateTime dataPagamento,
+            Integer duracaoMinutos,
+            Boolean retorno,
+            LocalDateTime dataLimiteRetorno,
+            Boolean teleconsulta,
+            String linkAcesso,
+            String planoSaude,
+            String numeroCarteirinha,
+            String motivo,
+            String anamnese,
+            String exameFisico,
+            String diagnostico,
+            String prescricao,
+            String observacoes,
+            Long pacienteId,
+            Long medicoId
+    ) {
+        this.dataHora = dataHora;
+        this.tipo = tipo;
+        this.status = status;
+        this.valorConsulta = valorConsulta;
+        this.meioPagamento = meioPagamento;
+        this.pago = pago;
+        this.dataPagamento = dataPagamento;
+        this.duracaoMinutos = duracaoMinutos;
+        this.retorno = retorno;
+        this.dataLimiteRetorno = dataLimiteRetorno;
+        this.teleconsulta = teleconsulta;
+        this.linkAcesso = linkAcesso;
+        this.planoSaude = planoSaude;
+        this.numeroCarteirinha = numeroCarteirinha;
+        this.motivo = motivo;
+        this.anamnese = anamnese;
+        this.exameFisico = exameFisico;
+        this.diagnostico = diagnostico;
+        this.prescricao = prescricao;
+        this.observacoes = observacoes;
+        this.pacienteId = pacienteId;
+        this.medicoId = medicoId;
+    }
 }
