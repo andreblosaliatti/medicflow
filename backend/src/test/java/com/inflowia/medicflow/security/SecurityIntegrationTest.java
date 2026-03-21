@@ -88,7 +88,7 @@ class SecurityIntegrationTest {
                 .nome("Secretaria")
                 .sobrenome("Security")
                 .email("secretaria.security@test.com")
-                .cpf("61498182000")
+                .cpf("61498182097")
                 .ativo(true)
                 .roles(Set.of(secretariaRole))
                 .build();

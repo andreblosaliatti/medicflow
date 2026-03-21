@@ -101,7 +101,7 @@ class UsuarioServiceTest {
         dto.setNome("Secretaria");
         dto.setSobrenome("Teste");
         dto.setEmail("secretaria@test.com");
-        dto.setCpf("61498182000");
+        dto.setCpf("61498182097");
         dto.setRoles(Set.of("ROLE_SECRETARIO"));
 
         Role secretariaRole = new Role(3L, "ROLE_SECRETARIA");

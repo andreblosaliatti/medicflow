@@ -61,7 +61,7 @@ class AuthControllerIntegrationTest {
                 .nome("Auth")
                 .sobrenome("User")
                 .email("auth.user@test.com")
-                .cpf("95633733052")
+                .cpf("95633733088")
                 .ativo(true)
                 .roles(Set.of(adminRole, medicoRole))
                 .build());
