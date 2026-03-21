@@ -1,7 +1,9 @@
 package com.inflowia.medicflow.service;
 
-import com.inflowia.medicflow.dto.usuario.DadosCadastroUsuario;
 import com.inflowia.medicflow.domain.usuario.Usuario;
+import com.inflowia.medicflow.dto.usuario.DadosCadastroUsuario;
+import com.inflowia.medicflow.dto.usuario.DadosDetalhamentoUsuario;
+import com.inflowia.medicflow.mappers.UsuarioMapper;
 import com.inflowia.medicflow.repository.RoleRepository;
 import com.inflowia.medicflow.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -23,10 +27,15 @@ class UsuarioServiceTest {
 
     @Mock
     UsuarioRepository repository;
+
     @Mock
     RoleRepository roleRepository;
+
     @Mock
     PasswordEncoder passwordEncoder;
+
+    @Mock
+    UsuarioMapper usuarioMapper;
 
     @InjectMocks
     UsuarioService service;
@@ -43,6 +52,7 @@ class UsuarioServiceTest {
 
         when(passwordEncoder.encode("plain123")).thenReturn("encoded");
         when(repository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(usuarioMapper.toDetalhamento(any(Usuario.class))).thenReturn(new DadosDetalhamentoUsuario());
 
         service.insert(dto);
 
@@ -64,7 +74,7 @@ class UsuarioServiceTest {
                 .ativo(true)
                 .build();
 
-        when(repository.findByIdAndAtivoTrue(1L)).thenReturn(java.util.Optional.of(usuario));
+        when(repository.findByIdAndAtivoTrue(1L)).thenReturn(Optional.of(usuario));
         when(repository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
 
         service.delete(1L);

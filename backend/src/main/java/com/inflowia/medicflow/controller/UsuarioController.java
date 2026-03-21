@@ -22,10 +22,6 @@ public class UsuarioController {
     @Autowired
     private UsuarioService service;
 
-    // ------------------------------------------------------------
-    // LISTAR USUÁRIOS POR NOME (PAGINADO)
-    // /usuarios?nome=greg
-    // ------------------------------------------------------------
     @GetMapping
     public ResponseEntity<Page<DadosListagemUsuario>> findAll(
             @RequestParam(value = "nome", defaultValue = "") String nome,
@@ -35,28 +31,18 @@ public class UsuarioController {
         return ResponseEntity.ok(page);
     }
 
-    // ------------------------------------------------------------
-    // BUSCAR POR ID
-    // ------------------------------------------------------------
     @GetMapping("/{id}")
     public ResponseEntity<DadosDetalhamentoUsuario> findById(@PathVariable Long id) {
         DadosDetalhamentoUsuario dto = service.findById(id);
         return ResponseEntity.ok(dto);
     }
 
-    // ------------------------------------------------------------
-    // BUSCAR POR CPF
-    // /usuarios/cpf/39053344705
-    // ------------------------------------------------------------
     @GetMapping("/cpf/{cpf}")
     public ResponseEntity<DadosDetalhamentoUsuario> findByCpf(@PathVariable String cpf) {
         DadosDetalhamentoUsuario dto = service.findByCpf(cpf);
         return ResponseEntity.ok(dto);
     }
 
-    // ------------------------------------------------------------
-    // INSERT
-    // ------------------------------------------------------------
     @PostMapping
     public ResponseEntity<DadosDetalhamentoUsuario> insert(
             @RequestBody @Valid DadosCadastroUsuario dto) {
@@ -71,21 +57,15 @@ public class UsuarioController {
         return ResponseEntity.created(uri).body(created);
     }
 
-    // ------------------------------------------------------------
-    // UPDATE
-    // ------------------------------------------------------------
     @PutMapping("/{id}")
-    public ResponseEntity<DadosAtualizacaoUsuario> update(
+    public ResponseEntity<DadosDetalhamentoUsuario> update(
             @PathVariable Long id,
             @RequestBody @Valid DadosAtualizacaoUsuario dto) {
 
-        DadosAtualizacaoUsuario updated = service.update(id, dto);
+        DadosDetalhamentoUsuario updated = service.update(id, dto);
         return ResponseEntity.ok(updated);
     }
 
-    // ------------------------------------------------------------
-    // DELETE - inativar usuário (política oficial)
-    // ------------------------------------------------------------
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
