@@ -1,6 +1,8 @@
 package com.inflowia.medicflow.config;
 
 import com.inflowia.medicflow.config.CorrelationIdFilter;
+import com.inflowia.medicflow.security.ApiAccessDeniedHandler;
+import com.inflowia.medicflow.security.ApiAuthenticationEntryPoint;
 import com.inflowia.medicflow.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +33,8 @@ public class SecurityBeansConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CorrelationIdFilter correlationIdFilter;
     private final Environment environment;
+    private final ApiAuthenticationEntryPoint authenticationEntryPoint;
+    private final ApiAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -68,6 +72,10 @@ public class SecurityBeansConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(

@@ -7,6 +7,7 @@ public final class ExceptionMessages {
     public static final String INVALID_LOGIN = "Login ou senha inválidos.";
     public static final String INACTIVE_USER = "Usuário inativo.";
     public static final String AUTHENTICATED_USER_NOT_FOUND = "Usuário autenticado não encontrado.";
+    public static final String AUTHENTICATION_REQUIRED = "Autenticação é obrigatória para acessar este recurso.";
     public static final String ACCESS_DENIED = "Você não tem permissão para realizar esta operação.";
     public static final String MEDICATION_INFO_REQUIRED = "Informe o medicamento pelo nome ou selecione um medicamento base.";
     public static final String DOSAGE_REQUIRED = "A dosagem do medicamento é obrigatória.";

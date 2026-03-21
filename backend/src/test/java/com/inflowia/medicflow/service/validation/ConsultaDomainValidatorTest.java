@@ -53,6 +53,29 @@ class ConsultaDomainValidatorTest {
         assertEquals(ExceptionMessages.CANCELED_CONSULTATION_PRESCRIPTION_NOT_ALLOWED, exception.getMessage());
     }
 
+
+    @Test
+    void validateCanAddMedicationMustRejectCanceledConsulta() {
+        Consulta consulta = consultaBase();
+        consulta.setStatus(StatusConsulta.CANCELADA);
+
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> validator.validateCanAddMedication(consulta));
+
+        assertEquals(ExceptionMessages.CANCELED_CONSULTATION_MEDICATION_NOT_ALLOWED, exception.getMessage());
+    }
+
+    @Test
+    void validateMustRejectPaidConsultaWithUnsupportedStatus() {
+        Consulta consulta = consultaBase();
+        consulta.setStatus(StatusConsulta.AGENDADA);
+        consulta.setPago(true);
+        consulta.setDataPagamento(LocalDateTime.now());
+
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> validator.validate(consulta));
+
+        assertEquals(ExceptionMessages.PAID_CONSULTATION_INVALID_STATUS, exception.getMessage());
+    }
+
     @Test
     void validateMustAllowPaidConsultaWithSupportedStatus() {
         Consulta consulta = consultaBase();
