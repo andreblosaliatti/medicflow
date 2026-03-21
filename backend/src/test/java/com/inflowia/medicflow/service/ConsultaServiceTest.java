@@ -77,7 +77,6 @@ class ConsultaServiceTest {
 
         when(pacienteRepository.findByIdAndAtivoTrue(1L)).thenReturn(Optional.of(new Paciente()));
         when(medicoRepository.findByIdAndAtivoTrue(2L)).thenReturn(Optional.of(new Medico()));
-        when(consultaRepository.save(any(Consulta.class))).thenAnswer(invocation -> invocation.getArgument(0));
         org.mockito.Mockito.doThrow(new BusinessRuleException(ExceptionMessages.TELECONSULTATION_LINK_REQUIRED))
                 .when(consultaDomainValidator)
                 .validate(any(Consulta.class));
@@ -100,29 +99,10 @@ class ConsultaServiceTest {
         consulta.setPaciente(new Paciente());
         consulta.setMedico(new Medico());
 
-        ConsultaUpdateDTO dto = new ConsultaUpdateDTO(
-                null,
-                null,
-                StatusConsulta.CANCELADA,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                "Prescrever antibiótico",
-                null,
-                null,
-                null
-        );
+        ConsultaUpdateDTO dto = ConsultaUpdateDTO.builder()
+                .status(StatusConsulta.CANCELADA)
+                .prescricao("Prescrever antibiótico")
+                .build();
 
         when(consultaRepository.getReferenceById(consultaId)).thenReturn(consulta);
         org.mockito.Mockito.doThrow(new BusinessRuleException(ExceptionMessages.CANCELED_CONSULTATION_PRESCRIPTION_NOT_ALLOWED))
