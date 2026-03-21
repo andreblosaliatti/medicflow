@@ -2,6 +2,7 @@ package com.inflowia.medicflow.controller;
 
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoDetailsDTO;
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoMinDTO;
+import com.inflowia.medicflow.dto.exame.ExameSolicitadoPatchDTO;
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoUpdateDTO;
 import com.inflowia.medicflow.service.ExameSolicitadoService;
 import jakarta.validation.Valid;
@@ -52,6 +53,24 @@ public class ExameSolicitadoController {
     public ResponseEntity<ExameSolicitadoDetailsDTO> buscarPorId(@PathVariable Long id) {
         ExameSolicitadoDetailsDTO dto = service.buscarPorId(id);
         return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('exames-solicitados:write')")
+    public ResponseEntity<ExameSolicitadoDetailsDTO> atualizar(
+            @PathVariable Long id,
+            @RequestBody @Valid ExameSolicitadoPatchDTO dto) {
+
+        return ResponseEntity.ok(service.atualizar(id, dto));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAuthority('exames-solicitados:write')")
+    public ResponseEntity<ExameSolicitadoDetailsDTO> atualizarParcialmente(
+            @PathVariable Long id,
+            @RequestBody @Valid ExameSolicitadoPatchDTO dto) {
+
+        return ResponseEntity.ok(service.atualizarParcialmente(id, dto));
     }
 
     // LISTAR EXAMES POR CONSULTA

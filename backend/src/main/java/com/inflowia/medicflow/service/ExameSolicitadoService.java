@@ -2,6 +2,7 @@ package com.inflowia.medicflow.service;
 
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoDetailsDTO;
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoMinDTO;
+import com.inflowia.medicflow.dto.exame.ExameSolicitadoPatchDTO;
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoUpdateDTO;
 import com.inflowia.medicflow.domain.consulta.Consulta;
 import com.inflowia.medicflow.domain.exame.ExameBase;
@@ -64,6 +65,42 @@ public class ExameSolicitadoService {
         ExameSolicitado entity = exameSolicitadoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Exame solicitado")));
 
+        return new ExameSolicitadoDetailsDTO(entity);
+    }
+
+    @Transactional
+    public ExameSolicitadoDetailsDTO atualizar(Long id, ExameSolicitadoPatchDTO dto) {
+        ExameSolicitado entity = exameSolicitadoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Exame solicitado")));
+
+        entity.setStatus(dto.getStatus());
+        entity.setDataColeta(dto.getDataColeta());
+        entity.setDataResultado(dto.getDataResultado());
+        entity.setObservacoes(dto.getObservacoes());
+
+        entity = exameSolicitadoRepository.save(entity);
+        return new ExameSolicitadoDetailsDTO(entity);
+    }
+
+    @Transactional
+    public ExameSolicitadoDetailsDTO atualizarParcialmente(Long id, ExameSolicitadoPatchDTO dto) {
+        ExameSolicitado entity = exameSolicitadoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Exame solicitado")));
+
+        if (dto.getStatus() != null) {
+            entity.setStatus(dto.getStatus());
+        }
+        if (dto.getDataColeta() != null) {
+            entity.setDataColeta(dto.getDataColeta());
+        }
+        if (dto.getDataResultado() != null) {
+            entity.setDataResultado(dto.getDataResultado());
+        }
+        if (dto.getObservacoes() != null) {
+            entity.setObservacoes(dto.getObservacoes());
+        }
+
+        entity = exameSolicitadoRepository.save(entity);
         return new ExameSolicitadoDetailsDTO(entity);
     }
 
