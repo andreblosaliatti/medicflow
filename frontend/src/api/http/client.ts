@@ -11,23 +11,23 @@ export class HttpClient {
     return this.transport<TResponse, TBody>(config);
   }
 
-  get<TResponse>(url: string) {
-    return this.request<TResponse>({ method: "GET", url });
+  get<TResponse>(url: string, config?: Omit<HttpRequestConfig<never>, "method" | "url" | "body">) {
+    return this.request<TResponse>({ method: "GET", url, ...config });
   }
 
-  post<TResponse, TBody = unknown>(url: string, body?: TBody) {
-    return this.request<TResponse, TBody>({ method: "POST", url, body });
+  post<TResponse, TBody = unknown>(url: string, body?: TBody, config?: Omit<HttpRequestConfig<TBody>, "method" | "url" | "body">) {
+    return this.request<TResponse, TBody>({ method: "POST", url, body, ...config });
   }
 
-  put<TResponse, TBody = unknown>(url: string, body?: TBody) {
-    return this.request<TResponse, TBody>({ method: "PUT", url, body });
+  put<TResponse, TBody = unknown>(url: string, body?: TBody, config?: Omit<HttpRequestConfig<TBody>, "method" | "url" | "body">) {
+    return this.request<TResponse, TBody>({ method: "PUT", url, body, ...config });
   }
 
-  patch<TResponse, TBody = unknown>(url: string, body?: TBody) {
-    return this.request<TResponse, TBody>({ method: "PATCH", url, body });
+  patch<TResponse, TBody = unknown>(url: string, body?: TBody, config?: Omit<HttpRequestConfig<TBody>, "method" | "url" | "body">) {
+    return this.request<TResponse, TBody>({ method: "PATCH", url, body, ...config });
   }
 
-  delete<TResponse>(url: string) {
-    return this.request<TResponse>({ method: "DELETE", url });
+  delete<TResponse>(url: string, config?: Omit<HttpRequestConfig<never>, "method" | "url" | "body">) {
+    return this.request<TResponse>({ method: "DELETE", url, ...config });
   }
 }

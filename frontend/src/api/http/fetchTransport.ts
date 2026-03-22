@@ -1,7 +1,6 @@
 import { clearStoredSession, getAccessToken } from "../../auth/session";
+import { API_BASE_URL } from "./config";
 import { HttpError, type HttpRequestConfig, type HttpTransport } from "./types";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
 
 function buildUrl(url: string) {
   if (/^https?:\/\//.test(url)) return url;
@@ -24,8 +23,9 @@ export const fetchTransport: HttpTransport = async <TResponse, TBody>(
 ): Promise<TResponse> => {
   const headers = new Headers(config.headers);
   const token = getAccessToken();
+  const authMode = config.auth ?? "auto";
 
-  if (token) {
+  if (token && authMode !== "none") {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
@@ -33,17 +33,20 @@ export const fetchTransport: HttpTransport = async <TResponse, TBody>(
     headers.set("Content-Type", "application/json");
   }
 
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "application/json");
+  }
+
   const response = await fetch(buildUrl(config.url), {
     method: config.method,
     headers,
     body: config.body === undefined ? undefined : JSON.stringify(config.body),
-    credentials: "include",
   });
 
   const payload = await parseResponse(response);
 
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
+    if ((response.status === 401 || response.status === 403) && authMode !== "none") {
       clearStoredSession({
         reason: response.status === 401 ? "unauthorized" : "forbidden",
         status: response.status,
