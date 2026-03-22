@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import BrandHeader from "../../../components/auth/BrandHeader";
 import AuthCard from "../../../components/auth/AuthCard";
@@ -26,10 +26,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string>("");
   const [isPending, setIsPending] = useState(false);
 
-  const canSubmit = useMemo(() => {
-    return loginValue.trim().length > 0 && senha.trim().length > 0;
-  }, [loginValue, senha]);
-
   const redirectTo = ((location.state as LoginLocationState | null)?.from || "/dashboard");
 
   useEffect(() => {
@@ -38,15 +34,22 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, navigate, redirectTo]);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!loginValue.trim()) {
+    const formData = new FormData(e.currentTarget);
+    const submittedLogin = String(formData.get("login") ?? "").trim();
+    const submittedSenha = String(formData.get("senha") ?? "");
+
+    setLoginValue(submittedLogin);
+    setSenha(submittedSenha);
+
+    if (!submittedLogin) {
       setError("Informe seu login.");
       return;
     }
 
-    if (senha.length < 4) {
+    if (submittedSenha.length < 4) {
       setError("Senha inválida.");
       return;
     }
@@ -55,7 +58,7 @@ export default function LoginPage() {
     setIsPending(true);
 
     try {
-      await signIn({ login: loginValue.trim(), senha });
+      await signIn({ login: submittedLogin, senha: submittedSenha });
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível autenticar.");
@@ -71,6 +74,7 @@ export default function LoginPage() {
       <AuthCard title="Login">
         <form onSubmit={onSubmit} className="auth-form" noValidate>
           <TextField
+            name="login"
             placeholder="Login"
             value={loginValue}
             onChange={(v) => setLoginValue(v)}
@@ -81,6 +85,7 @@ export default function LoginPage() {
           />
 
           <TextField
+            name="senha"
             placeholder="Senha"
             value={senha}
             onChange={(v) => setSenha(v)}
@@ -92,7 +97,7 @@ export default function LoginPage() {
 
           <ErrorMessage message={error} />
 
-          <PrimaryButton type="submit" disabled={!canSubmit || isPending}>
+          <PrimaryButton type="submit" disabled={isPending}>
             {isPending ? "Entrando..." : "Entrar"}
           </PrimaryButton>
 

@@ -5,6 +5,7 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
+  name?: string;
   type?: React.HTMLInputTypeAttribute;
   autoComplete?: string;
   leftIcon?: React.ReactNode;
@@ -19,6 +20,7 @@ export default function TextField({
   autoComplete,
   leftIcon,
   ariaLabel,
+  name,
 }: Props) {
   return (
     <label className="field">
@@ -30,6 +32,7 @@ export default function TextField({
         className="field-input"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        name={name}
         placeholder={placeholder}
         type={type}
         autoComplete={autoComplete}
