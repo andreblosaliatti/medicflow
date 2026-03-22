@@ -9,7 +9,7 @@ import Input from "../../../components/form/Input";
 import CalendarView from "../../../components/Agenda/CalendarView";
 import SelectField, { type SelectOption } from "../../../components/form/SelectField/SelectField";
 
-import { getSessionUser } from "../../../auth/session";
+import { useAuth } from "../../../auth/useAuth";
 
 import type { AppointmentEvent } from "./types";
 import type { StatusConsulta, TipoConsulta } from "../../../domain/enums/statusConsulta";
@@ -144,9 +144,9 @@ export default function AgendaPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const user = getSessionUser();
-  const doctorId = String(user.id ?? "1");
-  const doctorName = user.name ?? "Dr. João Carvalho";
+  const { user } = useAuth();
+  const doctorId = String(user?.id ?? "1");
+  const doctorName = user?.name ?? "Profissional";
 
   const [allEvents, setAllEvents] = useState<AppointmentEvent[]>(() => toAppointmentEvents());
 

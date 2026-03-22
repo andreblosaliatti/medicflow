@@ -1,25 +1,23 @@
-import type { UserRole } from "../../auth/session";
+import type { SessionData, UserRole } from "../../auth/session";
 
 export type LoginRequest = {
-  email: string;
+  login: string;
   senha: string;
 };
 
-export type AuthUserApi = {
-  id: string;
-  nome: string;
-  email: string;
-  role: UserRole;
-};
-
 export type LoginResponse = {
+  id: number;
+  login: string;
+  nomeCompleto: string;
+  roles: string[];
+  permissions: string[];
   token: string;
-  usuario: AuthUserApi;
 };
 
-export type SessionUserViewModel = {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-};
+export type SessionUserViewModel = SessionData["user"];
+
+export type AuthSessionViewModel = SessionData;
+
+export function isUserRole(value: string): value is UserRole {
+  return value === "MEDICO" || value === "SECRETARIA" || value === "ADMIN";
+}
