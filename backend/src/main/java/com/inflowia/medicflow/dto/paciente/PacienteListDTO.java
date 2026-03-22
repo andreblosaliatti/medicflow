@@ -1,11 +1,13 @@
 package com.inflowia.medicflow.dto.paciente;
 
 import com.inflowia.medicflow.domain.paciente.Paciente;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Schema(name = "PacienteListDTO", description = "DTO de listagem resumida de pacientes.")
 public class PacienteListDTO {
 
     private final Long id;

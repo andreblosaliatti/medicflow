@@ -11,6 +11,7 @@ import com.inflowia.medicflow.dto.medico.MedicoMinDTO;
 import com.inflowia.medicflow.dto.medico.MedicoSelectDTO;
 import com.inflowia.medicflow.dto.medico.MedicoUpdateDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteMinDTO;
+import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.exception.ResourceNotFoundException;
 import com.inflowia.medicflow.repository.ConsultaRepository;
@@ -120,7 +121,7 @@ public class MedicoService {
     @Transactional(readOnly = true)
     public List<PacienteMinDTO> listarPacientesPorMedico(Long medicoId) {
         if (!repository.existsByIdAndAtivoTrue(medicoId)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Médico"));
+            throw new ResourceNotFoundException(ErrorCodes.MEDICO_NOT_FOUND, ExceptionMessages.notFound("Médico"));
         }
 
         List<Paciente> pacientes = consultaRepository.findPacientesDistinctByMedicoId(medicoId);
@@ -132,7 +133,7 @@ public class MedicoService {
 
     private Medico getMedicoAtivo(Long id) {
         return repository.findByIdAndAtivoTrue(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Médico")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICO_NOT_FOUND, ExceptionMessages.notFound("Médico")));
     }
 
     private Set<Role> resolveRoles(Set<String> roleAuthorities) {
@@ -144,7 +145,7 @@ public class MedicoService {
 
         for (String authority : AccessRole.toCanonicalAuthorities(roleAuthorities)) {
             Role role = roleRepository.findByAuthority(authority)
-                    .orElseThrow(() -> new ResourceNotFoundException("Role não encontrada: " + authority));
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.ROLE_NOT_FOUND, "Role não encontrada: " + authority));
             resolvedRoles.add(role);
         }
 

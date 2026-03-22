@@ -6,6 +6,7 @@ import com.inflowia.medicflow.domain.consulta.StatusConsulta;
 import com.inflowia.medicflow.domain.consulta.TipoConsulta;
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoMinDTO;
 import com.inflowia.medicflow.dto.medicamento.MedicamentoPrescritoMinDTO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(name = "ConsultaDetailDTO", description = "DTO de detalhe de consulta para leitura, incluindo dados agregados da consulta.")
 public class ConsultaDetailsDTO {
 
     private Long id;

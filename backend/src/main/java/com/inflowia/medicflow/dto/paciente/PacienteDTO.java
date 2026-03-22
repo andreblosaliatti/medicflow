@@ -2,6 +2,7 @@ package com.inflowia.medicflow.dto.paciente;
 
 import com.inflowia.medicflow.dto.EnderecoDTO;
 import com.inflowia.medicflow.domain.paciente.Paciente;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.br.CPF;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(name = "PacienteFormDTO", description = "DTO de formulário para cadastro completo de pacientes.")
 public class PacienteDTO {
 
     private Long id;

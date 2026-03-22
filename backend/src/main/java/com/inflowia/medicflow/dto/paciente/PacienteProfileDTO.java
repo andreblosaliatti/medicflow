@@ -2,11 +2,13 @@ package com.inflowia.medicflow.dto.paciente;
 
 import com.inflowia.medicflow.domain.paciente.Paciente;
 import com.inflowia.medicflow.dto.EnderecoDTO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.time.LocalDate;
 
 @Getter
+@Schema(name = "PacienteDetailDTO", description = "DTO de detalhe/perfil de paciente para leitura.")
 public class PacienteProfileDTO {
 
     private final Long id;

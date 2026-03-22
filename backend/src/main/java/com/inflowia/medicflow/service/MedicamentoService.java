@@ -10,6 +10,7 @@ import com.inflowia.medicflow.repository.MedicamentoBaseRepository;
 import com.inflowia.medicflow.repository.MedicamentoPrescritoRepository;
 import com.inflowia.medicflow.repository.PacienteRepository;
 import com.inflowia.medicflow.exception.BusinessRuleException;
+import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.exception.ResourceNotFoundException;
 import com.inflowia.medicflow.service.validation.ConsultaDomainValidator;
@@ -47,7 +48,7 @@ public class MedicamentoService {
     @Transactional(readOnly = true)
     public Page<MedicamentoPrescritoMinDTO> listarPorConsulta(Long consultaId, Pageable pageable) {
         if (!consultaRepository.existsById(consultaId)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Consulta"));
+            throw new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta"));
         }
 
         Page<MedicamentoPrescrito> page =
@@ -59,7 +60,7 @@ public class MedicamentoService {
     @Transactional(readOnly = true)
     public Page<MedicamentoPrescritoMinDTO> listarHistoricoPorPaciente(Long pacienteId, Pageable pageable) {
         if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
+            throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
         }
 
         Page<MedicamentoPrescrito> page =
@@ -73,7 +74,7 @@ public class MedicamentoService {
         Optional<MedicamentoPrescrito> obj = medicamentoPrescritoRepository.findById(id);
 
         MedicamentoPrescrito entity =
-                obj.orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Medicamento")));
+                obj.orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICAMENTO_NOT_FOUND, ExceptionMessages.notFound("Medicamento")));
 
         return new MedicamentoPrescritoMinDTO(entity);
     }
@@ -89,12 +90,12 @@ public class MedicamentoService {
     @Transactional(readOnly = true)
     public List<MedicamentoPrescritoMinDTO> listarMedicacaoAtual(Long pacienteId) {
         if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
+            throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
         }
 
         Consulta consulta = consultaRepository
                 .findTopByPacienteIdOrderByDataHoraDesc(pacienteId)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.NO_PATIENT_CONSULTATIONS));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.NO_PATIENT_CONSULTATIONS));
 
         return consulta.getMedicamentoPrescrito()
                 .stream()
@@ -105,7 +106,7 @@ public class MedicamentoService {
     @Transactional
     public MedicamentoPrescritoMinDTO adicionarMedicamento(Long consultaId, MedicamentoPrescritoDTO dados) {
         Consulta consulta = consultaRepository.findById(consultaId)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Consulta")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta")));
 
         consultaDomainValidator.validateCanAddMedication(consulta);
 
@@ -130,7 +131,7 @@ public class MedicamentoService {
     @Transactional
     public MedicamentoPrescritoMinDTO atualizarMedicamento(Long medicamentoId, MedicamentoPrescritoDTO dados) {
         MedicamentoPrescrito prescrito = medicamentoPrescritoRepository.findById(medicamentoId)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Medicamento")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICAMENTO_NOT_FOUND, ExceptionMessages.notFound("Medicamento")));
 
         consultaDomainValidator.validateCanAddMedication(prescrito.getConsulta());
 
@@ -157,13 +158,13 @@ public class MedicamentoService {
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id) {
         if (!medicamentoPrescritoRepository.existsById(id)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Medicamento"));
+            throw new ResourceNotFoundException(ErrorCodes.MEDICAMENTO_NOT_FOUND, ExceptionMessages.notFound("Medicamento"));
         }
 
         try {
             medicamentoPrescritoRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessRuleException("Não é possível excluir o medicamento informado porque ele está vinculado a outros registros.");
+            throw new BusinessRuleException(ErrorCodes.MEDICAMENTO_BUSINESS_RULE, "Não é possível excluir o medicamento informado porque ele está vinculado a outros registros.");
         }
     }
 
@@ -172,28 +173,28 @@ public class MedicamentoService {
         boolean informouNomeLivre = dados.getNome() != null && !dados.getNome().isBlank();
 
         if (!informouBase && !informouNomeLivre) {
-            throw new BusinessRuleException(ExceptionMessages.MEDICATION_INFO_REQUIRED);
+            throw new BusinessRuleException(ErrorCodes.MEDICAMENTO_BUSINESS_RULE, ExceptionMessages.MEDICATION_INFO_REQUIRED);
         }
 
         if (informouBase && informouNomeLivre) {
-            throw new BusinessRuleException(ExceptionMessages.MEDICATION_INFO_CONFLICT);
+            throw new BusinessRuleException(ErrorCodes.MEDICAMENTO_BUSINESS_RULE, ExceptionMessages.MEDICATION_INFO_CONFLICT);
         }
 
         if (dados.getDosagem() == null || dados.getDosagem().isBlank()) {
-            throw new BusinessRuleException(ExceptionMessages.DOSAGE_REQUIRED);
+            throw new BusinessRuleException(ErrorCodes.MEDICAMENTO_BUSINESS_RULE, ExceptionMessages.DOSAGE_REQUIRED);
         }
 
         if (dados.getFrequencia() == null || dados.getFrequencia().isBlank()) {
-            throw new BusinessRuleException(ExceptionMessages.FREQUENCY_REQUIRED);
+            throw new BusinessRuleException(ErrorCodes.MEDICAMENTO_BUSINESS_RULE, ExceptionMessages.FREQUENCY_REQUIRED);
         }
 
         if (dados.getVia() == null || dados.getVia().isBlank()) {
-            throw new BusinessRuleException(ExceptionMessages.ROUTE_REQUIRED);
+            throw new BusinessRuleException(ErrorCodes.MEDICAMENTO_BUSINESS_RULE, ExceptionMessages.ROUTE_REQUIRED);
         }
 
         if (informouBase) {
             MedicamentoBase base = medicamentoBaseRepository.findById(dados.getMedicamentoBaseId())
-                    .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Medicamento base")));
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICAMENTO_BASE_NOT_FOUND, ExceptionMessages.notFound("Medicamento base")));
 
             String nomeResolvido = base.getPrincipioAtivo() != null && !base.getPrincipioAtivo().isBlank()
                     ? base.getPrincipioAtivo().trim()
