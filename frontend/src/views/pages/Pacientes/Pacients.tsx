@@ -49,7 +49,8 @@ export default function PacientesPage() {
   const pageSize = 10;
 
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-  const { data: pacientesBase, isLoading, error } = usePacientesQuery();
+  const { data: pacientesPage, isLoading, error } = usePacientesQuery();
+  const pacientesBase = pacientesPage.content;
 
   const from = `${location.pathname}${location.search}`;
   const navState: NavState = { from };
@@ -59,24 +60,24 @@ export default function PacientesPage() {
     let data = [...pacientesBase];
 
     if (q) {
-      data = data.filter((p) => {
-        const base = `${p.nome} ${p.telefone} ${p.ultimaConsulta} ${p.convenio}`.toLowerCase();
+      data = data.filter((paciente) => {
+        const base = `${paciente.nome} ${paciente.telefone} ${paciente.ultimaConsulta} ${paciente.convenio}`.toLowerCase();
         return base.includes(q);
       });
     }
 
     if (filtroConvenio !== "TODOS") {
-      data = data.filter((p) => {
-        const tem = p.convenio.toLowerCase() !== "nunca" && p.convenio.trim() !== "";
-        return filtroConvenio === "COM" ? tem : !tem;
+      data = data.filter((paciente) => {
+        const temConvenio = paciente.convenio.toLowerCase() !== "não informado" && paciente.convenio.trim() !== "";
+        return filtroConvenio === "COM" ? temConvenio : !temConvenio;
       });
     }
 
     void exibindo;
 
-    data.sort((a, b) => {
-      if (ordenarPor === "NOME") return a.nome.localeCompare(b.nome);
-      return a.ultimaConsulta.localeCompare(b.ultimaConsulta);
+    data.sort((pacienteA, pacienteB) => {
+      if (ordenarPor === "NOME") return pacienteA.nome.localeCompare(pacienteB.nome);
+      return pacienteA.ultimaConsulta.localeCompare(pacienteB.ultimaConsulta);
     });
 
     return data;
@@ -94,7 +95,7 @@ export default function PacientesPage() {
     setOpenMenuId(null);
 
     if (action === "NOVA_CONSULTA") {
-      const paciente = pacientesBase.find((x) => x.id === pacienteId);
+      const paciente = pacientesBase.find((item) => item.id === pacienteId);
 
       navigate("/agenda", {
         state: {
@@ -154,8 +155,8 @@ export default function PacientesPage() {
                 <span className="mf-control__label">Ordenar por</span>
                 <SelectField<OrdenarPor>
                   value={ordenarPor}
-                  onChange={(v) => {
-                    setOrdenarPor(v);
+                  onChange={(value) => {
+                    setOrdenarPor(value);
                     setPage(1);
                   }}
                   options={ordenarOptions}
@@ -168,8 +169,8 @@ export default function PacientesPage() {
                 <span className="mf-control__label">Filtro</span>
                 <SelectField<FiltroConvenio>
                   value={filtroConvenio}
-                  onChange={(v) => {
-                    setFiltroConvenio(v);
+                  onChange={(value) => {
+                    setFiltroConvenio(value);
                     setPage(1);
                   }}
                   options={filtroOptions}
@@ -182,8 +183,8 @@ export default function PacientesPage() {
                 <span className="mf-control__label">Exibindo</span>
                 <SelectField<Exibindo>
                   value={exibindo}
-                  onChange={(v) => {
-                    setExibindo(v);
+                  onChange={(value) => {
+                    setExibindo(value);
                     setPage(1);
                   }}
                   options={exibindoOptions}
@@ -195,8 +196,8 @@ export default function PacientesPage() {
               <div className="mf-search">
                 <Input
                   value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
+                  onChange={(event) => {
+                    setQuery(event.target.value);
                     setPage(1);
                   }}
                   placeholder="Buscar paciente..."
@@ -230,32 +231,32 @@ export default function PacientesPage() {
                   </Tr>
                 ) : null}
 
-                {pageItems.map((p: PacienteRowViewModel) => (
+                {pageItems.map((paciente: PacienteRowViewModel) => (
                   <Tr
-                    key={p.id}
-                    onClick={() => navigate(`/pacientes/${p.id}`, { state: navState })}
-                    ariaLabel={`Abrir perfil de ${p.nome}`}
+                    key={paciente.id}
+                    onClick={() => navigate(`/pacientes/${paciente.id}`, { state: navState })}
+                    ariaLabel={`Abrir perfil de ${paciente.nome}`}
                   >
                     <Td>
                       <div className="mf-person">
                         <div className="mf-avatar" aria-hidden="true">
-                          {p.initials}
+                          {paciente.initials}
                         </div>
-                        <span className="mf-person__name">{p.nome}</span>
+                        <span className="mf-person__name">{paciente.nome}</span>
                       </div>
                     </Td>
 
-                    <Td className="mf-mono">{p.telefone}</Td>
-                    <Td className="mf-mono">{p.ultimaConsulta}</Td>
-                    <Td className="mf-muted">{p.convenio}</Td>
+                    <Td className="mf-mono">{paciente.telefone}</Td>
+                    <Td className="mf-mono">{paciente.ultimaConsulta}</Td>
+                    <Td className="mf-muted">{paciente.convenio}</Td>
 
-                    <Td align="right" onClick={(e) => e.stopPropagation()}>
+                    <Td align="right" onClick={(event) => event.stopPropagation()}>
                       <div className="mf-row-actions">
                         <div className="mf-split">
                           <button
                             type="button"
                             className="mf-btn-link"
-                            onClick={() => navigate(`/pacientes/${p.id}`)}
+                            onClick={() => navigate(`/pacientes/${paciente.id}`)}
                           >
                             Ver perfil
                           </button>
@@ -264,14 +265,14 @@ export default function PacientesPage() {
                             type="button"
                             className="mf-rowMenuBtn"
                             aria-label="Ações do paciente"
-                            onClick={() => setOpenMenuId(openMenuId === p.id ? null : p.id)}
+                            onClick={() => setOpenMenuId(openMenuId === paciente.id ? null : paciente.id)}
                           >
                             ⋯
                           </button>
                         </div>
 
                         <RowMenu
-                          open={openMenuId === p.id}
+                          open={openMenuId === paciente.id}
                           onClose={() => setOpenMenuId(null)}
                           items={[
                             { key: "PRONTUARIO", label: "Prontuário" },
@@ -282,7 +283,7 @@ export default function PacientesPage() {
                             { key: "ENVIAR_MENSAGEM", label: "Enviar mensagem" },
                             { key: "ARQUIVAR", label: "Arquivar", tone: "danger" },
                           ]}
-                          onSelect={(key) => onAction(p.id, key as PacienteMenuAction)}
+                          onSelect={(key) => onAction(paciente.id, key as PacienteMenuAction)}
                         />
                       </div>
                     </Td>
@@ -298,7 +299,7 @@ export default function PacientesPage() {
             </span>
 
             <div className="mf-pagination__actions">
-              <button type="button" className="mf-pageBtn" disabled={safePage <= 1} onClick={() => setPage((p) => p - 1)}>
+              <button type="button" className="mf-pageBtn" disabled={safePage <= 1} onClick={() => setPage((currentPage) => currentPage - 1)}>
                 Anterior
               </button>
               <span className="mf-pageIndex">Página {safePage}</span>
@@ -306,7 +307,7 @@ export default function PacientesPage() {
                 type="button"
                 className="mf-pageBtn"
                 disabled={safePage >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
+                onClick={() => setPage((currentPage) => currentPage + 1)}
               >
                 Próxima
               </button>

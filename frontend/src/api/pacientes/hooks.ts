@@ -1,11 +1,18 @@
 import { useCallback } from "react";
 import { useApiMutation, useApiQuery } from "../shared/hooks";
+import { emptyPageResponse } from "../shared/types";
 import { createPaciente, getPacienteById, getPacienteProfileById, listPacientesRows, updatePaciente } from "./service";
-import type { PacienteApi, PacienteFormValues, PacienteProfileViewModel, PacienteRowViewModel } from "./types";
+import type {
+  PacienteApi,
+  PacienteFormValues,
+  PacienteListParams,
+  PacienteProfileViewModel,
+  PacienteRowsPageViewModel,
+} from "./types";
 
-export function usePacientesQuery() {
-  const queryFn = useCallback(() => listPacientesRows(), []);
-  return useApiQuery<PacienteRowViewModel[]>(["pacientes", "list"], [], queryFn);
+export function usePacientesQuery(params: PacienteListParams = {}) {
+  const queryFn = useCallback(() => listPacientesRows(params), [params]);
+  return useApiQuery<PacienteRowsPageViewModel>(["pacientes", "list", params], emptyPageResponse(), queryFn);
 }
 
 export function usePacienteByIdQuery(id: number | null) {
