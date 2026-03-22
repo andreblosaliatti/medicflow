@@ -1,11 +1,14 @@
-import { setSessionUser } from "../../auth/session";
+import type { SessionData } from "../../auth/session";
 import { httpClient } from "../http";
-import { toSessionUserViewModel } from "./mappers";
-import type { LoginRequest, LoginResponse, SessionUserViewModel } from "./types";
+import { toSessionData } from "./mappers";
+import type { LoginRequest, LoginResponse } from "./types";
 
-export async function login(credentials: LoginRequest): Promise<SessionUserViewModel> {
+export async function login(credentials: LoginRequest): Promise<SessionData> {
   const response = await httpClient.post<LoginResponse, LoginRequest>("/auth/login", credentials);
-  const sessionUser = toSessionUserViewModel(response.usuario);
-  setSessionUser(sessionUser);
-  return sessionUser;
+  return toSessionData(response);
+}
+
+export async function me(): Promise<SessionData> {
+  const response = await httpClient.get<LoginResponse>("/auth/me");
+  return toSessionData(response);
 }
