@@ -22,13 +22,12 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
     @Query("""
             SELECT p
             FROM Paciente p
-            WHERE (:nome IS NULL
-                    OR UPPER(CONCAT(COALESCE(p.primeiroNome, ''), ' ', COALESCE(p.sobrenome, '')))
-                    LIKE UPPER(CONCAT('%', :nome, '%')))
-              AND (:cpf IS NULL OR p.cpf LIKE CONCAT('%', :cpf, '%'))
+            WHERE UPPER(CONCAT(COALESCE(p.primeiroNome, ''), ' ', COALESCE(p.sobrenome, '')))
+                    LIKE UPPER(CONCAT('%', COALESCE(:nome, ''), '%'))
+              AND COALESCE(p.cpf, '') LIKE CONCAT('%', COALESCE(:cpf, ''), '%')
               AND (:ativo IS NULL OR p.ativo = :ativo)
-              AND (:convenio IS NULL
-                    OR UPPER(COALESCE(p.planoSaude, '')) LIKE UPPER(CONCAT('%', :convenio, '%')))
+              AND UPPER(COALESCE(p.planoSaude, ''))
+                    LIKE UPPER(CONCAT('%', COALESCE(:convenio, ''), '%'))
             """)
     Page<Paciente> search(@Param("nome") String nome,
                           @Param("cpf") String cpf,

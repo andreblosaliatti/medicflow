@@ -89,6 +89,7 @@ public class JwtService {
             );
         }
 
+        System.out.println("JWT SECRET: " + jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
