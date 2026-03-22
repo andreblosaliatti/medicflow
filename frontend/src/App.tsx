@@ -1,70 +1,75 @@
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import LoginPage from "./views/pages/Login/LoginPage";
-import DashboardPage from "./views/pages/Dashboard/DashboardPage";
-import AgendaPage from "./views/pages/Agenda/AgendaPage";
-
+import { AuthProvider } from "./auth/AuthProvider";
+import { useAuth } from "./auth/useAuth";
+import ProtectedRoute from "./auth/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
-
-// Pacientes
-import PacientesPage from "./views/pages/Pacientes/Pacients";
-import PacientProfile from "./views/pages/Pacientes/PacientProfile/PacientProfile";
-import ProntuarioPage from "./views/pages/Pacientes/Prontuario/Prontuario";
-import PacienteFormPage from "./views/pages/Pacientes/PacientForm/PacientFormPage";
-
-// Consultas
-import ConsultasPage from "./views/pages/Consultas/Consultas/Consulta";
+import AgendaPage from "./views/pages/Agenda/AgendaPage";
+import DashboardPage from "./views/pages/Dashboard/DashboardPage";
+import LoginPage from "./views/pages/Login/LoginPage";
+import ForgotPasswordPage from "./views/pages/ForgotPassword/ForgotPasswordPage";
+import PendenciasPage from "./views/pages/Pendencias";
+import ConsultaAtendimento from "./views/pages/Consultas/ConsultaAtendimento/ConsultaAtendimento";
 import ConsultaDetails from "./views/pages/Consultas/ConsultaDetail/ConsultaDetails";
 import ConsultaEdit from "./views/pages/Consultas/ConsultaEdit/ConsultaEdit";
 import ConsultaNew from "./views/pages/Consultas/ConsultaEdit/ConsultaNew";
-import ConsultaAtendimento from "./views/pages/Consultas/ConsultaAtendimento/ConsultaAtendimento";
-
+import ConsultasPage from "./views/pages/Consultas/Consultas/Consulta";
+import PacienteFormPage from "./views/pages/Pacientes/PacientForm/PacientFormPage";
+import PacientProfile from "./views/pages/Pacientes/PacientProfile/PacientProfile";
+import PacientesPage from "./views/pages/Pacientes/Pacients";
 import PrescricoesPage from "./views/pages/Pacientes/Prescricoes";
+import ProntuarioPage from "./views/pages/Pacientes/Prontuario/Prontuario";
 
-import PendenciasPage from "./views/pages/Pendencias";
+function RootRedirect() {
+  const { status, isAuthenticated } = useAuth();
+
+  if (status === "loading") {
+    return <div className="mf-page-loading">Carregando sessão...</div>;
+  }
+
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+}
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Login */}
-        <Route path="/" element={<LoginPage />} />
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
 
-        {/* Layout protegido */}
-        <Route element={<AppLayout />}>
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/agenda" element={<AgendaPage />} />
 
-          {/* Dashboard */}
-          <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/pacientes">
+                <Route index element={<PacientesPage />} />
+                <Route path="novo" element={<PacienteFormPage />} />
+                <Route path=":id/editar" element={<PacienteFormPage />} />
+                <Route path=":id/prescricoes" element={<PrescricoesPage />} />
+                <Route path=":id/prontuario" element={<ProntuarioPage />} />
+                <Route path=":id" element={<PacientProfile />} />
+              </Route>
 
-          {/* Agenda */}
-          <Route path="/agenda" element={<AgendaPage />} />
+              <Route element={<ProtectedRoute allowedRoles={["MEDICO"]} />}>
+                <Route path="/consultas">
+                  <Route index element={<ConsultasPage />} />
+                  <Route path="nova" element={<ConsultaNew />} />
+                  <Route path=":id/editar" element={<ConsultaEdit />} />
+                  <Route path=":id/atendimento" element={<ConsultaAtendimento />} />
+                  <Route path=":id" element={<ConsultaDetails />} />
+                </Route>
 
-          {/* Pacientes */}
-          <Route path="/pacientes">
-            <Route index element={<PacientesPage />} />
-            <Route path="novo" element={<PacienteFormPage />} />
-            <Route path=":id/editar" element={<PacienteFormPage />} />
-            <Route path=":id/prescricoes" element={<PrescricoesPage />} />
-            <Route path=":id/prontuario" element={<ProntuarioPage />} />
-            <Route path=":id" element={<PacientProfile />} />
+                <Route path="/pendencias" element={<PendenciasPage />} />
+              </Route>
+            </Route>
           </Route>
 
-          {/* Consultas */}
-          <Route path="/consultas">
-            <Route index element={<ConsultasPage />} />
-            <Route path="nova" element={<ConsultaNew />} />
-            <Route path=":id/editar" element={<ConsultaEdit />} />
-            <Route path=":id/atendimento" element={<ConsultaAtendimento />} />
-            <Route path=":id" element={<ConsultaDetails />} />
-          </Route>
-
-          <Route path="/pendencias" element={<PendenciasPage />} />
-
-        </Route>
-
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

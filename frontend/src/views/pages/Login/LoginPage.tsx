@@ -1,6 +1,5 @@
-// src/pages/Login/LoginPage.tsx
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import BrandHeader from "../../../components/auth/BrandHeader";
 import AuthCard from "../../../components/auth/AuthCard";
 import AuthLinkDivider from "../../../components/auth/AuthLinkDivider";
@@ -10,38 +9,61 @@ import ErrorMessage from "../../../components/auth/ErrorMessage";
 import PrimaryButton from "../../../components/ui/HighlightButton/HighlightButton";
 import FooterMeta from "../../../components/auth/FooterMeta";
 import { MailIcon, LockIcon } from "../../../components/auth/Icons";
-import { useLoginMutation } from "../../../api/auth/hooks";
+import { useAuth } from "../../../auth/useAuth";
 
 import "./styles.css";
 
+type LoginLocationState = {
+  from?: string;
+};
+
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const location = useLocation();
+  const { signIn, isAuthenticated } = useAuth();
+  const [loginValue, setLoginValue] = useState("");
   const [senha, setSenha] = useState("");
   const [error, setError] = useState<string>("");
-  const { mutateAsync: login, isPending, error: apiError } = useLoginMutation();
+  const [isPending, setIsPending] = useState(false);
 
-  const canSubmit = useMemo(() => {
-    return email.trim().length > 0 && senha.trim().length > 0;
-  }, [email, senha]);
+  const redirectTo = ((location.state as LoginLocationState | null)?.from || "/dashboard");
 
-  async function onSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(redirectTo, { replace: true });
+    }
+  }, [isAuthenticated, navigate, redirectTo]);
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!email.includes("@")) {
-      setError("E-mail inválido");
+    const formData = new FormData(e.currentTarget);
+    const submittedLogin = String(formData.get("login") ?? "").trim();
+    const submittedSenha = String(formData.get("senha") ?? "");
+
+    setLoginValue(submittedLogin);
+    setSenha(submittedSenha);
+
+    if (!submittedLogin) {
+      setError("Informe seu login.");
       return;
     }
-    if (senha.length < 4) {
-      setError("Senha inválida");
+
+    if (submittedSenha.length < 4) {
+      setError("Senha inválida.");
       return;
     }
 
     setError("");
-    const result = await login({ email, senha });
+    setIsPending(true);
 
-    if (result) {
-      navigate("/dashboard");
+    try {
+      await signIn({ login: submittedLogin, senha: submittedSenha });
+      navigate(redirectTo, { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível autenticar.");
+    } finally {
+      setIsPending(false);
     }
   }
 
@@ -52,16 +74,18 @@ export default function LoginPage() {
       <AuthCard title="Login">
         <form onSubmit={onSubmit} className="auth-form" noValidate>
           <TextField
-            placeholder="E-mail"
-            value={email}
-            onChange={(v) => setEmail(v)}
-            type="email"
-            autoComplete="email"
+            name="login"
+            placeholder="Login"
+            value={loginValue}
+            onChange={(v) => setLoginValue(v)}
+            type="text"
+            autoComplete="username"
             leftIcon={<MailIcon />}
-            ariaLabel="E-mail"
+            ariaLabel="Login"
           />
 
           <TextField
+            name="senha"
             placeholder="Senha"
             value={senha}
             onChange={(v) => setSenha(v)}
@@ -71,9 +95,9 @@ export default function LoginPage() {
             ariaLabel="Senha"
           />
 
-          <ErrorMessage message={error || apiError || ""} />
+          <ErrorMessage message={error} />
 
-          <PrimaryButton type="submit" disabled={!canSubmit || isPending}>
+          <PrimaryButton type="submit" disabled={isPending}>
             {isPending ? "Entrando..." : "Entrar"}
           </PrimaryButton>
 
