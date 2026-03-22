@@ -1,3 +1,5 @@
+import type { PageResponse } from "../shared/types";
+
 export type PacienteSexo = "MASCULINO" | "FEMININO" | "OUTRO" | "NAO_INFORMAR";
 
 export type EnderecoApi = {
@@ -33,6 +35,8 @@ export type PacienteListApi = {
   ativo: boolean;
   ultimaConsulta: string | null;
 };
+
+export type PacienteListResponse = PageResponse<PacienteListApi>;
 
 export type PacienteUltimaConsultaResumoApi = {
   id: number;
@@ -98,6 +102,8 @@ export type PacienteRowViewModel = {
   initials: string;
   ativo: boolean;
 };
+
+export type PacienteRowsPageViewModel = PageResponse<PacienteRowViewModel>;
 
 export type PacienteFormValues = PacienteApi;
 

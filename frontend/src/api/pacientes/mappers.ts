@@ -1,13 +1,14 @@
-import type { PageResponse } from "../shared/types";
+import { mapPageResponse } from "../shared/types";
 import type {
   EnderecoApi,
   PacienteApi,
   PacienteCreatePayload,
   PacienteFormValues,
-  PacienteListApi,
+  PacienteListResponse,
   PacienteProfileApi,
   PacienteProfileViewModel,
   PacienteRowViewModel,
+  PacienteRowsPageViewModel,
   PacienteUpdatePayload,
 } from "./types";
 
@@ -155,21 +156,21 @@ export function toPacienteFormValues(api: PacienteApi): PacienteFormValues {
   };
 }
 
-export function toPacienteRowViewModel(paciente: PacienteListApi): PacienteRowViewModel {
+export function toPacienteRowViewModel(paciente: PacienteListResponse["content"][number]): PacienteRowViewModel {
   return {
     id: paciente.id,
     nome: paciente.nomeCompleto,
     cpf: paciente.cpf,
     telefone: paciente.telefone,
     ultimaConsulta: formatDate(paciente.ultimaConsulta),
-    convenio: paciente.planoSaude?.trim() || "Nunca",
+    convenio: paciente.planoSaude?.trim() || "Não informado",
     initials: initials(paciente.nomeCompleto),
     ativo: paciente.ativo,
   };
 }
 
-export function toPacienteRows(page: PageResponse<PacienteListApi>): PacienteRowViewModel[] {
-  return page.content.map(toPacienteRowViewModel);
+export function toPacienteRows(page: PacienteListResponse): PacienteRowsPageViewModel {
+  return mapPageResponse(page, toPacienteRowViewModel);
 }
 
 export function toPacienteProfileViewModel(api: PacienteProfileApi): PacienteProfileViewModel {
