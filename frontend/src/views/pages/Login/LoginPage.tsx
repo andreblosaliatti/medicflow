@@ -37,9 +37,8 @@ export default function LoginPage() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
-    const submittedLogin = String(formData.get("login") ?? "").trim();
-    const submittedSenha = String(formData.get("senha") ?? "");
+    const submittedLogin = loginValue.trim();
+    const submittedSenha = senha;
 
     setLoginValue(submittedLogin);
     setSenha(submittedSenha);

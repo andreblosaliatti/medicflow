@@ -1,4 +1,6 @@
 // src/components/auth/TextField.tsx
+
+import type { ReactNode, HTMLInputTypeAttribute } from "react";
 import "./auth.css";
 
 type Props = {
@@ -6,9 +8,9 @@ type Props = {
   onChange: (value: string) => void;
   placeholder: string;
   name?: string;
-  type?: React.HTMLInputTypeAttribute;
+  type?: HTMLInputTypeAttribute;
   autoComplete?: string;
-  leftIcon?: React.ReactNode;
+  leftIcon?: ReactNode;
   ariaLabel: string;
 };
 
@@ -30,11 +32,11 @@ export default function TextField({
 
       <input
         className="field-input"
+        name={name}
+        type={type}
+        placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        name={name}
-        placeholder={placeholder}
-        type={type}
         autoComplete={autoComplete}
         aria-label={ariaLabel}
       />
