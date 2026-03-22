@@ -1,17 +1,29 @@
-import { httpClient } from "../http";
-import { listPacientesApi } from "../pacientes/service";
-import { toConsultaRowViewModel } from "./mappers";
-import type { ConsultaApi, ConsultaRowViewModel } from "./types";
+import { api, unwrapResponse } from "../../lib/api";
+import type { PageResponse } from "../shared/types";
+import { toConsultaHistoryRowViewModel, toConsultaRowViewModel } from "./mappers";
+import type { ConsultaApi, ConsultaHistoryRowViewModel, ConsultaRowViewModel, ConsultaTableItemApi } from "./types";
 
 export async function listConsultasApi(): Promise<ConsultaApi[]> {
-  return httpClient.get<ConsultaApi[]>("/consultas");
+  const response = await unwrapResponse(api.get<PageResponse<ConsultaApi>>("/consultas/tabela", { params: { size: 200 } }));
+  return response.content;
 }
 
 export async function listConsultasRows(): Promise<ConsultaRowViewModel[]> {
-  const [consultas, pacientes] = await Promise.all([listConsultasApi(), listPacientesApi()]);
+  const consultas = await listConsultasApi();
 
   return consultas
     .slice()
     .sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())
-    .map((consulta) => toConsultaRowViewModel(consulta, pacientes));
+    .map(toConsultaRowViewModel);
+}
+
+export async function listConsultasByPacienteId(pacienteId: number): Promise<ConsultaHistoryRowViewModel[]> {
+  const response = await unwrapResponse(api.get<PageResponse<ConsultaTableItemApi>>("/consultas/tabela", {
+    params: {
+      pacienteId,
+      size: 50,
+    },
+  }));
+
+  return response.content.map(toConsultaHistoryRowViewModel);
 }
