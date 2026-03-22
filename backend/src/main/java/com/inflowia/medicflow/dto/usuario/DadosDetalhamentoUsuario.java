@@ -16,6 +16,7 @@ public class DadosDetalhamentoUsuario {
     private String login;
     private String nome;
     private String sobrenome;
+    private String nomeCompleto;
     private String email;
     private String cpf;
     private Set<String> roles;

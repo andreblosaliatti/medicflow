@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface MedicamentoPrescritoRepository extends JpaRepository<MedicamentoPrescrito, Long> {
 
+    long countByConsultaPacienteId(Long pacienteId);
+
     Page<MedicamentoPrescrito> findByConsultaPacienteId(Long pacienteId, Pageable pageable);
 
     Page<MedicamentoPrescrito> findByConsultaId(Long consultaId, Pageable pageable);

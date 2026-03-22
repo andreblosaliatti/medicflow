@@ -2,6 +2,7 @@ package com.inflowia.medicflow.service;
 
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoDetailsDTO;
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoMinDTO;
+import com.inflowia.medicflow.dto.exame.ExameSolicitadoPatchDTO;
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoUpdateDTO;
 import com.inflowia.medicflow.domain.consulta.Consulta;
 import com.inflowia.medicflow.domain.exame.ExameBase;
@@ -11,6 +12,7 @@ import com.inflowia.medicflow.repository.ExameBaseRepository;
 import com.inflowia.medicflow.repository.ExameSolicitadoRepository;
 import com.inflowia.medicflow.repository.PacienteRepository;
 import com.inflowia.medicflow.exception.BusinessRuleException;
+import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,12 +51,12 @@ public class ExameSolicitadoService {
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id) {
         if (!exameSolicitadoRepository.existsById(id)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Exame solicitado"));
+            throw new ResourceNotFoundException(ErrorCodes.EXAME_SOLICITADO_NOT_FOUND, ExceptionMessages.notFound("Exame solicitado"));
         }
         try {
             exameSolicitadoRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessRuleException("Não é possível excluir o exame solicitado informado porque ele está vinculado a outros registros. Utilize a inativação.");
+            throw new BusinessRuleException(ErrorCodes.EXAME_SOLICITADO_BUSINESS_RULE, "Não é possível excluir o exame solicitado informado porque ele está vinculado a outros registros. Utilize a inativação.");
         }
     }
 
@@ -62,8 +64,44 @@ public class ExameSolicitadoService {
     @Transactional(readOnly = true)
     public ExameSolicitadoDetailsDTO buscarPorId(Long id) {
         ExameSolicitado entity = exameSolicitadoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Exame solicitado")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_SOLICITADO_NOT_FOUND, ExceptionMessages.notFound("Exame solicitado")));
 
+        return new ExameSolicitadoDetailsDTO(entity);
+    }
+
+    @Transactional
+    public ExameSolicitadoDetailsDTO atualizar(Long id, ExameSolicitadoPatchDTO dto) {
+        ExameSolicitado entity = exameSolicitadoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_SOLICITADO_NOT_FOUND, ExceptionMessages.notFound("Exame solicitado")));
+
+        entity.setStatus(dto.getStatus());
+        entity.setDataColeta(dto.getDataColeta());
+        entity.setDataResultado(dto.getDataResultado());
+        entity.setObservacoes(dto.getObservacoes());
+
+        entity = exameSolicitadoRepository.save(entity);
+        return new ExameSolicitadoDetailsDTO(entity);
+    }
+
+    @Transactional
+    public ExameSolicitadoDetailsDTO atualizarParcialmente(Long id, ExameSolicitadoPatchDTO dto) {
+        ExameSolicitado entity = exameSolicitadoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_SOLICITADO_NOT_FOUND, ExceptionMessages.notFound("Exame solicitado")));
+
+        if (dto.getStatus() != null) {
+            entity.setStatus(dto.getStatus());
+        }
+        if (dto.getDataColeta() != null) {
+            entity.setDataColeta(dto.getDataColeta());
+        }
+        if (dto.getDataResultado() != null) {
+            entity.setDataResultado(dto.getDataResultado());
+        }
+        if (dto.getObservacoes() != null) {
+            entity.setObservacoes(dto.getObservacoes());
+        }
+
+        entity = exameSolicitadoRepository.save(entity);
         return new ExameSolicitadoDetailsDTO(entity);
     }
 
@@ -71,7 +109,7 @@ public class ExameSolicitadoService {
     @Transactional(readOnly = true)
     public Page<ExameSolicitadoMinDTO> listarPorConsulta(Long consultaId, Pageable pageable) {
         if (!consultaRepository.existsById(consultaId)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Consulta"));
+            throw new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta"));
         }
 
         Page<ExameSolicitado> page = exameSolicitadoRepository
@@ -84,7 +122,7 @@ public class ExameSolicitadoService {
     @Transactional(readOnly = true)
     public Page<ExameSolicitadoMinDTO> listarPorExameBase(Long exameBaseId, Pageable pageable) {
         if (!exameBaseRepository.existsById(exameBaseId)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Exame base"));
+            throw new ResourceNotFoundException(ErrorCodes.EXAME_BASE_NOT_FOUND, ExceptionMessages.notFound("Exame base"));
         }
 
         Page<ExameSolicitado> page = exameSolicitadoRepository
@@ -96,7 +134,7 @@ public class ExameSolicitadoService {
     @Transactional(readOnly = true)
     public Page<ExameSolicitadoMinDTO> listarPorPaciente(Long pacienteId, Pageable pageable) {
         if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
+            throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
         }
 
         Page<ExameSolicitado> page =
@@ -109,12 +147,13 @@ public class ExameSolicitadoService {
     public Page<ExameSolicitadoMinDTO> listarPorPacienteUltimaConsulta(Long pacienteId,
                                                                        Pageable pageable) {
         if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
+            throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
         }
 
         Consulta ultimaConsulta = consultaRepository
                 .findTopByPacienteIdOrderByIdDesc(pacienteId)
                 .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.CONSULTA_NOT_FOUND,
                         ExceptionMessages.NO_CONSULTATIONS_FOR_PATIENT));
 
         Page<ExameSolicitado> page =
@@ -132,11 +171,11 @@ public class ExameSolicitadoService {
         entity.setDataResultado(dto.getDataResultado());
 
         Consulta consulta = consultaRepository.findById(dto.getConsultaId())
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Consulta")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta")));
         entity.setConsulta(consulta);
 
         ExameBase exameBase = exameBaseRepository.findById(dto.getExameBaseId())
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Exame base")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_BASE_NOT_FOUND, ExceptionMessages.notFound("Exame base")));
         entity.setExameBase(exameBase);
     }
 

@@ -2,6 +2,7 @@ package com.inflowia.medicflow.dto.paciente;
 
 import com.inflowia.medicflow.dto.EnderecoDTO;
 import com.inflowia.medicflow.domain.paciente.Paciente;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.br.CPF;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(name = "PacienteFormDTO", description = "DTO de formulário para cadastro completo de pacientes.")
 public class PacienteDTO {
 
     private Long id;
@@ -42,6 +44,10 @@ public class PacienteDTO {
     @NotNull(message = "Endereço é obrigatório")
     private EnderecoDTO endereco;
 
+    private String planoSaude;
+
+    private boolean ativo;
+
     public PacienteDTO(Paciente p) {
         this.id = p.getId();
         this.primeiroNome = p.getPrimeiroNome();
@@ -51,7 +57,8 @@ public class PacienteDTO {
         this.telefone = p.getTelefone();
         this.email = p.getEmail();
         this.sexo = p.getSexo();
-        this.endereco = new EnderecoDTO(p.getEndereco());
+        this.endereco = p.getEndereco() != null ? new EnderecoDTO(p.getEndereco()) : null;
+        this.planoSaude = p.getPlanoSaude();
+        this.ativo = p.isAtivo();
     }
 }
-

@@ -1,7 +1,8 @@
 package com.inflowia.medicflow.controller;
 
 import com.inflowia.medicflow.dto.paciente.PacienteDTO;
-import com.inflowia.medicflow.dto.paciente.PacienteMinDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteListDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteProfileDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteUpdateDTO;
 import com.inflowia.medicflow.service.PacienteService;
 import jakarta.validation.Valid;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -22,8 +24,8 @@ public class PacienteController {
     @Autowired
     private PacienteService service;
 
-    // POST - cadastrar
     @PostMapping
+    @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<PacienteDTO> cadastrar(
             @RequestBody @Valid PacienteDTO dto,
             UriComponentsBuilder uriBuilder) {
@@ -38,31 +40,45 @@ public class PacienteController {
         return ResponseEntity.created(uri).body(salvo);
     }
 
-    // GET - listar
     @GetMapping
-    public ResponseEntity<Page<PacienteMinDTO>> listar(
+    @PreAuthorize("hasAuthority('pacientes:read')")
+    public ResponseEntity<Page<PacienteListDTO>> listar(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String cpf,
+            @RequestParam(required = false) Boolean ativo,
+            @RequestParam(required = false, name = "convenio") String convenio,
             @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
 
-        Page<PacienteMinDTO> page = service.listar(pageable);
+        Page<PacienteListDTO> page = service.listar(nome, cpf, ativo, convenio, pageable);
         return ResponseEntity.ok(page);
     }
 
     @GetMapping("/inativos")
-    public ResponseEntity<Page<PacienteMinDTO>> listarInativos(
+    @PreAuthorize("hasAuthority('pacientes:read')")
+    public ResponseEntity<Page<PacienteListDTO>> listarInativos(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String cpf,
+            @RequestParam(required = false, name = "convenio") String convenio,
             @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
 
-        return ResponseEntity.ok(service.listarInativos(pageable));
+        return ResponseEntity.ok(service.listarInativos(nome, cpf, convenio, pageable));
     }
 
-    // GET - buscar por ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('pacientes:read')")
     public ResponseEntity<PacienteDTO> buscarPorId(@PathVariable Long id) {
         PacienteDTO dto = service.buscarPorId(id);
         return ResponseEntity.ok(dto);
     }
 
-    // PUT - atualizar
+    @GetMapping("/{id}/perfil")
+    @PreAuthorize("hasAuthority('pacientes:read')")
+    public ResponseEntity<PacienteProfileDTO> buscarPerfil(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarPerfil(id));
+    }
+
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<PacienteDTO> atualizar(
             @PathVariable Long id,
             @RequestBody @Valid PacienteUpdateDTO dto) {
@@ -71,14 +87,15 @@ public class PacienteController {
         return ResponseEntity.ok(atualizado);
     }
 
-    // DELETE - inativar paciente (política oficial)
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/inativar")
+    @PreAuthorize("hasAuthority('pacientes:write')")
     public ResponseEntity<Void> softDelete(@PathVariable Long id) {
         service.softDelete(id);
         return ResponseEntity.noContent().build();

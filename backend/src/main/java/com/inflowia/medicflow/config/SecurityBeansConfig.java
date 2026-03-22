@@ -5,8 +5,8 @@ import com.inflowia.medicflow.security.ApiAccessDeniedHandler;
 import com.inflowia.medicflow.security.ApiAuthenticationEntryPoint;
 import com.inflowia.medicflow.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -79,7 +79,7 @@ public class SecurityBeansConfig {
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(
-                            "/auth/**",
+                            "/auth/login",
                             "/error",
                             "/actuator/health",
                             "/actuator/info"

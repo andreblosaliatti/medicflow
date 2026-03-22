@@ -3,6 +3,7 @@ package com.inflowia.medicflow.service;
 import com.inflowia.medicflow.dto.exame.*;
 import com.inflowia.medicflow.domain.exame.ExameBase;
 import com.inflowia.medicflow.repository.ExameBaseRepository;
+import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.exception.BusinessRuleException;
 import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.exception.ResourceNotFoundException;
@@ -35,7 +36,7 @@ public class ExameBaseService {
     @Transactional(readOnly = true)
     public ExameBaseDetailsDTO findById(Long id) {
         ExameBase entity = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Exame base")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_BASE_NOT_FOUND, ExceptionMessages.notFound("Exame base")));
         return new ExameBaseDetailsDTO(entity);
     }
 
@@ -70,19 +71,19 @@ public class ExameBaseService {
             return new ExameBaseDetailsDTO(entity);
         }
         catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Exame base"));
+            throw new ResourceNotFoundException(ErrorCodes.EXAME_BASE_NOT_FOUND, ExceptionMessages.notFound("Exame base"));
         }
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Exame base"));
+            throw new ResourceNotFoundException(ErrorCodes.EXAME_BASE_NOT_FOUND, ExceptionMessages.notFound("Exame base"));
         }
         try {
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessRuleException("Não é possível excluir o exame base informado porque ele possui exames solicitados vinculados. Utilize a inativação.");
+            throw new BusinessRuleException(ErrorCodes.EXAME_BASE_BUSINESS_RULE, "Não é possível excluir o exame base informado porque ele possui exames solicitados vinculados. Utilize a inativação.");
         }
     }
 

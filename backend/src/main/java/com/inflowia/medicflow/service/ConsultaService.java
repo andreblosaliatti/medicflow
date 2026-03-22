@@ -1,20 +1,29 @@
 package com.inflowia.medicflow.service;
 
-import com.inflowia.medicflow.dto.consulta.ConsultaDTO;
-import com.inflowia.medicflow.dto.consulta.ConsultaDetailsDTO;
-import com.inflowia.medicflow.dto.consulta.ConsultaMinDTO;
-import com.inflowia.medicflow.dto.consulta.ConsultaUpdateDTO;
 import com.inflowia.medicflow.domain.consulta.Consulta;
+import com.inflowia.medicflow.domain.consulta.MeioPagamento;
 import com.inflowia.medicflow.domain.consulta.StatusConsulta;
+import com.inflowia.medicflow.domain.consulta.TipoConsulta;
 import com.inflowia.medicflow.domain.paciente.Paciente;
 import com.inflowia.medicflow.domain.usuario.Medico;
+import com.inflowia.medicflow.dto.consulta.ConsultaAgendaItemDTO;
+import com.inflowia.medicflow.dto.consulta.ConsultaDTO;
+import com.inflowia.medicflow.dto.consulta.ConsultaDetailsDTO;
+import com.inflowia.medicflow.dto.consulta.ConsultaFilterDTO;
+import com.inflowia.medicflow.dto.consulta.ConsultaMetadataDTO;
+import com.inflowia.medicflow.dto.consulta.ConsultaMinDTO;
+import com.inflowia.medicflow.dto.consulta.ConsultaTableItemDTO;
+import com.inflowia.medicflow.dto.consulta.ConsultaUpdateDTO;
+import com.inflowia.medicflow.dto.consulta.EnumOptionDTO;
+import com.inflowia.medicflow.exception.BusinessRuleException;
+import com.inflowia.medicflow.exception.ErrorCodes;
+import com.inflowia.medicflow.exception.ExceptionMessages;
+import com.inflowia.medicflow.exception.ResourceNotFoundException;
 import com.inflowia.medicflow.repository.ConsultaRepository;
 import com.inflowia.medicflow.repository.MedicoRepository;
 import com.inflowia.medicflow.repository.PacienteRepository;
-import com.inflowia.medicflow.exception.BusinessRuleException;
+import com.inflowia.medicflow.repository.specification.ConsultaSpecifications;
 import com.inflowia.medicflow.service.validation.ConsultaDomainValidator;
-import com.inflowia.medicflow.exception.ExceptionMessages;
-import com.inflowia.medicflow.exception.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -22,8 +31,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -47,10 +57,10 @@ public class ConsultaService {
     @Transactional
     public ConsultaDetailsDTO criar(ConsultaDTO dto) {
         Paciente paciente = pacienteRepository.findByIdAndAtivoTrue(dto.getPacienteId())
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente")));
 
         Medico medico = medicoRepository.findByIdAndAtivoTrue(dto.getMedicoId())
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Médico")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICO_NOT_FOUND, ExceptionMessages.notFound("Médico")));
 
         Consulta entity = new Consulta();
         copyCreateDtoToEntity(dto, entity, paciente, medico);
@@ -70,12 +80,16 @@ public class ConsultaService {
 
             if (dto.getPacienteId() != null) {
                 paciente = pacienteRepository.findByIdAndAtivoTrue(dto.getPacienteId())
-                        .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
+                        .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente")));
             }
 
             if (dto.getMedicoId() != null) {
                 medico = medicoRepository.findByIdAndAtivoTrue(dto.getMedicoId())
-                        .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Médico")));
+                        .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICO_NOT_FOUND, ExceptionMessages.notFound("Médico")));
+            }
+
+            if (dto.getStatus() != null) {
+                consultaDomainValidator.validateStatusTransition(entity.getStatus(), dto.getStatus());
             }
 
             copyUpdateDtoToEntity(dto, entity, paciente, medico);
@@ -85,75 +99,183 @@ public class ConsultaService {
             return new ConsultaDetailsDTO(entity);
 
         } catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Consulta"));
+            throw new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta"));
         }
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id){
         if(!consultaRepository.existsById(id)){
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Consulta"));
+            throw new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta"));
         }
         try {
             consultaRepository.deleteById(id);
         }
         catch (DataIntegrityViolationException e) {
-            throw new BusinessRuleException("Não é possível excluir a consulta informada porque ela está vinculada a outros registros.");
+            throw new BusinessRuleException(ErrorCodes.CONSULTA_BUSINESS_RULE, "Não é possível excluir a consulta informada porque ela está vinculada a outros registros.");
         }
     }
 
     @Transactional(readOnly = true)
     public ConsultaDetailsDTO buscarPorId(Long id) {
-        Consulta entity = consultaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Consulta")));
+        Consulta entity = getConsulta(id);
         return new ConsultaDetailsDTO(entity);
     }
 
     @Transactional(readOnly = true)
-    public Page<ConsultaMinDTO> listar(Pageable pageable) {
-        Page<Consulta> page = consultaRepository.findAll(pageable);
+    public Page<ConsultaMinDTO> listar(ConsultaFilterDTO filtro, Pageable pageable) {
+        ConsultaFilterDTO filtroNormalizado = normalizarFiltro(filtro);
+        validarFiltros(filtroNormalizado);
+        Page<Consulta> page = consultaRepository.findAll(ConsultaSpecifications.withFilters(filtroNormalizado), pageable);
         return page.map(ConsultaMinDTO::new);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ConsultaTableItemDTO> listarParaTabela(ConsultaFilterDTO filtro, Pageable pageable) {
+        ConsultaFilterDTO filtroNormalizado = normalizarFiltro(filtro);
+        validarFiltros(filtroNormalizado);
+        Page<Consulta> page = consultaRepository.findAll(ConsultaSpecifications.withFilters(filtroNormalizado), pageable);
+        return page.map(ConsultaTableItemDTO::new);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ConsultaAgendaItemDTO> listarParaAgenda(ConsultaFilterDTO filtro, Pageable pageable) {
+        ConsultaFilterDTO filtroNormalizado = normalizarFiltro(filtro);
+        validarFiltros(filtroNormalizado);
+        Page<Consulta> page = consultaRepository.findAll(ConsultaSpecifications.withFilters(filtroNormalizado), pageable);
+        return page.map(ConsultaAgendaItemDTO::new);
     }
 
     @Transactional(readOnly = true)
     public Page<ConsultaMinDTO> listarPorPaciente(Long pacienteId, Pageable pageable) {
         if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Paciente"));
+            throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
         }
-        Page<Consulta> page = consultaRepository.findByPacienteId(pacienteId, pageable);
-        return page.map(ConsultaMinDTO::new);
+        return listar(ConsultaFilterDTO.builder().pacienteId(pacienteId).build(), pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<ConsultaMinDTO> listarPorMedico(Long medicoId, Pageable pageable) {
         if (!medicoRepository.existsByIdAndAtivoTrue(medicoId)) {
-            throw new ResourceNotFoundException(ExceptionMessages.notFound("Médico"));
+            throw new ResourceNotFoundException(ErrorCodes.MEDICO_NOT_FOUND, ExceptionMessages.notFound("Médico"));
         }
-        Page<Consulta> page = consultaRepository.findByMedicoId(medicoId, pageable);
-        return page.map(ConsultaMinDTO::new);
+        return listar(ConsultaFilterDTO.builder().medicoId(medicoId).build(), pageable);
     }
 
     @Transactional(readOnly = true)
     public ConsultaDetailsDTO buscarUltimaConsultaPorPaciente(Long pacienteId) {
         Consulta consulta = consultaRepository.findTopByPacienteIdOrderByDataHoraDesc(pacienteId)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.NO_CONSULTATIONS_FOR_PATIENT));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.NO_CONSULTATIONS_FOR_PATIENT));
         return new ConsultaDetailsDTO(consulta);
     }
 
     @Transactional(readOnly = true)
-    public List<ConsultaMinDTO> listarPorStatus(StatusConsulta status) {
-        List<Consulta> list = consultaRepository.findByStatus(status);
-        return list.stream()
-                .map(ConsultaMinDTO::new)
-                .toList();
+    public Page<ConsultaMinDTO> listarPorStatus(StatusConsulta status, Pageable pageable) {
+        return listar(ConsultaFilterDTO.builder().status(status).build(), pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<ConsultaMinDTO> listarPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
-        List<Consulta> list = consultaRepository.findByDataHoraBetween(inicio, fim);
-        return list.stream()
-                .map(ConsultaMinDTO::new)
+    public Page<ConsultaMinDTO> listarPorPeriodo(ConsultaFilterDTO filtro, Pageable pageable) {
+        return listar(filtro, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public ConsultaMetadataDTO listarMetadata() {
+        return new ConsultaMetadataDTO(
+                toOptions(StatusConsulta.values()),
+                toOptions(TipoConsulta.values()),
+                toOptions(MeioPagamento.values())
+        );
+    }
+
+    @Transactional
+    public ConsultaDetailsDTO confirmar(Long id) {
+        Consulta consulta = getConsulta(id);
+        consultaDomainValidator.validateCanConfirm(consulta);
+        consultaDomainValidator.validateStatusTransition(consulta.getStatus(), StatusConsulta.CONFIRMADA);
+        consulta.setStatus(StatusConsulta.CONFIRMADA);
+        consultaDomainValidator.validate(consulta);
+        return new ConsultaDetailsDTO(consultaRepository.save(consulta));
+    }
+
+    @Transactional
+    public ConsultaDetailsDTO cancelar(Long id) {
+        Consulta consulta = getConsulta(id);
+        consultaDomainValidator.validateCanCancel(consulta);
+        consultaDomainValidator.validateStatusTransition(consulta.getStatus(), StatusConsulta.CANCELADA);
+        consulta.setStatus(StatusConsulta.CANCELADA);
+        consultaDomainValidator.validate(consulta);
+        return new ConsultaDetailsDTO(consultaRepository.save(consulta));
+    }
+
+    @Transactional
+    public ConsultaDetailsDTO iniciarAtendimento(Long id) {
+        Consulta consulta = getConsulta(id);
+        consultaDomainValidator.validateCanStart(consulta);
+        consultaDomainValidator.validateStatusTransition(consulta.getStatus(), StatusConsulta.EM_ATENDIMENTO);
+        consulta.setStatus(StatusConsulta.EM_ATENDIMENTO);
+        consultaDomainValidator.validate(consulta);
+        return new ConsultaDetailsDTO(consultaRepository.save(consulta));
+    }
+
+    @Transactional
+    public ConsultaDetailsDTO finalizarAtendimento(Long id) {
+        Consulta consulta = getConsulta(id);
+        consultaDomainValidator.validateCanFinish(consulta);
+        consultaDomainValidator.validateStatusTransition(consulta.getStatus(), StatusConsulta.CONCLUIDA);
+        consulta.setStatus(StatusConsulta.CONCLUIDA);
+        consultaDomainValidator.validate(consulta);
+        return new ConsultaDetailsDTO(consultaRepository.save(consulta));
+    }
+
+    private Consulta getConsulta(Long id) {
+        return consultaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta")));
+    }
+
+    private List<EnumOptionDTO> toOptions(StatusConsulta[] values) {
+        return Arrays.stream(values)
+                .map(item -> new EnumOptionDTO(item.getCode(), item.getLabel()))
                 .toList();
+    }
+
+    private List<EnumOptionDTO> toOptions(TipoConsulta[] values) {
+        return Arrays.stream(values)
+                .map(item -> new EnumOptionDTO(item.getCode(), item.getLabel()))
+                .toList();
+    }
+
+    private List<EnumOptionDTO> toOptions(MeioPagamento[] values) {
+        return Arrays.stream(values)
+                .map(item -> new EnumOptionDTO(item.getCode(), item.getLabel()))
+                .toList();
+    }
+
+    private ConsultaFilterDTO normalizarFiltro(ConsultaFilterDTO filtro) {
+        return filtro != null ? filtro : new ConsultaFilterDTO();
+    }
+
+    private void validarFiltros(ConsultaFilterDTO filtro) {
+        if (filtro == null) {
+            return;
+        }
+
+        if (filtro.getPacienteId() != null && !pacienteRepository.existsByIdAndAtivoTrue(filtro.getPacienteId())) {
+            throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
+        }
+
+        if (filtro.getMedicoId() != null && !medicoRepository.existsByIdAndAtivoTrue(filtro.getMedicoId())) {
+            throw new ResourceNotFoundException(ErrorCodes.MEDICO_NOT_FOUND, ExceptionMessages.notFound("Médico"));
+        }
+
+        if (filtro.getDataHoraInicio() != null && filtro.getDataHoraFim() != null
+                && filtro.getDataHoraInicio().isAfter(filtro.getDataHoraFim())) {
+            throw new BusinessRuleException(ErrorCodes.CONSULTA_BUSINESS_RULE, ExceptionMessages.INVALID_CONSULTATION_PERIOD);
+        }
+
+        if (StringUtils.hasText(filtro.getTermo())) {
+            filtro.setTermo(filtro.getTermo().trim());
+        }
     }
 
     private void copyCreateDtoToEntity(ConsultaDTO dto, Consulta entity,
@@ -210,8 +332,6 @@ public class ConsultaService {
         if (dto.getDuracaoMinutos() != null) {
             entity.setDuracaoMinutos(dto.getDuracaoMinutos());
         }
-
-        // ⚠ aqui é importante: no DTO, use Boolean, não boolean
         if (dto.getRetorno() != null) {
             entity.setRetorno(dto.getRetorno());
         }
@@ -221,7 +341,6 @@ public class ConsultaService {
         if (dto.getTeleconsulta() != null) {
             entity.setTeleconsulta(dto.getTeleconsulta());
         }
-
         if (dto.getLinkAcesso() != null) {
             entity.setLinkAcesso(dto.getLinkAcesso());
         }
@@ -257,5 +376,4 @@ public class ConsultaService {
             entity.setMedico(medico);
         }
     }
-
 }

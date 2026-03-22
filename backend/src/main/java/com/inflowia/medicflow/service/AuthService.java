@@ -1,9 +1,12 @@
 package com.inflowia.medicflow.service;
 
+import com.inflowia.medicflow.domain.usuario.Usuario;
 import com.inflowia.medicflow.dto.auth.LoginRequest;
 import com.inflowia.medicflow.dto.auth.LoginResponse;
-import com.inflowia.medicflow.domain.usuario.Usuario;
+import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.repository.UsuarioRepository;
+import com.inflowia.medicflow.security.AccessRole;
+import com.inflowia.medicflow.security.AuthorizationMatrix;
 import com.inflowia.medicflow.security.CustomUserDetailsService;
 import com.inflowia.medicflow.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +16,10 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import com.inflowia.medicflow.exception.ExceptionMessages;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -43,27 +46,38 @@ public class AuthService {
         }
 
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.getLogin());
-
-        Usuario usuario = usuarioRepository.findByLoginIgnoreCase(request.getLogin())
-                .orElseThrow(() -> new BadCredentialsException(ExceptionMessages.AUTHENTICATED_USER_NOT_FOUND));
-
         String token = jwtService.generateToken(userDetails);
 
-        List<String> roles = usuario.getRoles()
+        return buildResponse(request.getLogin(), token);
+    }
+
+    @Transactional(readOnly = true)
+    public LoginResponse me(String login, String token) {
+        return buildResponse(login, token);
+    }
+
+    private LoginResponse buildResponse(String login, String token) {
+        Usuario usuario = usuarioRepository.findByLoginIgnoreCase(login)
+                .orElseThrow(() -> new BadCredentialsException(ExceptionMessages.AUTHENTICATED_USER_NOT_FOUND));
+
+        List<String> roles = AccessRole.toApiNames(usuario.getRoles()
                 .stream()
                 .map(role -> role.getAuthority())
-                .sorted()
-                .toList();
+                .toList());
+        Set<String> permissions = AuthorizationMatrix.permissionsFor(usuario.getRoles()
+                .stream()
+                .map(role -> role.getAuthority())
+                .collect(java.util.stream.Collectors.toSet()));
 
         String nomeCompleto = usuario.getNome() + " " + usuario.getSobrenome();
 
         return new LoginResponse(
-                token,
-                "Bearer",
                 usuario.getId(),
                 usuario.getLogin(),
                 nomeCompleto,
-                roles
+                roles,
+                permissions.stream().sorted().toList(),
+                token
         );
     }
 }

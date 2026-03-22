@@ -3,6 +3,7 @@ package com.inflowia.medicflow.dto.consulta;
 import com.inflowia.medicflow.domain.consulta.MeioPagamento;
 import com.inflowia.medicflow.domain.consulta.StatusConsulta;
 import com.inflowia.medicflow.domain.consulta.TipoConsulta;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(name = "ConsultaFormDTO", description = "DTO de formulário para cadastro completo de consultas.")
 public class ConsultaDTO {
 
         @NotNull(message = "A data e hora da consulta são obrigatórias")

@@ -42,7 +42,7 @@ public class ExameSolicitadoDetailsDTO {
             if (entity.getConsulta().getPaciente() != null) {
                 this.pacienteId = entity.getConsulta().getPaciente().getId();
                 this.pacientePrimeiroNome = entity.getConsulta().getPaciente().getPrimeiroNome();
-                this.pacientePrimeiroNome = entity.getConsulta().getPaciente().getSobrenome();
+                this.pacienteSobrenome = entity.getConsulta().getPaciente().getSobrenome();
             }
         }
 

@@ -43,7 +43,7 @@ class UsuarioRepositoryTest {
         repository.save(usuario("ana.1", "ana1@test.com", "11144477735", true, "Ana", "Silva"));
         repository.save(usuario("ana.2", "ana2@test.com", "22255588846", true, "Ana", "Souza"));
         repository.save(usuario("ana.3", "ana3@test.com", "33366699957", false, "Ana", "Costa"));
-        repository.save(usuario("bruno.1", "bruno1@test.com", "44477700018", true, "Bruno", "Pereira"));
+        repository.save(usuario("bruno.1", "bruno1@test.com", "44477700083", true, "Bruno", "Pereira"));
 
         Page<Usuario> primeiraPagina = repository.findByNomeContainingIgnoreCaseAndAtivoTrue("ana", PageRequest.of(0, 1));
         Page<Usuario> segundaPagina = repository.findByNomeContainingIgnoreCaseAndAtivoTrue("ana", PageRequest.of(1, 1));

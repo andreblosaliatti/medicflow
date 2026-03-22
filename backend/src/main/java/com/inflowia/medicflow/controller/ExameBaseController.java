@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -24,6 +25,7 @@ public class ExameBaseController {
 
     // LISTAGEM COM FILTRO OPCIONAL POR NOME
     @GetMapping
+    @PreAuthorize("hasAuthority('exames-base:read')")
     public ResponseEntity<Page<ExameBaseMinDTO>> findAll(
             @RequestParam(value = "nome", required = false) String nome,
             Pageable pageable) {
@@ -34,6 +36,7 @@ public class ExameBaseController {
 
     // BUSCAR POR ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('exames-base:read')")
     public ResponseEntity<ExameBaseDetailsDTO> findById(@PathVariable Long id) {
         ExameBaseDetailsDTO dto = service.findById(id);
         return ResponseEntity.ok(dto);
@@ -41,6 +44,7 @@ public class ExameBaseController {
 
     // CRIAR
     @PostMapping
+    @PreAuthorize("hasAuthority('exames-base:write')")
     public ResponseEntity<ExameBaseDetailsDTO> create(@Valid @RequestBody ExameBaseDTO dto) {
         ExameBaseDetailsDTO created = service.create(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -53,6 +57,7 @@ public class ExameBaseController {
 
     // ATUALIZAR
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('exames-base:write')")
     public ResponseEntity<ExameBaseDetailsDTO> update(
             @PathVariable Long id,
             @Valid @RequestBody ExameBaseUpdateDTO dto) {
@@ -63,6 +68,7 @@ public class ExameBaseController {
 
     // DELETAR
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('exames-base:write')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

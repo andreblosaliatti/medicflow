@@ -6,11 +6,13 @@ import com.inflowia.medicflow.dto.usuario.DadosAtualizacaoUsuario;
 import com.inflowia.medicflow.dto.usuario.DadosCadastroUsuario;
 import com.inflowia.medicflow.dto.usuario.DadosDetalhamentoUsuario;
 import com.inflowia.medicflow.dto.usuario.DadosListagemUsuario;
+import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.exception.ResourceNotFoundException;
 import com.inflowia.medicflow.mappers.UsuarioMapper;
 import com.inflowia.medicflow.repository.RoleRepository;
 import com.inflowia.medicflow.repository.UsuarioRepository;
+import com.inflowia.medicflow.security.AccessRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,8 +34,9 @@ public class UsuarioService {
     private final UsuarioMapper usuarioMapper;
 
     @Transactional(readOnly = true)
-    public Page<DadosListagemUsuario> findAllPaged(String nome, Pageable pageable) {
-        Page<Usuario> page = repository.findByNomeContainingIgnoreCaseAndAtivoTrue(nome, pageable);
+    public Page<DadosListagemUsuario> findAllPaged(String nome, Boolean ativo, String role, Pageable pageable) {
+        String normalizedRole = normalizeRole(role);
+        Page<Usuario> page = repository.searchForAdmin(nome == null ? "" : nome, ativo, normalizedRole, pageable);
         return page.map(usuarioMapper::toListagem);
     }
 
@@ -47,6 +50,7 @@ public class UsuarioService {
     public DadosDetalhamentoUsuario findByCpf(String cpf) {
         Usuario entity = repository.findByCpfAndAtivoTrue(cpf)
                 .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.USUARIO_NOT_FOUND,
                         ExceptionMessages.notFoundBy("Usuário", "CPF", cpf)
                 ));
         return usuarioMapper.toDetalhamento(entity);
@@ -62,7 +66,7 @@ public class UsuarioService {
         entity.setSobrenome(dto.getSobrenome());
         entity.setEmail(dto.getEmail());
         entity.setCpf(dto.getCpf());
-        entity.setAtivo(true);
+        entity.setAtivo(dto.getAtivo() == null || dto.getAtivo());
 
         if (dto.getEndereco() != null) {
             entity.setEndereco(dto.getEndereco().toEntity());
@@ -78,26 +82,24 @@ public class UsuarioService {
     public DadosDetalhamentoUsuario update(Long id, DadosAtualizacaoUsuario dto) {
         Usuario entity = getUsuarioAtivo(id);
 
+        if (dto.getLogin() != null) {
+            entity.setLogin(dto.getLogin());
+        }
         if (dto.getNome() != null) {
             entity.setNome(dto.getNome());
         }
-
         if (dto.getSobrenome() != null) {
             entity.setSobrenome(dto.getSobrenome());
         }
-
         if (dto.getEmail() != null) {
             entity.setEmail(dto.getEmail());
         }
-
         if (dto.getAtivo() != null) {
             entity.setAtivo(dto.getAtivo());
         }
-
         if (dto.getRoles() != null) {
             entity.setRoles(resolveRoles(dto.getRoles()));
         }
-
         if (dto.getEndereco() != null) {
             entity.setEndereco(dto.getEndereco().toEntity());
         }
@@ -115,7 +117,7 @@ public class UsuarioService {
 
     private Usuario getUsuarioAtivo(Long id) {
         return repository.findByIdAndAtivoTrue(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Usuário")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USUARIO_NOT_FOUND, ExceptionMessages.notFound("Usuário")));
     }
 
     private Set<Role> resolveRoles(Set<String> roleAuthorities) {
@@ -125,12 +127,19 @@ public class UsuarioService {
 
         Set<Role> resolvedRoles = new HashSet<>();
 
-        for (String authority : roleAuthorities) {
+        for (String authority : AccessRole.toCanonicalAuthorities(roleAuthorities)) {
             Role role = roleRepository.findByAuthority(authority)
-                    .orElseThrow(() -> new ResourceNotFoundException("Role não encontrada: " + authority));
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.ROLE_NOT_FOUND, "Role não encontrada: " + authority));
             resolvedRoles.add(role);
         }
 
         return resolvedRoles;
+    }
+
+    private String normalizeRole(String role) {
+        if (role == null || role.isBlank()) {
+            return null;
+        }
+        return AccessRole.fromValue(role).authority();
     }
 }

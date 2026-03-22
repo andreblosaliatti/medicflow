@@ -84,7 +84,7 @@ class UsuarioControllerWebMvcTest {
         payload.setSobrenome("Usuario");
         payload.setEmail("novo.usuario@test.com");
         payload.setCpf("32844208606");
-        payload.setRoles(Set.of("ROLE_ADMIN"));
+        payload.setRoles(Set.of("ADMIN"));
 
         when(usuarioService.insert(any(DadosCadastroUsuario.class))).thenReturn(
                 new DadosDetalhamentoUsuario(
@@ -92,9 +92,10 @@ class UsuarioControllerWebMvcTest {
                         "novo.usuario",
                         "Novo",
                         "Usuario",
+                        "Novo Usuario",
                         "novo.usuario@test.com",
                         "32844208606",
-                        Set.of("ROLE_ADMIN"),
+                        Set.of("ADMIN"),
                         true,
                         null
                 )

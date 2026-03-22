@@ -2,6 +2,7 @@ package com.inflowia.medicflow.dto.paciente;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(name = "PacienteUpdateFormDTO", description = "DTO de formulário para atualização parcial/total de pacientes.")
 public class PacienteUpdateDTO {
 
     private String primeiroNome;
@@ -29,4 +31,6 @@ public class PacienteUpdateDTO {
     private LocalDate dataNascimento;
 
     private EnderecoDTO endereco;
+
+    private String planoSaude;
 }
