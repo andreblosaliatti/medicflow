@@ -1,47 +1,50 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
+import type { PacienteProfileViewModel } from "../../../api/pacientes/types";
 import Card from "../../ui/Card";
 import "./styles.css";
 import HighlightButton from "../../ui/HighlightButton/HighlightButton";
 
-export default function PatientHeaderCard() {
+export default function PatientHeaderCard({ patient }: { patient: PacienteProfileViewModel }) {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
 
   function handleNovaConsulta() {
-    navigate(`/agenda/novo?pacienteId=${id}`);
+    navigate("/agenda", {
+      state: {
+        novaConsulta: {
+          pacienteId: String(patient.id),
+          pacienteNome: patient.nomeCompleto,
+        },
+      },
+    });
   }
 
   function handleIrParaProntuario() {
-    navigate(`/pacientes/${id}?tab=prontuario`);
+    navigate(`/pacientes/${patient.id}?tab=prontuario`);
   }
 
   return (
     <Card>
       <div className="patient-header">
         <div className="patient-header-left">
-          <img
-            src="https://i.pravatar.cc/100"
-            alt="Paciente"
-            className="patient-avatar"
-          />
+          <div className="patient-avatar" aria-hidden="true">
+            {patient.initials}
+          </div>
 
           <div>
-            <h2>Sofia Almeida (35 anos)</h2>
-            <span className="patient-subtitle">Paciente</span>
+            <h2>
+              {patient.nomeCompleto} ({patient.idadeLabel})
+            </h2>
+            <span className="patient-subtitle">
+              Paciente • {patient.ativo ? "Ativo" : "Inativo"}
+            </span>
           </div>
         </div>
 
         <div className="patient-header-actions">
-          <HighlightButton onClick={handleNovaConsulta}>
-            + Nova Consulta
-          </HighlightButton>
+          <HighlightButton onClick={handleNovaConsulta}>+ Nova Consulta</HighlightButton>
 
-          <HighlightButton
-            onClick={handleIrParaProntuario}
-          >
-            Ir para Prontuário
-          </HighlightButton>
+          <HighlightButton onClick={handleIrParaProntuario}>Ir para Prontuário</HighlightButton>
         </div>
       </div>
     </Card>

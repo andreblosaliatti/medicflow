@@ -2,18 +2,11 @@ import { useMemo, useState } from "react";
 
 import Card from "../../../../../components/ui/Card";
 import SelectField, { type SelectOption } from "../../../../../components/form/SelectField/SelectField";
+import type { ConsultaHistoryRowViewModel } from "../../../../../api/consultas/types";
 
 import "./styles.css";
 
 type ConsultaStatus = "AGENDADA" | "CONFIRMADA" | "EM_ATENDIMENTO" | "CONCLUIDA" | "CANCELADA";
-
-type ConsultaRow = {
-  id: string;
-  data: string; // "12/02/2024"
-  hora: string; // "13:30"
-  profissional: string; // "Dra. Marina Costa"
-  status: ConsultaStatus;
-};
 
 type RowAction = "open" | "edit" | "cancel";
 
@@ -22,15 +15,6 @@ const rowActions: readonly SelectOption<RowAction>[] = [
   { label: "Editar", value: "edit" },
   { label: "Cancelar", value: "cancel" },
 ] as const;
-
-// Mock (troca depois por fetch)
-const mock: ConsultaRow[] = [
-  { id: "c1", data: "12/02/2024", hora: "13:30", profissional: "Dra. Marina Costa", status: "CANCELADA" },
-  { id: "c2", data: "20/10/2023", hora: "10:00", profissional: "Dr. José Lima", status: "CONCLUIDA" },
-  { id: "c3", data: "05/01/2024", hora: "09:15", profissional: "Dr. João Carvalho", status: "CONFIRMADA" },
-  { id: "c4", data: "18/01/2024", hora: "16:40", profissional: "Dra. Marina Costa", status: "EM_ATENDIMENTO" },
-  { id: "c5", data: "22/01/2024", hora: "08:30", profissional: "Dr. José Lima", status: "AGENDADA" },
-];
 
 function statusLabel(s: ConsultaStatus) {
   if (s === "CONFIRMADA") return "Confirmada";
@@ -41,12 +25,10 @@ function statusLabel(s: ConsultaStatus) {
 }
 
 function statusClass(s: ConsultaStatus) {
-  // Mantém classes do seu CSS atual (provável: is-success / is-danger / is-muted)
-  // Sem mexer no visual agora, só melhora coerência.
   if (s === "CONFIRMADA") return "is-success";
   if (s === "CONCLUIDA") return "is-success";
   if (s === "CANCELADA") return "is-danger";
-  if (s === "EM_ATENDIMENTO") return "is-info"; // ✅ nova classe (se não existir, cai no CSS default)
+  if (s === "EM_ATENDIMENTO") return "is-info";
   return "is-muted";
 }
 
@@ -55,7 +37,7 @@ type Props = {
   onAbrir?: (id: string) => void;
   onEditar?: (id: string) => void;
   onCancelar?: (id: string) => void;
-  items?: ConsultaRow[]; // se vier de fora
+  items?: ConsultaHistoryRowViewModel[];
 };
 
 export default function HistoryTab({
@@ -65,13 +47,12 @@ export default function HistoryTab({
   onCancelar,
   items,
 }: Props) {
-  const data = useMemo(() => items ?? mock, [items]);
+  const data = useMemo(() => items ?? [], [items]);
 
   const [page, setPage] = useState(1);
   const pageSize = 6;
 
   const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
-
   const safePage = Math.min(page, totalPages);
 
   const paged = useMemo(() => {
@@ -153,7 +134,7 @@ export default function HistoryTab({
           <button
             type="button"
             className="pager-btn"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
             disabled={safePage === 1}
           >
             ‹
@@ -166,7 +147,7 @@ export default function HistoryTab({
           <button
             type="button"
             className="pager-btn"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
             disabled={safePage === totalPages}
           >
             ›
