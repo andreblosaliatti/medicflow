@@ -20,7 +20,8 @@ import {
   type Exibindo,
 } from "./pacientFilters";
 
-import { toPacientesRows } from "../../../mocks/mappers";
+import { usePacientesQuery } from "../../../api/pacientes/hooks";
+import type { PacienteRowViewModel } from "../../../api/pacientes/types";
 
 import "./styles.css";
 
@@ -35,15 +36,6 @@ type PacienteMenuAction =
   | "ENVIAR_MENSAGEM"
   | "ARQUIVAR";
 
-type PacienteRowModel = {
-  id: number;
-  nome: string;
-  telefone: string;
-  ultimaConsulta: string;
-  convenio: string;
-  initials?: string;
-};
-
 export default function PacientesPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -57,11 +49,10 @@ export default function PacientesPage() {
   const pageSize = 10;
 
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const { data: pacientesBase, isLoading, error } = usePacientesQuery();
 
   const from = `${location.pathname}${location.search}`;
   const navState: NavState = { from };
-
-  const pacientesBase = useMemo(() => toPacientesRows() as PacienteRowModel[], []);
 
   const listaFiltrada = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -81,7 +72,6 @@ export default function PacientesPage() {
       });
     }
 
-    // ainda não aplicado (mantém para não quebrar UI)
     void exibindo;
 
     data.sort((a, b) => {
@@ -100,15 +90,9 @@ export default function PacientesPage() {
   const end = Math.min(start + pageSize, total);
   const pageItems = listaFiltrada.slice(start, end);
 
-  function initials(name: string) {
-    const parts = name.trim().split(/\s+/).slice(0, 2);
-    return parts.map((p) => p[0]?.toUpperCase()).join("");
-  }
-
   function onAction(pacienteId: number, action: PacienteMenuAction) {
     setOpenMenuId(null);
 
-    // ✅ Nova consulta: navega para Agenda e pede abertura do drawer com paciente travado
     if (action === "NOVA_CONSULTA") {
       const paciente = pacientesBase.find((x) => x.id === pacienteId);
 
@@ -221,6 +205,8 @@ export default function PacientesPage() {
             </div>
           }
         >
+          {error ? <div className="mf-muted">{error}</div> : null}
+
           <TableWrap>
             <Table>
               <THead>
@@ -236,7 +222,15 @@ export default function PacientesPage() {
               </THead>
 
               <TBody>
-                {pageItems.map((p) => (
+                {!isLoading && pageItems.length === 0 ? (
+                  <Tr>
+                    <Td colSpan={5} className="mf-muted">
+                      Nenhum paciente encontrado.
+                    </Td>
+                  </Tr>
+                ) : null}
+
+                {pageItems.map((p: PacienteRowViewModel) => (
                   <Tr
                     key={p.id}
                     onClick={() => navigate(`/pacientes/${p.id}`, { state: navState })}
@@ -245,7 +239,7 @@ export default function PacientesPage() {
                     <Td>
                       <div className="mf-person">
                         <div className="mf-avatar" aria-hidden="true">
-                          {p.initials ?? initials(p.nome)}
+                          {p.initials}
                         </div>
                         <span className="mf-person__name">{p.nome}</span>
                       </div>
@@ -258,39 +252,38 @@ export default function PacientesPage() {
                     <Td align="right" onClick={(e) => e.stopPropagation()}>
                       <div className="mf-row-actions">
                         <div className="mf-split">
-                          <div className="mf-split__buttons">
-                            <button
-                              type="button"
-                              className="mf-split__main"
-                              onClick={() => onAction(p.id, "PRONTUARIO")}
-                            >
-                              📄 <span>Prontuário</span>
-                            </button>
+                          <button
+                            type="button"
+                            className="mf-btn-link"
+                            onClick={() => navigate(`/pacientes/${p.id}`)}
+                          >
+                            Ver perfil
+                          </button>
 
-                            <button
-                              type="button"
-                              className="mf-split__caret"
-                              aria-label="Mais ações"
-                              onClick={() => setOpenMenuId((prev) => (prev === p.id ? null : p.id))}
-                            >
-                              ▾
-                            </button>
-                          </div>
-
-                          <RowMenu
-                            open={openMenuId === p.id}
-                            onClose={() => setOpenMenuId(null)}
-                            items={[
-                              { key: "PRESCRICOES", label: "Prescrições" },
-                              { key: "VER_PERFIL", label: "Ver perfil" },
-                              { key: "EDITAR", label: "Editar", tone: "primary" },
-                              { key: "NOVA_CONSULTA", label: "Nova consulta" },
-                              { key: "ENVIAR_MENSAGEM", label: "Enviar mensagem" },
-                              { key: "ARQUIVAR", label: "Arquivar", tone: "danger" },
-                            ]}
-                            onSelect={(key) => onAction(p.id, key as PacienteMenuAction)}
-                          />
+                          <button
+                            type="button"
+                            className="mf-rowMenuBtn"
+                            aria-label="Ações do paciente"
+                            onClick={() => setOpenMenuId(openMenuId === p.id ? null : p.id)}
+                          >
+                            ⋯
+                          </button>
                         </div>
+
+                        <RowMenu
+                          open={openMenuId === p.id}
+                          onClose={() => setOpenMenuId(null)}
+                          items={[
+                            { key: "PRONTUARIO", label: "Prontuário" },
+                            { key: "PRESCRICOES", label: "Prescrições" },
+                            { key: "VER_PERFIL", label: "Ver perfil" },
+                            { key: "EDITAR", label: "Editar", tone: "primary" },
+                            { key: "NOVA_CONSULTA", label: "Nova consulta" },
+                            { key: "ENVIAR_MENSAGEM", label: "Enviar mensagem" },
+                            { key: "ARQUIVAR", label: "Arquivar", tone: "danger" },
+                          ]}
+                          onSelect={(key) => onAction(p.id, key as PacienteMenuAction)}
+                        />
                       </div>
                     </Td>
                   </Tr>
@@ -299,45 +292,23 @@ export default function PacientesPage() {
             </Table>
           </TableWrap>
 
-          {total === 0 ? (
-            <div className="mf-empty">
-              <div className="mf-empty__title">Nenhum paciente encontrado</div>
-              <div className="mf-empty__sub">Ajuste a busca ou os filtros.</div>
-            </div>
-          ) : null}
+          <div className="mf-pagination">
+            <span className="mf-pagination__text">
+              {isLoading ? "Carregando pacientes..." : `Exibindo ${total === 0 ? 0 : start + 1}-${end} de ${total}`}
+            </span>
 
-          <div className="mf-pager">
-            <div className="mf-pager__left">
-              {total > 0 ? (
-                <span>
-                  {start + 1} - {end} de {total}
-                </span>
-              ) : (
-                <span>0 de 0</span>
-              )}
-            </div>
-
-            <div className="mf-pager__right">
-              <button
-                type="button"
-                className="mf-pager__btn"
-                disabled={safePage <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                aria-label="Anterior"
-              >
-                ‹
+            <div className="mf-pagination__actions">
+              <button type="button" className="mf-pageBtn" disabled={safePage <= 1} onClick={() => setPage((p) => p - 1)}>
+                Anterior
               </button>
-
-              <div className="mf-pager__page">{safePage}</div>
-
+              <span className="mf-pageIndex">Página {safePage}</span>
               <button
                 type="button"
-                className="mf-pager__btn"
+                className="mf-pageBtn"
                 disabled={safePage >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                aria-label="Próximo"
+                onClick={() => setPage((p) => p + 1)}
               >
-                ›
+                Próxima
               </button>
             </div>
           </div>

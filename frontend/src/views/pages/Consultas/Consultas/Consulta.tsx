@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import AppPage from "../../../../components/layout/AppPage/AppPage";
@@ -8,15 +8,15 @@ import RowMenu from "../../../../components/ui/RowMenu/RowMenu";
 
 import { TableWrap, Table, THead, TBody, Tr, Th, Td } from "../../../../components/ui/Table/Table";
 
-import { toConsultasRows, type ConsultaRowModel } from "../../../../mocks/mappers";
+import { useConsultasQuery } from "../../../../api/consultas/hooks";
+import type { ConsultaRowViewModel } from "../../../../api/consultas/types";
 
 import "./styles.css";
 
 export default function ConsultasPage() {
   const navigate = useNavigate();
   const [menuId, setMenuId] = useState<string | null>(null);
-
-  const rows: ConsultaRowModel[] = useMemo(() => toConsultasRows(), []);
+  const { data: rows, isLoading, error } = useConsultasQuery();
 
   return (
     <AppPage
@@ -37,6 +37,8 @@ export default function ConsultasPage() {
     >
       <div className="mf-page-content">
         <Panel title="Lista de Consultas" icon="🗓️">
+          {error ? <div className="mf-muted">{error}</div> : null}
+
           <TableWrap>
             <Table>
               <THead>
@@ -53,7 +55,15 @@ export default function ConsultasPage() {
               </THead>
 
               <TBody>
-                {rows.map((c) => (
+                {!isLoading && rows.length === 0 ? (
+                  <Tr>
+                    <Td colSpan={6} className="mf-muted">
+                      Nenhuma consulta encontrada.
+                    </Td>
+                  </Tr>
+                ) : null}
+
+                {rows.map((c: ConsultaRowViewModel) => (
                   <Tr
                     key={c.id}
                     onClick={() => navigate(`/consultas/${c.id}`)}
