@@ -57,5 +57,5 @@ Overall backend health is **early-production / pre-hardening**. Core layering (C
 3. Fix medication repository method usage (`consultaId` vs `pacienteId`) and add contract tests.
 4. Introduce Flyway baseline and disable `ddl-auto` outside local dev.
 5. Add `@EntityGraph`/fetch-join strategy for doctor→patients use case to remove N+1.
-6. Standardize API errors with machine code + trace id + global fallback handler.
+6. Standardize API errors with machine code + trace id + global fallback handler, and keep the OpenAPI document aligned as the integration contract (see `docs/api-contract-guidelines.md`).
 7. Add focused tests for service rules, repository queries, and security integration.

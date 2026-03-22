@@ -2,6 +2,7 @@ package com.inflowia.medicflow.dto.consulta;
 import com.inflowia.medicflow.domain.consulta.Consulta;
 import com.inflowia.medicflow.domain.consulta.StatusConsulta;
 import com.inflowia.medicflow.domain.consulta.TipoConsulta;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(name = "ConsultaListDTO", description = "DTO de listagem resumida de consultas.")
 public class ConsultaMinDTO {
 
     private Long id;

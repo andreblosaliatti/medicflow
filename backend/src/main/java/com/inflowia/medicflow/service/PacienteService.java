@@ -8,6 +8,7 @@ import com.inflowia.medicflow.dto.paciente.PacienteListDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteProfileDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteUltimaConsultaResumoDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteUpdateDTO;
+import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.exception.ResourceNotFoundException;
 import com.inflowia.medicflow.repository.ConsultaRepository;
@@ -115,7 +116,7 @@ public class PacienteService {
 
     private Paciente getPacienteAtivo(Long id) {
         return repository.findByIdAndAtivoTrue(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Paciente")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente")));
     }
 
     private PacienteListDTO toPacienteListDTO(Paciente paciente) {

@@ -6,6 +6,7 @@ import com.inflowia.medicflow.dto.usuario.DadosAtualizacaoUsuario;
 import com.inflowia.medicflow.dto.usuario.DadosCadastroUsuario;
 import com.inflowia.medicflow.dto.usuario.DadosDetalhamentoUsuario;
 import com.inflowia.medicflow.dto.usuario.DadosListagemUsuario;
+import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.exception.ResourceNotFoundException;
 import com.inflowia.medicflow.mappers.UsuarioMapper;
@@ -49,6 +50,7 @@ public class UsuarioService {
     public DadosDetalhamentoUsuario findByCpf(String cpf) {
         Usuario entity = repository.findByCpfAndAtivoTrue(cpf)
                 .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.USUARIO_NOT_FOUND,
                         ExceptionMessages.notFoundBy("Usuário", "CPF", cpf)
                 ));
         return usuarioMapper.toDetalhamento(entity);
@@ -115,7 +117,7 @@ public class UsuarioService {
 
     private Usuario getUsuarioAtivo(Long id) {
         return repository.findByIdAndAtivoTrue(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ExceptionMessages.notFound("Usuário")));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.USUARIO_NOT_FOUND, ExceptionMessages.notFound("Usuário")));
     }
 
     private Set<Role> resolveRoles(Set<String> roleAuthorities) {
@@ -127,7 +129,7 @@ public class UsuarioService {
 
         for (String authority : AccessRole.toCanonicalAuthorities(roleAuthorities)) {
             Role role = roleRepository.findByAuthority(authority)
-                    .orElseThrow(() -> new ResourceNotFoundException("Role não encontrada: " + authority));
+                    .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.ROLE_NOT_FOUND, "Role não encontrada: " + authority));
             resolvedRoles.add(role);
         }
 
