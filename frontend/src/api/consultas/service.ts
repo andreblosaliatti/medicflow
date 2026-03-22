@@ -1,10 +1,10 @@
-import { httpClient } from "../http";
+import { api, unwrapResponse } from "../../lib/api";
 import type { PageResponse } from "../shared/types";
 import { toConsultaHistoryRowViewModel, toConsultaRowViewModel } from "./mappers";
 import type { ConsultaApi, ConsultaHistoryRowViewModel, ConsultaRowViewModel, ConsultaTableItemApi } from "./types";
 
 export async function listConsultasApi(): Promise<ConsultaApi[]> {
-  const response = await httpClient.get<PageResponse<ConsultaApi>>("/consultas/tabela?size=200");
+  const response = await unwrapResponse(api.get<PageResponse<ConsultaApi>>("/consultas/tabela", { params: { size: 200 } }));
   return response.content;
 }
 
@@ -18,6 +18,12 @@ export async function listConsultasRows(): Promise<ConsultaRowViewModel[]> {
 }
 
 export async function listConsultasByPacienteId(pacienteId: number): Promise<ConsultaHistoryRowViewModel[]> {
-  const response = await httpClient.get<PageResponse<ConsultaTableItemApi>>(`/consultas/tabela?pacienteId=${pacienteId}&size=50`);
+  const response = await unwrapResponse(api.get<PageResponse<ConsultaTableItemApi>>("/consultas/tabela", {
+    params: {
+      pacienteId,
+      size: 50,
+    },
+  }));
+
   return response.content.map(toConsultaHistoryRowViewModel);
 }
