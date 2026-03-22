@@ -75,10 +75,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [applySession, navigate, redirectToLogin]);
 
   const signIn = useCallback(async (credentials: LoginRequest) => {
-    const nextSession = await login(credentials);
-    setStoredSession(nextSession);
-    applySession(nextSession);
-    return nextSession;
+    setStatus("loading");
+
+    try {
+      const loginSession = await login(credentials);
+      setStoredSession(loginSession);
+
+      const hydratedSession = await me();
+      setStoredSession(hydratedSession);
+      applySession(hydratedSession);
+      return hydratedSession;
+    } catch (error) {
+      clearStoredSession({ reason: "invalid" });
+      applySession(null);
+      throw error;
+    }
   }, [applySession]);
 
   const signOut = useCallback((reason: "manual" | "unauthorized" | "forbidden" | "invalid" = "manual") => {

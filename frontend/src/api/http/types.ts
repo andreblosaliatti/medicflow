@@ -1,10 +1,13 @@
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
+export type HttpAuthMode = "auto" | "required" | "none";
+
 export type HttpRequestConfig<TBody = unknown> = {
   method: HttpMethod;
   url: string;
   body?: TBody;
   headers?: Record<string, string>;
+  auth?: HttpAuthMode;
 };
 
 export type HttpTransport = <TResponse = unknown, TBody = unknown>(
