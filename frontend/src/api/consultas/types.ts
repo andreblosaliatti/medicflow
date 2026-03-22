@@ -1,6 +1,20 @@
-import type { ConsultaDTO } from "../../mocks/db/seed";
+export type ConsultaApi = {
+  id: number;
+  dataHora: string;
+  tipo: string;
+  status: string;
+  meioPagamento: string | null;
+  valorConsulta: number | null;
+  pago: boolean | null;
+  duracaoMinutos: number | null;
+  pacienteId: number | null;
+  pacienteNome: string | null;
+  medicoId: number | null;
+  medicoNome: string | null;
+  motivo: string | null;
+};
 
-export type ConsultaApi = ConsultaDTO;
+export type ConsultaTableItemApi = ConsultaApi;
 
 export type ConsultaRowViewModel = {
   id: string;
@@ -8,9 +22,17 @@ export type ConsultaRowViewModel = {
   pacienteId: number;
   pacienteNome: string;
   medicoNome: string;
-  tipo: ConsultaDTO["tipo"];
-  duracaoMinutos: ConsultaDTO["duracaoMinutos"];
-  status: ConsultaDTO["status"];
+  tipo: string;
+  duracaoMinutos: number;
+  status: string;
   statusLabel: string;
   statusTone: "success" | "warning" | "danger" | "primary" | "neutral";
+};
+
+export type ConsultaHistoryRowViewModel = {
+  id: string;
+  data: string;
+  hora: string;
+  profissional: string;
+  status: "AGENDADA" | "CONFIRMADA" | "EM_ATENDIMENTO" | "CONCLUIDA" | "CANCELADA";
 };

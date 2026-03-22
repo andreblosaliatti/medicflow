@@ -1,4 +1,4 @@
-import type { PacienteDTO } from "../../../../mocks/db/seed";
+import type { PacienteFormValues } from "../../../../api/pacientes/types";
 
 export type FormErrorKey =
   | "primeiroNome"
@@ -43,7 +43,7 @@ export function formatPhoneBR(value: string) {
   return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`;
 }
 
-export function validatePaciente(dto: PacienteDTO): FormErrors {
+export function validatePaciente(dto: PacienteFormValues): FormErrors {
   const errors: FormErrors = {};
 
   if (!dto.primeiroNome.trim()) errors.primeiroNome = "Informe o primeiro nome.";

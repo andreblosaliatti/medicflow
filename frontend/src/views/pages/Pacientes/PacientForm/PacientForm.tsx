@@ -6,7 +6,7 @@ import SelectField, { type SelectOption } from "../../../../components/form/Sele
 import HighlightButton from "../../../../components/ui/HighlightButton/HighlightButton";
 import DateField from "../../../../components/form/DateField/DateField";
 
-import type { PacienteDTO, Sexo } from "../../../../mocks/db/seed";
+import type { PacienteFormValues, PacienteSexo } from "../../../../api/pacientes/types";
 import { formatCPF, formatPhoneBR, type FormErrors, validatePaciente } from "./formUtils";
 
 import "./styles.css";
@@ -19,8 +19,8 @@ export default function PacienteForm({
   mode,
   onCancel,
 }: {
-  value: PacienteDTO;
-  onChange: (next: PacienteDTO) => void;
+  value: PacienteFormValues;
+  onChange: (next: PacienteFormValues) => void;
   onSubmit: () => void;
   submitting: boolean;
   mode: "create" | "edit";
@@ -28,37 +28,34 @@ export default function PacienteForm({
 }) {
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const sexoOptions: readonly SelectOption<Sexo>[] = useMemo(
+  const sexoOptions: readonly SelectOption<PacienteSexo>[] = useMemo(
     () => [
       { value: "NAO_INFORMAR", label: "Não informar" },
       { value: "MASCULINO", label: "Masculino" },
       { value: "FEMININO", label: "Feminino" },
       { value: "OUTRO", label: "Outro" },
     ],
-    []
+    [],
   );
 
-  function set<K extends keyof PacienteDTO>(key: K, v: PacienteDTO[K]) {
+  function set<K extends keyof PacienteFormValues>(key: K, v: PacienteFormValues[K]) {
     onChange({ ...value, [key]: v });
   }
 
-  function setEndereco<K extends keyof PacienteDTO["endereco"]>(key: K, v: string) {
+  function setEndereco<K extends keyof PacienteFormValues["endereco"]>(key: K, v: string) {
     onChange({ ...value, endereco: { ...value.endereco, [key]: v } });
   }
 
   function handleSubmit() {
-    const e = validatePaciente(value);
-    setErrors(e);
-    if (Object.keys(e).length > 0) return;
+    const nextErrors = validatePaciente(value);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
     onSubmit();
   }
 
   return (
     <div className="mf-page-content">
       <div className="pacienteFormGrid">
-        {/* =========================
-            DADOS PESSOAIS
-           ========================= */}
         <Card>
           <div className="pacienteCardHeader">
             <h2 className="pacienteCardTitle">Dados pessoais</h2>
@@ -72,6 +69,7 @@ export default function PacienteForm({
                 onChange={(ev) => set("primeiroNome", ev.target.value)}
                 helperText={errors.primeiroNome}
                 placeholder="Ex.: Maria"
+                disabled={submitting}
               />
             </div>
 
@@ -82,6 +80,7 @@ export default function PacienteForm({
                 onChange={(ev) => set("sobrenome", ev.target.value)}
                 helperText={errors.sobrenome}
                 placeholder="Ex.: Silva"
+                disabled={submitting}
               />
             </div>
 
@@ -90,9 +89,10 @@ export default function PacienteForm({
                 label="CPF"
                 value={value.cpf}
                 onChange={(ev) => set("cpf", formatCPF(ev.target.value))}
-                helperText={errors.cpf}
+                helperText={mode === "edit" ? "CPF não pode ser alterado após o cadastro." : errors.cpf}
                 placeholder="000.000.000-00"
                 inputMode="numeric"
+                disabled={submitting || mode === "edit"}
               />
             </div>
 
@@ -103,42 +103,41 @@ export default function PacienteForm({
                 value={value.dataNascimento}
                 onChange={(v) => set("dataNascimento", v)}
                 aria-label="Data de nascimento"
+                disabled={submitting}
               />
 
-              {errors.dataNascimento && (
-                <div className="pacienteHelper">{errors.dataNascimento}</div>
-              )}
+              {errors.dataNascimento ? <div className="pacienteHelper">{errors.dataNascimento}</div> : null}
             </div>
 
             <div className="pacienteField pacienteSpan3">
-              <SelectField<Sexo>
+              <SelectField<PacienteSexo>
                 label="Sexo"
                 value={value.sexo}
                 onChange={(v) => set("sexo", v)}
                 options={sexoOptions}
                 placeholder="Selecionar..."
+                disabled={submitting}
               />
             </div>
 
             <div className="pacienteField pacienteSpan2">
-              <div className="pacienteSwitchControl" data-label="Ativo ">
+              <div className="pacienteSwitchControl" data-label="Status">
                 <button
                   type="button"
                   className={`pacienteSwitch ${value.ativo ? "isOn" : ""}`}
                   onClick={() => set("ativo", !value.ativo)}
                   aria-pressed={value.ativo}
                   aria-label="Ativo"
+                  disabled={submitting || mode === "edit"}
                 >
                   <span className="pacienteKnob" />
                 </button>
+                {mode === "edit" ? <div className="pacienteHelper">Status é controlado fora da edição.</div> : null}
               </div>
             </div>
           </div>
         </Card>
 
-        {/* =========================
-            CONTATO
-           ========================= */}
         <Card>
           <div className="pacienteCardHeader">
             <h2 className="pacienteCardTitle">Contato</h2>
@@ -153,6 +152,7 @@ export default function PacienteForm({
                 helperText={errors.telefone}
                 placeholder="(51) 99999-9999"
                 inputMode="tel"
+                disabled={submitting}
               />
             </div>
 
@@ -164,6 +164,7 @@ export default function PacienteForm({
                 helperText={errors.email}
                 placeholder="nome@dominio.com"
                 inputMode="email"
+                disabled={submitting}
               />
             </div>
 
@@ -173,14 +174,12 @@ export default function PacienteForm({
                 value={value.planoSaude}
                 onChange={(ev) => set("planoSaude", ev.target.value)}
                 placeholder="Ex.: Unimed"
+                disabled={submitting}
               />
             </div>
           </div>
         </Card>
 
-        {/* =========================
-            ENDEREÇO
-           ========================= */}
         <Card>
           <div className="pacienteCardHeader">
             <h2 className="pacienteCardTitle">Endereço</h2>
@@ -195,6 +194,7 @@ export default function PacienteForm({
                 helperText={errors["endereco.cep"]}
                 placeholder="00000-000"
                 inputMode="numeric"
+                disabled={submitting}
               />
             </div>
 
@@ -204,6 +204,7 @@ export default function PacienteForm({
                 value={value.endereco.logradouro}
                 onChange={(ev) => setEndereco("logradouro", ev.target.value)}
                 placeholder="Rua / Av."
+                disabled={submitting}
               />
             </div>
 
@@ -213,6 +214,7 @@ export default function PacienteForm({
                 value={value.endereco.numero}
                 onChange={(ev) => setEndereco("numero", ev.target.value)}
                 placeholder="123"
+                disabled={submitting}
               />
             </div>
 
@@ -223,6 +225,7 @@ export default function PacienteForm({
                 onChange={(ev) => setEndereco("uf", ev.target.value.toUpperCase().slice(0, 2))}
                 helperText={errors["endereco.uf"]}
                 placeholder="RS"
+                disabled={submitting}
               />
             </div>
 
@@ -232,6 +235,7 @@ export default function PacienteForm({
                 value={value.endereco.complemento}
                 onChange={(ev) => setEndereco("complemento", ev.target.value)}
                 placeholder="Apto, bloco..."
+                disabled={submitting}
               />
             </div>
 
@@ -241,6 +245,7 @@ export default function PacienteForm({
                 value={value.endereco.bairro}
                 onChange={(ev) => setEndereco("bairro", ev.target.value)}
                 placeholder="Ex.: Petrópolis"
+                disabled={submitting}
               />
             </div>
 
@@ -250,23 +255,20 @@ export default function PacienteForm({
                 value={value.endereco.cidade}
                 onChange={(ev) => setEndereco("cidade", ev.target.value)}
                 placeholder="Ex.: Porto Alegre"
+                disabled={submitting}
               />
             </div>
           </div>
         </Card>
       </div>
 
-      {/* =========================
-          ACTIONS BAR
-         ========================= */}
       <div className="pacienteActionsBar">
         <div className="pacienteActionsInner">
-          <button type="button" className="pacienteLinkBtn" onClick={onCancel}>
+          <button type="button" className="pacienteLinkBtn" onClick={onCancel} disabled={submitting}>
             Cancelar
           </button>
-
-          <HighlightButton onClick={handleSubmit} disabled={submitting}>
-            {submitting ? "Salvando..." : mode === "create" ? "Salvar paciente" : "Salvar alterações"}
+            <HighlightButton onClick={handleSubmit} disabled={submitting}>
+            {submitting ? "Salvando..." : mode === "create" ? "Cadastrar paciente" : "Salvar alterações"}
           </HighlightButton>
         </div>
       </div>
