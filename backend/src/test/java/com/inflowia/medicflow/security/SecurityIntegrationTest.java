@@ -2,6 +2,7 @@ package com.inflowia.medicflow.security;
 
 import com.inflowia.medicflow.domain.usuario.Role;
 import com.inflowia.medicflow.domain.usuario.Usuario;
+import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.repository.RoleRepository;
 import com.inflowia.medicflow.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -117,7 +118,7 @@ class SecurityIntegrationTest {
     void shouldReturn401WhenRequestHasNoToken() throws Exception {
         mockMvc.perform(get("/test-security/admin").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("AUTHENTICATION_ERROR"))
+                .andExpect(jsonPath("$.code").value(ErrorCodes.AUTH_AUTHENTICATION_ERROR))
                 .andExpect(jsonPath("$.message").value("Autenticação é obrigatória para acessar este recurso."))
                 .andExpect(jsonPath("$.path").value("/test-security/admin"));
     }
@@ -128,7 +129,7 @@ class SecurityIntegrationTest {
                         .header("Authorization", "Bearer token-invalido")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("AUTHENTICATION_ERROR"))
+                .andExpect(jsonPath("$.code").value(ErrorCodes.AUTH_AUTHENTICATION_ERROR))
                 .andExpect(jsonPath("$.path").value("/test-security/admin"));
     }
 
@@ -138,7 +139,7 @@ class SecurityIntegrationTest {
                         .header("Authorization", "Bearer " + medicoToken)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"))
+                .andExpect(jsonPath("$.code").value(ErrorCodes.AUTH_ACCESS_DENIED))
                 .andExpect(jsonPath("$.message").value("Você não tem permissão para realizar esta operação."))
                 .andExpect(jsonPath("$.path").value("/test-security/admin"));
     }
@@ -167,7 +168,7 @@ class SecurityIntegrationTest {
                         .header("Authorization", "Bearer " + secretariaToken)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
+                .andExpect(jsonPath("$.code").value(ErrorCodes.AUTH_ACCESS_DENIED));
     }
 
     @TestConfiguration
