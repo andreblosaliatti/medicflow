@@ -34,7 +34,7 @@ public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 Instant.now(),
                 HttpStatus.UNAUTHORIZED.value(),
                 HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-                ErrorCodes.AUTHENTICATION_ERROR,
+                ErrorCodes.AUTH_AUTHENTICATION_ERROR,
                 ExceptionMessages.AUTHENTICATION_REQUIRED,
                 request.getRequestURI(),
                 resolveTraceId(request)

@@ -25,6 +25,14 @@ public final class ErrorCodes {
     public static final String MEDICAMENTO_BUSINESS_RULE = "MEDICAMENTO-BUSINESS-422";
     public static final String ROLE_NOT_FOUND = "AUTH-ROLE-NOT-FOUND-404";
 
+    // LEGADO / COMPATIBILIDADE COM TESTES
+    public static final String VALIDATION_ERROR = CORE_REQUEST_BODY_INVALID;
+    public static final String RESOURCE_NOT_FOUND = "RESOURCE-NOT-FOUND-404";
+    public static final String BUSINESS_RULE_VIOLATION = "BUSINESS-RULE-422";
+    public static final String UNAUTHORIZED_OPERATION = AUTH_UNAUTHORIZED_OPERATION;
+    public static final String AUTHENTICATION_ERROR = AUTH_AUTHENTICATION_ERROR;
+    public static final String INTERNAL_ERROR = CORE_INTERNAL_ERROR;
+
     private ErrorCodes() {
     }
 }

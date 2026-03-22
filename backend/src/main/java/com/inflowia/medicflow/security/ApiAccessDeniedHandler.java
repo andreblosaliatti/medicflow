@@ -34,7 +34,7 @@ public class ApiAccessDeniedHandler implements AccessDeniedHandler {
                 Instant.now(),
                 HttpStatus.FORBIDDEN.value(),
                 HttpStatus.FORBIDDEN.getReasonPhrase(),
-                ErrorCodes.ACCESS_DENIED,
+                ErrorCodes.AUTH_ACCESS_DENIED,
                 ExceptionMessages.ACCESS_DENIED,
                 request.getRequestURI(),
                 resolveTraceId(request)
