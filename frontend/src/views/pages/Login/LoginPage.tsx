@@ -1,5 +1,6 @@
 // src/pages/Login/LoginPage.tsx
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import BrandHeader from "../../../components/auth/BrandHeader";
 import AuthCard from "../../../components/auth/AuthCard";
 import AuthLinkDivider from "../../../components/auth/AuthLinkDivider";
@@ -9,22 +10,24 @@ import ErrorMessage from "../../../components/auth/ErrorMessage";
 import PrimaryButton from "../../../components/ui/HighlightButton/HighlightButton";
 import FooterMeta from "../../../components/auth/FooterMeta";
 import { MailIcon, LockIcon } from "../../../components/auth/Icons";
+import { useLoginMutation } from "../../../api/auth/hooks";
 
 import "./styles.css";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [error, setError] = useState<string>("");
+  const { mutateAsync: login, isPending, error: apiError } = useLoginMutation();
 
   const canSubmit = useMemo(() => {
     return email.trim().length > 0 && senha.trim().length > 0;
   }, [email, senha]);
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validação simples (troque depois pela chamada da API)
     if (!email.includes("@")) {
       setError("E-mail inválido");
       return;
@@ -35,9 +38,11 @@ export default function LoginPage() {
     }
 
     setError("");
+    const result = await login({ email, senha });
 
-    // TODO: integrar com sua API (Spring Boot) e tratar retorno/erro
-    console.log("Login:", { email, senha });
+    if (result) {
+      navigate("/dashboard");
+    }
   }
 
   return (
@@ -66,10 +71,10 @@ export default function LoginPage() {
             ariaLabel="Senha"
           />
 
-          <ErrorMessage message={error || ""} />
+          <ErrorMessage message={error || apiError || ""} />
 
-          <PrimaryButton type="submit" disabled={!canSubmit}>
-            Entrar
+          <PrimaryButton type="submit" disabled={!canSubmit || isPending}>
+            {isPending ? "Entrando..." : "Entrar"}
           </PrimaryButton>
 
           <AuthLinkDivider to="/esqueci-senha">Esqueci minha senha</AuthLinkDivider>
