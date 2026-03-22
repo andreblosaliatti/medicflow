@@ -1,12 +1,12 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import { AuthProvider } from "./auth/AuthProvider";
-import { useAuth } from "./auth/useAuth";
-import ProtectedRoute from "./auth/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./context/useAuth";
+import PrivateRoute from "./router/PrivateRoute";
 import AppLayout from "./components/layout/AppLayout";
 import AgendaPage from "./views/pages/Agenda/AgendaPage";
 import DashboardPage from "./views/pages/Dashboard/DashboardPage";
-import LoginPage from "./views/pages/Login/LoginPage";
+import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./views/pages/ForgotPassword/ForgotPasswordPage";
 import PendenciasPage from "./views/pages/Pendencias";
 import ConsultaAtendimento from "./views/pages/Consultas/ConsultaAtendimento/ConsultaAtendimento";
@@ -21,9 +21,9 @@ import PrescricoesPage from "./views/pages/Pacientes/Prescricoes";
 import ProntuarioPage from "./views/pages/Pacientes/Prontuario/Prontuario";
 
 function RootRedirect() {
-  const { status, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
 
-  if (status === "loading") {
+  if (isLoading) {
     return <div className="mf-page-loading">Carregando sessão...</div>;
   }
 
@@ -39,7 +39,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
 
-          <Route element={<ProtectedRoute />}>
+          <Route element={<PrivateRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/agenda" element={<AgendaPage />} />
@@ -53,7 +53,7 @@ export default function App() {
                 <Route path=":id" element={<PacientProfile />} />
               </Route>
 
-              <Route element={<ProtectedRoute allowedRoles={["MEDICO"]} />}>
+              <Route element={<PrivateRoute allowedRoles={["MEDICO"]} />}>
                 <Route path="/consultas">
                   <Route index element={<ConsultasPage />} />
                   <Route path="nova" element={<ConsultaNew />} />

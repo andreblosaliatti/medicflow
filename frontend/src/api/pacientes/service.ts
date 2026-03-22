@@ -1,13 +1,57 @@
-import { httpClient } from "../http";
-import { listConsultasApi } from "../consultas/service";
-import { toPacienteRowViewModel } from "./mappers";
-import type { PacienteApi, PacienteRowViewModel } from "./types";
+import { api, unwrapResponse } from "../../lib/api";
+import type { PageResponse } from "../shared/types";
+import {
+  toPacienteCreatePayload,
+  toPacienteProfileViewModel,
+  toPacienteRows,
+  toPacienteUpdatePayload,
+} from "./mappers";
+import type {
+  PacienteApi,
+  PacienteFormValues,
+  PacienteListApi,
+  PacienteListParams,
+  PacienteProfileApi,
+  PacienteProfileViewModel,
+  PacienteRowViewModel,
+} from "./types";
 
-export async function listPacientesApi(): Promise<PacienteApi[]> {
-  return httpClient.get<PacienteApi[]>("/pacientes");
+function buildPacientesParams(params: PacienteListParams = {}) {
+  return {
+    size: 200,
+    sort: "nome,asc",
+    ...params,
+  };
 }
 
-export async function listPacientesRows(): Promise<PacienteRowViewModel[]> {
-  const [pacientes, consultas] = await Promise.all([listPacientesApi(), listConsultasApi()]);
-  return pacientes.map((paciente) => toPacienteRowViewModel(paciente, consultas));
+export async function listPacientesApi(params: PacienteListParams = {}): Promise<PageResponse<PacienteListApi>> {
+  return unwrapResponse(api.get<PageResponse<PacienteListApi>>("/pacientes", { params: buildPacientesParams(params) }));
+}
+
+export async function listPacientesRows(params: PacienteListParams = {}): Promise<PacienteRowViewModel[]> {
+  const response = await listPacientesApi(params);
+  return toPacienteRows(response);
+}
+
+export async function getPacienteById(id: number): Promise<PacienteApi> {
+  return unwrapResponse(api.get<PacienteApi>(`/pacientes/${id}`));
+}
+
+export async function getPacienteProfileById(id: number): Promise<PacienteProfileViewModel> {
+  const response = await unwrapResponse(api.get<PacienteProfileApi>(`/pacientes/${id}/perfil`));
+  return toPacienteProfileViewModel(response);
+}
+
+export async function createPaciente(values: PacienteFormValues): Promise<PacienteApi> {
+  return unwrapResponse(api.post<PacienteApi, ReturnType<typeof toPacienteCreatePayload>>(
+    "/pacientes",
+    toPacienteCreatePayload(values),
+  ));
+}
+
+export async function updatePaciente(id: number, values: PacienteFormValues): Promise<PacienteApi> {
+  return unwrapResponse(api.put<PacienteApi, ReturnType<typeof toPacienteUpdatePayload>>(
+    `/pacientes/${id}`,
+    toPacienteUpdatePayload(values),
+  ));
 }
