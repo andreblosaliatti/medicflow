@@ -16,10 +16,6 @@ const items: NavItem[] = [
   { to: "/pacientes", label: "Pacientes", roles: ["MEDICO", "SECRETARIA", "ADMIN"] },
   { to: "/consultas", label: "Consultas", roles: ["MEDICO"] },
   { to: "/pendencias", label: "Pendências", roles: ["MEDICO"] },
-  { to: "/confirmacoes", label: "Confirmações", roles: ["SECRETARIA"] },
-  { to: "/atendimento", label: "Atendimento", roles: ["SECRETARIA"] },
-  { to: "/usuarios", label: "Usuários", roles: ["ADMIN"] },
-  { to: "/configuracoes", label: "Configurações", roles: ["ADMIN"] },
 ];
 
 function formatRole(role: UserRole) {
