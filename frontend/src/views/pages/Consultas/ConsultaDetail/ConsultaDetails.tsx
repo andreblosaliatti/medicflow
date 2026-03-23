@@ -103,7 +103,7 @@ export default function ConsultaDetails() {
         actions={[
           ...(canConfirm ? [{ label: "Confirmar", variant: "secondary" as const, onClick: () => void handleAction("confirm", consulta), disabled: isMutating }] : []),
           ...(canStart ? [{ label: "Iniciar atendimento", variant: "primary" as const, onClick: () => void handleAction("start", consulta), disabled: isMutating }] : []),
-          ...(canFinish ? [{ label: "Finalizar atendimento", variant: "primary" as const, onClick: () => void handleAction("finish", consulta), disabled: isMutating }] : []),
+          ...(canFinish ? [{ label: "Voltar para atendimento", variant: "secondary" as const, onClick: () => navigate(`/consultas/${consulta.id}/atendimento`) }, { label: "Finalizar atendimento", variant: "primary" as const, onClick: () => void handleAction("finish", consulta), disabled: isMutating }] : []),
           ...(canEdit ? [{ label: "Editar", variant: "secondary" as const, onClick: () => navigate(`/consultas/${consulta.id}/editar`) }] : []),
         ]}
       />
@@ -176,9 +176,14 @@ export default function ConsultaDetails() {
               ) : null}
 
               {canFinish ? (
-                <PrimaryButton onClick={() => void handleAction("finish", consulta)} disabled={isMutating}>
-                  Finalizar atendimento
-                </PrimaryButton>
+                <>
+                  <SecondaryButton onClick={() => navigate(`/consultas/${consulta.id}/atendimento`)}>
+                    Voltar para atendimento
+                  </SecondaryButton>
+                  <PrimaryButton onClick={() => void handleAction("finish", consulta)} disabled={isMutating}>
+                    Finalizar atendimento
+                  </PrimaryButton>
+                </>
               ) : null}
 
               {canEdit ? (

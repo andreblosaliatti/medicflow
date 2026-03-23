@@ -1,4 +1,9 @@
-import type { MedicamentoApi, MedicamentoViewModel } from "./types";
+import type {
+  MedicamentoApi,
+  MedicamentoBaseApi,
+  MedicamentoBaseOptionViewModel,
+  MedicamentoViewModel,
+} from "./types";
 
 export function toMedicamentoViewModel(medicamento: MedicamentoApi): MedicamentoViewModel {
   return {
@@ -8,5 +13,19 @@ export function toMedicamentoViewModel(medicamento: MedicamentoApi): Medicamento
     frequencia: medicamento.frequencia,
     via: medicamento.via,
     consultaId: medicamento.consultaId,
+    medicamentoBaseId: medicamento.medicamentoBaseId ?? null,
+  };
+}
+
+export function toMedicamentoBaseOption(medicamento: MedicamentoBaseApi): MedicamentoBaseOptionViewModel {
+  const title = medicamento.dcb || medicamento.nomeComercial || medicamento.principioAtivo;
+  const subtitle = [medicamento.nomeComercial, medicamento.principioAtivo].filter(Boolean).join(" • ");
+
+  return {
+    id: medicamento.id,
+    label: title,
+    subtitle,
+    dosagemPadrao: medicamento.dosagemPadrao,
+    viaAdministracao: medicamento.viaAdministracao,
   };
 }

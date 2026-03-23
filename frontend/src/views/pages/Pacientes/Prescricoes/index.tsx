@@ -58,11 +58,11 @@ export default function PrescricoesPage() {
     return pacienteNomeById(pacienteId);
   }, [pacienteId]);
 
-  function openConsulta(consultaId: string) {
+  function openConsulta(consultaId: number) {
     navigate(`/consultas/${consultaId}`);
   }
 
-  async function onSelectAction(action: MenuAction, payload: { consultaId: string; medId?: number; exameId?: number }) {
+  async function onSelectAction(action: MenuAction, payload: { consultaId: number; medId?: number; exameId?: number }) {
     setMenuKey(null);
 
     if (action === "OPEN_CONSULTA") {
@@ -362,7 +362,7 @@ function printMedicamento(pacienteNome: string, medicamento: MedicamentoViewMode
       </head>
       <body>
         <h1>Prescrição</h1>
-        <div class="muted">Paciente: ${escapeHtml(pacienteNome)} • Consulta #${escapeHtml(medicamento.consultaId)}</div>
+        <div class="muted">Paciente: ${escapeHtml(pacienteNome)} • Consulta #${escapeHtml(String(medicamento.consultaId))}</div>
         <div class="box">
           <p><strong>Medicamento:</strong> ${escapeHtml(medicamento.nome)}</p>
           <p><strong>Dosagem:</strong> ${escapeHtml(medicamento.dosagem || "—")}</p>

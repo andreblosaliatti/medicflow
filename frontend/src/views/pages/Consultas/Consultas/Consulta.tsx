@@ -56,8 +56,13 @@ export default function ConsultasPage() {
   const mutationError = confirmMutation.error ?? cancelMutation.error ?? startMutation.error ?? finishMutation.error;
   const isMutating = confirmMutation.isPending || cancelMutation.isPending || startMutation.isPending || finishMutation.isPending;
 
-  async function runAction(action: "confirm" | "cancel" | "start" | "finish", row: ConsultaRowViewModel) {
+  async function runAction(action: "confirm" | "cancel" | "start" | "finish" | "resume", row: ConsultaRowViewModel) {
     const id = Number(row.id);
+
+    if (action === "resume") {
+      navigate(`/consultas/${row.id}/atendimento`);
+      return;
+    }
 
     const result = action === "confirm"
       ? await confirmMutation.mutateAsync(id)
@@ -146,7 +151,7 @@ export default function ConsultasPage() {
                     { key: "details", label: "Ver detalhes" },
                     ...(canConfirmConsulta(row.status) ? [{ key: "confirm", label: "Confirmar", tone: "primary" as const }] : []),
                     ...(canStartConsulta(row.status) ? [{ key: "start", label: "Iniciar atendimento", tone: "primary" as const }] : []),
-                    ...(canFinishConsulta(row.status) ? [{ key: "finish", label: "Finalizar atendimento", tone: "primary" as const }] : []),
+                    ...(canFinishConsulta(row.status) ? [{ key: "resume", label: "Voltar para atendimento", tone: "primary" as const }, { key: "finish", label: "Finalizar atendimento", tone: "primary" as const }] : []),
                     ...(canEditConsulta(row.status) ? [{ key: "edit", label: "Editar", tone: "primary" as const }] : []),
                     ...(canCancelConsulta(row.status) ? [{ key: "cancel", label: "Cancelar", tone: "danger" as const }] : []),
                   ];
@@ -199,6 +204,7 @@ export default function ConsultasPage() {
                               if (key === "confirm") void runAction("confirm", row);
                               if (key === "cancel") void runAction("cancel", row);
                               if (key === "start") void runAction("start", row);
+                              if (key === "resume") void runAction("resume", row);
                               if (key === "finish") void runAction("finish", row);
                             }}
                           />

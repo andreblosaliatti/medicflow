@@ -1,7 +1,7 @@
 .mf-table-wrap{
   border: 1px solid var(--mf-border);
   border-radius: var(--radius-mm);
-  overflow: hidden;
+  overflow: visible;
   background: var(--mf-surface);
 }
 
@@ -86,10 +86,12 @@
 }
 
 .mf-row-actions{
+  position: relative;
   display:flex;
   align-items:center;
   justify-content:flex-end;
   gap: var(--space-2);
+  overflow: visible;
 }
 
 .mf-split{
