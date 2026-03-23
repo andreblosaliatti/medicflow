@@ -10,14 +10,10 @@ import type {
 } from "./types";
 
 export async function listMedicamentosByPacienteId(pacienteId: number): Promise<MedicamentoViewModel[]> {
-  const response = await unwrapResponse(api.get<MedicamentoApi[]>(`/pacientes/${pacienteId}/medicamentos`));
-  return response.map(toMedicamentoViewModel);
+  const response = await unwrapResponse(api.get<MedicamentoPageResponse>(`/medicamentos/paciente/${pacienteId}`, { params: { size: 100 } }));
+  return response.content.map(toMedicamentoViewModel);
 }
 
-export async function duplicateMedicamentoById(medicamentoId: number): Promise<MedicamentoViewModel> {
-  const response = await unwrapResponse(api.post<MedicamentoApi>(`/medicamentos/${medicamentoId}/duplicate`));
-  return toMedicamentoViewModel(response);
-}
 
 export async function listMedicamentosByConsultaId(consultaId: number): Promise<MedicamentoViewModel[]> {
   const response = await unwrapResponse(api.get<MedicamentoPageResponse>(`/medicamentos/consultas/${consultaId}`, { params: { size: 100 } }));

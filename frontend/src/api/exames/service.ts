@@ -12,12 +12,12 @@ import type {
 import type { PageResponse } from "../shared/types";
 
 export async function listExamesByPacienteId(pacienteId: number): Promise<ExameViewModel[]> {
-  const response = await unwrapResponse(api.get<ExameApi[]>(`/pacientes/${pacienteId}/exames`));
-  return response.map(toExameViewModel);
+  const response = await unwrapResponse(api.get<ExamePageResponse>(`/exames-solicitados/paciente/${pacienteId}`, { params: { size: 100 } }));
+  return response.content.map(toExameViewModel);
 }
 
 export async function updateExameById({ exameId, ...body }: UpdateExameRequest): Promise<ExameViewModel> {
-  const response = await unwrapResponse(api.patch<ExameApi, Omit<UpdateExameRequest, "exameId">>(`/exames/${exameId}`, body));
+  const response = await unwrapResponse(api.patch<ExameApi, Omit<UpdateExameRequest, "exameId">>(`/exames-solicitados/${exameId}`, body));
   return toExameViewModel(response);
 }
 
