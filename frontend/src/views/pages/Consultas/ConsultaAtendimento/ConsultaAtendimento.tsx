@@ -20,6 +20,7 @@ import {
   useMedicamentoBaseSearchQuery,
   useMedicamentosByConsultaQuery,
 } from "../../../../api/medicamentos/hooks";
+import type { MedicamentoViewModel } from "../../../../api/medicamentos/types";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../../components/ui/Card";
 import PrimaryButton from "../../../../components/ui/PrimaryButton/PrimaryButton";
@@ -31,6 +32,7 @@ import {
   canStartConsulta,
   isTerminalConsulta,
 } from "../../../../domain/consulta/workflow";
+import type { ExameViewModel } from "../../../../api/exames/types";
 
 import "./styles.css";
 import "../base.css";
@@ -56,6 +58,16 @@ type ExameDraft = {
   exameBaseId: number | null;
   justificativa: string;
   observacoes: string;
+};
+
+type MedicationFormErrors = {
+  medication: string | null;
+  dosagem: string | null;
+  frequencia: string | null;
+};
+
+type ExamFormErrors = {
+  exameBaseId: string | null;
 };
 
 const tabOptions: readonly { key: Tab; label: string }[] = [
@@ -109,6 +121,14 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
     justificativa: "",
     observacoes: "",
   });
+  const [medicationErrors, setMedicationErrors] = useState<MedicationFormErrors>({
+    medication: null,
+    dosagem: null,
+    frequencia: null,
+  });
+  const [examErrors, setExamErrors] = useState<ExamFormErrors>({
+    exameBaseId: null,
+  });
 
   const updateMutation = useUpdateConsultaMutation();
   const startMutation = useStartConsultaMutation();
@@ -121,6 +141,10 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   const exameBaseQuery = useExameBaseSearchQuery(exameQuery);
   const createExameMutation = useCreateExameSolicitadoMutation();
   const deleteExameMutation = useDeleteExameSolicitadoMutation();
+  const [addedMedicamentos, setAddedMedicamentos] = useState<MedicamentoViewModel[]>([]);
+  const [removedMedicamentoIds, setRemovedMedicamentoIds] = useState<number[]>([]);
+  const [addedExames, setAddedExames] = useState<ExameViewModel[]>([]);
+  const [removedExameIds, setRemovedExameIds] = useState<number[]>([]);
 
   const medicamentoOptions = useMemo<readonly SelectOption<number>[]>(() => {
     return medicamentoBaseQuery.data.map((item) => ({ value: item.id, label: item.label }));
@@ -129,6 +153,22 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   const exameOptions = useMemo<readonly SelectOption<number>[]>(() => {
     return exameBaseQuery.data.map((item) => ({ value: item.id, label: item.label }));
   }, [exameBaseQuery.data]);
+
+  const medicamentosList = useMemo(() => {
+    const removedIds = new Set(removedMedicamentoIds);
+    const queryItems = medicamentosQuery.data.filter((item) => !removedIds.has(item.id));
+    const queryIds = new Set(queryItems.map((item) => item.id));
+    const localItems = addedMedicamentos.filter((item) => !removedIds.has(item.id) && !queryIds.has(item.id));
+    return [...queryItems, ...localItems];
+  }, [addedMedicamentos, medicamentosQuery.data, removedMedicamentoIds]);
+
+  const examesList = useMemo(() => {
+    const removedIds = new Set(removedExameIds);
+    const queryItems = examesQuery.data.filter((item) => !removedIds.has(item.id));
+    const queryIds = new Set(queryItems.map((item) => item.id));
+    const localItems = addedExames.filter((item) => !removedIds.has(item.id) && !queryIds.has(item.id));
+    return [...queryItems, ...localItems];
+  }, [addedExames, examesQuery.data, removedExameIds]);
 
   async function saveProgress() {
     const payload: ConsultaUpdatePayload = {
@@ -178,9 +218,29 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
     const started = await ensureStarted();
     if (!started) return;
 
+    const hasBase = medDraft.medicamentoBaseId !== null;
+    const nomeLivre = medDraft.nomeLivre.trim();
+    const hasNomeLivre = nomeLivre.length > 0;
+    const nextErrors: MedicationFormErrors = {
+      medication:
+        !hasBase && !hasNomeLivre
+          ? "Selecione um medicamento base ou informe um nome livre."
+          : hasBase && hasNomeLivre
+            ? "Use apenas um modo de inclusão: medicamento base ou nome livre."
+            : null,
+      dosagem: medDraft.dosagem.trim() ? null : "Informe a dosagem.",
+      frequencia: medDraft.frequencia.trim() ? null : "Informe a frequência / posologia.",
+    };
+
+    setMedicationErrors(nextErrors);
+
+    if (nextErrors.medication || nextErrors.dosagem || nextErrors.frequencia) {
+      return;
+    }
+
     const payload = {
       medicamentoBaseId: medDraft.medicamentoBaseId,
-      nome: medDraft.medicamentoBaseId ? null : medDraft.nomeLivre.trim() || null,
+      nome: hasBase ? null : nomeLivre,
       dosagem: medDraft.dosagem.trim(),
       frequencia: medDraft.frequencia.trim(),
       via: medDraft.via,
@@ -189,7 +249,10 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
     const created = await createMedicamentoMutation.mutateAsync({ consultaId: Number(consulta.id), payload });
     if (created) {
       setMedQuery("");
+      setMedicationErrors({ medication: null, dosagem: null, frequencia: null });
       setMedDraft({ medicamentoBaseId: null, nomeLivre: "", dosagem: "", frequencia: "", via: "VO" });
+      setAddedMedicamentos((current) => [...current.filter((item) => item.id !== created.id), created]);
+      setRemovedMedicamentoIds((current) => current.filter((id) => id !== created.id));
       await medicamentosQuery.refetch();
     }
   }
@@ -197,12 +260,22 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   async function handleDeleteMedicamento(id: number) {
     const removed = await deleteMedicamentoMutation.mutateAsync(id);
     if (removed === null) return;
+    setAddedMedicamentos((current) => current.filter((item) => item.id !== id));
+    setRemovedMedicamentoIds((current) => (current.includes(id) ? current : [...current, id]));
     await medicamentosQuery.refetch();
   }
 
   async function handleAddExame() {
     const started = await ensureStarted();
-    if (!started || !exameDraft.exameBaseId) return;
+    if (!started) return;
+
+    const nextErrors: ExamFormErrors = {
+      exameBaseId: exameDraft.exameBaseId ? null : "Selecione um exame base antes de adicionar.",
+    };
+
+    setExamErrors(nextErrors);
+
+    if (nextErrors.exameBaseId || !exameDraft.exameBaseId) return;
 
     const created = await createExameMutation.mutateAsync({
       consultaId: Number(consulta.id),
@@ -214,7 +287,10 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
 
     if (created) {
       setExameQuery("");
+      setExamErrors({ exameBaseId: null });
       setExameDraft({ exameBaseId: null, justificativa: "", observacoes: "" });
+      setAddedExames((current) => [...current.filter((item) => item.id !== created.id), created]);
+      setRemovedExameIds((current) => current.filter((id) => id !== created.id));
       await examesQuery.refetch();
     }
   }
@@ -222,6 +298,8 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   async function handleDeleteExame(id: number) {
     const removed = await deleteExameMutation.mutateAsync(id);
     if (removed === null) return;
+    setAddedExames((current) => current.filter((item) => item.id !== id));
+    setRemovedExameIds((current) => (current.includes(id) ? current : [...current, id]));
     await examesQuery.refetch();
   }
 
@@ -327,7 +405,7 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                   <Input
                     value={medQuery}
                     onChange={(e) => setMedQuery(e.target.value)}
-                    placeholder="Buscar por DCB ou nome comercial..."
+                    placeholder="Buscar por nome comercial..."
                   />
                 </label>
 
@@ -340,9 +418,11 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                       setMedDraft((current) => ({
                         ...current,
                         medicamentoBaseId,
+                        nomeLivre: "",
                         dosagem: current.dosagem || selected?.dosagemPadrao || "",
                         via: current.via || selected?.viaAdministracao || "VO",
                       }));
+                      setMedicationErrors((current) => ({ ...current, medication: null }));
                     }}
                     options={medicamentoOptions}
                     placeholder="Selecionar medicamento base"
@@ -357,7 +437,10 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                   <span className="atd-label">Nome livre (opcional)</span>
                   <Input
                     value={medDraft.nomeLivre}
-                    onChange={(e) => setMedDraft((current) => ({ ...current, nomeLivre: e.target.value, medicamentoBaseId: null }))}
+                    onChange={(e) => {
+                      setMedDraft((current) => ({ ...current, nomeLivre: e.target.value, medicamentoBaseId: null }));
+                      setMedicationErrors((current) => ({ ...current, medication: null }));
+                    }}
                     placeholder="Usar quando não houver medicamento base"
                   />
                 </label>
@@ -378,35 +461,42 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                   <span className="atd-label">Dosagem</span>
                   <Input
                     value={medDraft.dosagem}
-                    onChange={(e) => setMedDraft((current) => ({ ...current, dosagem: e.target.value }))}
+                    onChange={(e) => {
+                      setMedDraft((current) => ({ ...current, dosagem: e.target.value }));
+                      setMedicationErrors((current) => ({ ...current, dosagem: null }));
+                    }}
                     placeholder="500 mg"
                   />
+                  {medicationErrors.dosagem ? <span className="atd-fieldError">{medicationErrors.dosagem}</span> : null}
                 </label>
 
                 <label className="atd-field">
                   <span className="atd-label">Frequência / posologia</span>
                   <Input
                     value={medDraft.frequencia}
-                    onChange={(e) => setMedDraft((current) => ({ ...current, frequencia: e.target.value }))}
+                    onChange={(e) => {
+                      setMedDraft((current) => ({ ...current, frequencia: e.target.value }));
+                      setMedicationErrors((current) => ({ ...current, frequencia: null }));
+                    }}
                     placeholder="8/8h por 5 dias"
                   />
+                  {medicationErrors.frequencia ? <span className="atd-fieldError">{medicationErrors.frequencia}</span> : null}
                 </label>
               </div>
 
+              {medicationErrors.medication ? <div className="atd-formError">{medicationErrors.medication}</div> : null}
+
               <div className="atd-sectionActions">
-                <PrimaryButton
-                  onClick={() => void handleAddMedicamento()}
-                  disabled={medicationBusy || (!medDraft.medicamentoBaseId && !medDraft.nomeLivre.trim()) || !medDraft.dosagem.trim() || !medDraft.frequencia.trim()}
-                >
+                <PrimaryButton onClick={() => void handleAddMedicamento()} disabled={medicationBusy}>
                   Adicionar medicamento
                 </PrimaryButton>
               </div>
 
               <div className="atd-list">
-                {medicamentosQuery.data.length === 0 ? (
+                {medicamentosList.length === 0 ? (
                   <div className="atd-empty">Nenhum medicamento prescrito para esta consulta.</div>
                 ) : (
-                  medicamentosQuery.data.map((medicamento) => (
+                  medicamentosList.map((medicamento) => (
                     <div key={medicamento.id} className="atd-item">
                       <div className="atd-itemHeader">
                         <strong className="atd-itemTitle">{medicamento.nome}</strong>
@@ -443,12 +533,16 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                   <span className="atd-label">Exame encontrado</span>
                   <SelectField<number>
                     value={exameDraft.exameBaseId}
-                    onChange={(exameBaseId) => setExameDraft((current) => ({ ...current, exameBaseId }))}
+                    onChange={(exameBaseId) => {
+                      setExameDraft((current) => ({ ...current, exameBaseId }));
+                      setExamErrors({ exameBaseId: null });
+                    }}
                     options={exameOptions}
                     placeholder="Selecionar exame base"
                     ariaLabel="Exame base"
                     disabled={exameOptions.length === 0}
                   />
+                  {examErrors.exameBaseId ? <span className="atd-fieldError">{examErrors.exameBaseId}</span> : null}
                 </label>
               </div>
 
@@ -473,16 +567,16 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
               </label>
 
               <div className="atd-sectionActions">
-                <PrimaryButton onClick={() => void handleAddExame()} disabled={examBusy || !exameDraft.exameBaseId}>
+                <PrimaryButton onClick={() => void handleAddExame()} disabled={examBusy}>
                   Adicionar exame
                 </PrimaryButton>
               </div>
 
               <div className="atd-list">
-                {examesQuery.data.length === 0 ? (
+                {examesList.length === 0 ? (
                   <div className="atd-empty">Nenhum exame solicitado para esta consulta.</div>
                 ) : (
-                  examesQuery.data.map((exame) => (
+                  examesList.map((exame) => (
                     <div key={exame.id} className="atd-item">
                       <div className="atd-itemHeader">
                         <strong className="atd-itemTitle">{exame.nome}</strong>
