@@ -84,6 +84,14 @@
   color: var(--mf-muted);
 }
 
+.atd-formError,
+.atd-fieldError {
+  color: var(--mf-danger);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
 .atd-textarea {
   width: 100%;
   min-height: 140px;
