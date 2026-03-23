@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import AppPage from "../../../../components/layout/AppPage/AppPage";
@@ -8,12 +8,11 @@ import RowMenu from "../../../../components/ui/RowMenu/RowMenu";
 import SelectField, { type SelectOption } from "../../../../components/form/SelectField/SelectField";
 
 import { TableWrap, Table, THead, TBody, Tr, Th, Td } from "../../../../components/ui/Table/Table";
-import { pacienteNomeById } from "../../../../mocks/mappers";
-import { seedPrescricoesIfEmpty } from "../../../../mocks/prescricoesStorage";
 import { useExamesByPacienteQuery, useUpdateExameMutation } from "../../../../api/exames/hooks";
 import type { StatusExameApi } from "../../../../api/exames/types";
-import { useDuplicateMedicamentoMutation, useMedicamentosByPacienteQuery } from "../../../../api/medicamentos/hooks";
+import { useMedicamentosByPacienteQuery } from "../../../../api/medicamentos/hooks";
 import type { MedicamentoViewModel } from "../../../../api/medicamentos/types";
+import { usePacienteProfileQuery } from "../../../../api/pacientes/hooks";
 
 import "./styles.css";
 
@@ -21,7 +20,6 @@ type Tab = "MEDICAMENTOS" | "EXAMES";
 
 type MenuAction =
   | "OPEN_CONSULTA"
-  | "REPETIR_MED"
   | "IMPRIMIR_MED"
   | "SET_COLETA"
   | "SET_RESULTADO"
@@ -43,26 +41,22 @@ export default function PrescricoesPage() {
   const [tab, setTab] = useState<Tab>("MEDICAMENTOS");
   const [menuKey, setMenuKey] = useState<string | null>(null);
 
-  const { data: medicamentos, refetch: refetchMedicamentos, error: medicamentosError } =
+  const { data: medicamentos, error: medicamentosError } =
     useMedicamentosByPacienteQuery(pacienteIdValue);
   const { data: exames, refetch: refetchExames, error: examesError } = useExamesByPacienteQuery(pacienteIdValue);
-  const { mutateAsync: duplicateMedicamento } = useDuplicateMedicamentoMutation();
+  const { data: pacienteProfile } = usePacienteProfileQuery(pacienteIdValue);
   const { mutateAsync: updateExame } = useUpdateExameMutation();
-
-  useEffect(() => {
-    seedPrescricoesIfEmpty();
-  }, []);
 
   const pacienteNome = useMemo(() => {
     if (!Number.isFinite(pacienteId)) return "Paciente";
-    return pacienteNomeById(pacienteId);
-  }, [pacienteId]);
+    return pacienteProfile?.nomeCompleto ?? `Paciente #${pacienteId}`;
+  }, [pacienteId, pacienteProfile?.nomeCompleto]);
 
-  function openConsulta(consultaId: string) {
+  function openConsulta(consultaId: number) {
     navigate(`/consultas/${consultaId}`);
   }
 
-  async function onSelectAction(action: MenuAction, payload: { consultaId: string; medId?: number; exameId?: number }) {
+  async function onSelectAction(action: MenuAction, payload: { consultaId: number; medId?: number; exameId?: number }) {
     setMenuKey(null);
 
     if (action === "OPEN_CONSULTA") {
@@ -70,13 +64,6 @@ export default function PrescricoesPage() {
       return;
     }
 
-    if (action === "REPETIR_MED" && payload.medId != null) {
-      const duplicated = await duplicateMedicamento(payload.medId);
-      if (duplicated) {
-        await refetchMedicamentos();
-      }
-      return;
-    }
 
     if (action === "IMPRIMIR_MED" && payload.medId != null) {
       const medicamento = medicamentos.find((item) => item.id === payload.medId);
@@ -204,7 +191,6 @@ export default function PrescricoesPage() {
                                 onClose={() => setMenuKey(null)}
                                 items={[
                                   { key: "OPEN_CONSULTA", label: "Ver consulta" },
-                                  { key: "REPETIR_MED", label: "Repetir", tone: "primary" },
                                   { key: "IMPRIMIR_MED", label: "Imprimir" },
                                 ]}
                                 onSelect={(selected) =>
@@ -362,7 +348,7 @@ function printMedicamento(pacienteNome: string, medicamento: MedicamentoViewMode
       </head>
       <body>
         <h1>Prescrição</h1>
-        <div class="muted">Paciente: ${escapeHtml(pacienteNome)} • Consulta #${escapeHtml(medicamento.consultaId)}</div>
+        <div class="muted">Paciente: ${escapeHtml(pacienteNome)} • Consulta #${escapeHtml(String(medicamento.consultaId))}</div>
         <div class="box">
           <p><strong>Medicamento:</strong> ${escapeHtml(medicamento.nome)}</p>
           <p><strong>Dosagem:</strong> ${escapeHtml(medicamento.dosagem || "—")}</p>
