@@ -84,6 +84,42 @@
   color: var(--mf-muted);
 }
 
+.atd-formError,
+.atd-fieldError {
+  color: var(--mf-danger);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+
+.atd-input {
+  width: 100%;
+  min-height: var(--mf-control-height);
+  border: 1px solid var(--mf-border);
+  background: var(--mf-control-bg);
+  border-radius: var(--mf-radius-control);
+  padding: 10px 12px;
+  color: var(--mf-text);
+  outline: none;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.atd-input:hover {
+  background: var(--mf-control-bg-hover);
+  border-color: rgba(18, 167, 195, 0.30);
+}
+
+.atd-input:focus {
+  border-color: var(--mf-focus-border);
+  box-shadow: 0 0 0 4px var(--mf-focus-ring);
+}
+
+.atd-grid2--top {
+  align-items: start;
+}
+
 .atd-textarea {
   width: 100%;
   min-height: 140px;

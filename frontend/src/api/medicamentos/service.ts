@@ -22,7 +22,9 @@ export async function listMedicamentosByConsultaId(consultaId: number): Promise<
 
 export async function searchMedicamentosBase(query: string): Promise<MedicamentoBaseOptionViewModel[]> {
   if (!query.trim()) return [];
-  const response = await unwrapResponse(api.get<MedicamentoBaseApi[]>("/medicamentos-base", { params: { q: query.trim() } }));
+  const response = await unwrapResponse(api.get<MedicamentoBaseApi[]>("/medicamentos-base", {
+    params: { nomeComercial: query.trim() },
+  }));
   return response.map(toMedicamentoBaseOption);
 }
 

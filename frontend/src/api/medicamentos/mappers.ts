@@ -18,7 +18,7 @@ export function toMedicamentoViewModel(medicamento: MedicamentoApi): Medicamento
 }
 
 export function toMedicamentoBaseOption(medicamento: MedicamentoBaseApi): MedicamentoBaseOptionViewModel {
-  const title = medicamento.dcb || medicamento.nomeComercial || medicamento.principioAtivo;
+  const title = medicamento.nomeComercial || medicamento.principioAtivo || medicamento.dcb;
   const subtitle = [medicamento.nomeComercial, medicamento.principioAtivo].filter(Boolean).join(" • ");
 
   return {
