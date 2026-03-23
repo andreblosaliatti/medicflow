@@ -155,6 +155,32 @@ class MedicamentoServiceTest {
     }
 
     @Test
+    void adicionarMedicamentoMustFallbackToDcbWhenBaseHasNoPrincipioAtivoOrNomeComercial() {
+        Long consultaId = 10L;
+        Consulta consulta = consultaValida();
+        MedicamentoBase base = MedicamentoBase.builder()
+                .id(9L)
+                .dcb("Losartana")
+                .build();
+        MedicamentoPrescritoDTO dto = new MedicamentoPrescritoDTO(9L, null, "50mg", "1x/dia", "Oral");
+
+        when(consultaRepository.findById(consultaId)).thenReturn(Optional.of(consulta));
+        when(medicamentoBaseRepository.findById(9L)).thenReturn(Optional.of(base));
+        when(medicamentoPrescritoRepository.save(any(MedicamentoPrescrito.class)))
+                .thenAnswer(invocation -> {
+                    MedicamentoPrescrito salvo = invocation.getArgument(0);
+                    salvo.setId(99L);
+                    return salvo;
+                });
+
+        var result = service.adicionarMedicamento(consultaId, dto);
+
+        assertEquals(99L, result.getId());
+        assertEquals("Losartana", result.getNome());
+        assertEquals(base, consulta.getMedicamentoPrescrito().get(0).getMedicamentoBase());
+    }
+
+    @Test
     void atualizarMedicamentoMustSwitchToFreeTextWhenClinicalFlowRequiresEdit() {
         Consulta consulta = consultaValida();
         MedicamentoBase base = MedicamentoBase.builder()
