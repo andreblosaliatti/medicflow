@@ -32,6 +32,7 @@ import {
   canFinishConsulta,
   canStartConsulta,
 } from "../../../../domain/consulta/workflow";
+import type { ExameViewModel } from "../../../../api/exames/types";
 
 import "./styles.css";
 import "../base.css";
@@ -142,6 +143,10 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   const exameBaseQuery = useExameBaseSearchQuery(exameDraft.nome);
   const createExameMutation = useCreateExameSolicitadoMutation();
   const deleteExameMutation = useDeleteExameSolicitadoMutation();
+  const [addedMedicamentos, setAddedMedicamentos] = useState<MedicamentoViewModel[]>([]);
+  const [removedMedicamentoIds, setRemovedMedicamentoIds] = useState<number[]>([]);
+  const [addedExames, setAddedExames] = useState<ExameViewModel[]>([]);
+  const [removedExameIds, setRemovedExameIds] = useState<number[]>([]);
 
   const medicamentoOptions = useMemo<readonly AutocompleteOption<number>[]>(() => {
     return medicamentoBaseQuery.data.map((item) => ({
@@ -464,6 +469,8 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                   {medicationErrors.frequencia ? <span className="atd-fieldError">{medicationErrors.frequencia}</span> : null}
                 </label>
               </div>
+
+              {medicationErrors.medication ? <div className="atd-formError">{medicationErrors.medication}</div> : null}
 
               <div className="atd-sectionActions">
                 <PrimaryButton onClick={() => void handleAddMedicamento()} disabled={medicationBusy}>
