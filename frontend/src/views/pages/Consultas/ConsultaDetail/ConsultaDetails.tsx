@@ -1,24 +1,28 @@
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { useConsultaDetailsQuery, useFinishConsultaMutation, useStartConsultaMutation } from "../../../../api/consultas/hooks";
+import {
+  useCancelConsultaMutation,
+  useConsultaDetailsQuery,
+  useConfirmConsultaMutation,
+  useFinishConsultaMutation,
+  useStartConsultaMutation,
+} from "../../../../api/consultas/hooks";
 import type { ConsultaDetailsViewModel } from "../../../../api/consultas/types";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../../components/ui/Card";
 import PrimaryButton from "../../../../components/ui/PrimaryButton/PrimaryButton";
 import SecondaryButton from "../../../../components/ui/SecondaryButton/SecondaryButton";
-import type { StatusConsulta } from "../../../../domain/enums/statusConsulta";
+import {
+  canCancelConsulta,
+  canConfirmConsulta,
+  canEditConsulta,
+  canFinishConsulta,
+  canStartConsulta,
+} from "../../../../domain/consulta/workflow";
 
 import "./styles.css";
 import "../base.css";
-
-function canStart(status: StatusConsulta) {
-  return status === "AGENDADA" || status === "CONFIRMADA";
-}
-
-function canFinish(status: StatusConsulta) {
-  return status === "EM_ATENDIMENTO";
-}
 
 export default function ConsultaDetails() {
   const navigate = useNavigate();
@@ -28,28 +32,36 @@ export default function ConsultaDetails() {
     return Number.isFinite(parsed) ? parsed : null;
   }, [id]);
 
-  const { data: consulta, isLoading, error } = useConsultaDetailsQuery(consultaId);
+  const { data: consulta, isLoading, error, refetch } = useConsultaDetailsQuery(consultaId);
+  const confirmMutation = useConfirmConsultaMutation();
+  const cancelMutation = useCancelConsultaMutation();
   const startMutation = useStartConsultaMutation();
   const finishMutation = useFinishConsultaMutation();
 
-  async function handlePrimaryAction(current: ConsultaDetailsViewModel) {
-    if (canStart(current.status)) {
-      const started = await startMutation.mutateAsync(Number(current.id));
-      if (started) {
-        navigate(`/consultas/${current.id}/atendimento`, { replace: true });
-      }
+  async function handleAction(action: "confirm" | "cancel" | "start" | "finish", current: ConsultaDetailsViewModel) {
+    const id = Number(current.id);
+    const result = action === "confirm"
+      ? await confirmMutation.mutateAsync(id)
+      : action === "cancel"
+        ? await cancelMutation.mutateAsync(id)
+        : action === "start"
+          ? await startMutation.mutateAsync(id)
+          : await finishMutation.mutateAsync(id);
+
+    if (!result) return;
+
+    if (action === "start") {
+      navigate(`/consultas/${current.id}/atendimento`, { replace: true });
       return;
     }
 
-    if (canFinish(current.status)) {
-      const finished = await finishMutation.mutateAsync(Number(current.id));
-      if (finished) {
-        navigate(`/consultas/${current.id}`, { replace: true });
-      }
+    if (action === "finish") {
+      await refetch();
+      navigate(`/consultas/${current.id}`, { replace: true });
       return;
     }
 
-    navigate(`/consultas/${current.id}/editar`);
+    await refetch();
   }
 
   if (consultaId === null) {
@@ -76,21 +88,24 @@ export default function ConsultaDetails() {
     );
   }
 
-  const headerActionLabel = canStart(consulta.status)
-    ? "Iniciar atendimento"
-    : canFinish(consulta.status)
-      ? "Finalizar atendimento"
-      : "Editar";
-
-  const workflowError = startMutation.error ?? finishMutation.error;
-  const workflowPending = startMutation.isPending || finishMutation.isPending;
+  const canConfirm = canConfirmConsulta(consulta.status);
+  const canCancel = canCancelConsulta(consulta.status);
+  const canStart = canStartConsulta(consulta.status);
+  const canFinish = canFinishConsulta(consulta.status);
+  const canEdit = canEditConsulta(consulta.status);
+  const mutationError = confirmMutation.error ?? cancelMutation.error ?? startMutation.error ?? finishMutation.error;
+  const isMutating = confirmMutation.isPending || cancelMutation.isPending || startMutation.isPending || finishMutation.isPending;
 
   return (
     <>
       <PageHeader
         title={`Consulta • ${consulta.pacienteNome}`}
-        actionLabel={headerActionLabel}
-        onAction={() => void handlePrimaryAction(consulta)}
+        actions={[
+          ...(canConfirm ? [{ label: "Confirmar", variant: "secondary" as const, onClick: () => void handleAction("confirm", consulta), disabled: isMutating }] : []),
+          ...(canStart ? [{ label: "Iniciar atendimento", variant: "primary" as const, onClick: () => void handleAction("start", consulta), disabled: isMutating }] : []),
+          ...(canFinish ? [{ label: "Finalizar atendimento", variant: "primary" as const, onClick: () => void handleAction("finish", consulta), disabled: isMutating }] : []),
+          ...(canEdit ? [{ label: "Editar", variant: "secondary" as const, onClick: () => navigate(`/consultas/${consulta.id}/editar`) }] : []),
+        ]}
       />
 
       <div className="mf-page-content">
@@ -102,7 +117,7 @@ export default function ConsultaDetails() {
               </span>
             </div>
 
-            {workflowError ? <div className="mf-muted">{workflowError}</div> : null}
+            {mutationError ? <div className="mf-muted">{mutationError}</div> : null}
             {error ? <div className="mf-muted">{error}</div> : null}
 
             <div className="consultas-kv">
@@ -148,21 +163,35 @@ export default function ConsultaDetails() {
             </div>
 
             <div className="consultas-actionsBottom">
-              {canStart(consulta.status) ? (
-                <PrimaryButton onClick={() => void handlePrimaryAction(consulta)} disabled={workflowPending}>
+              {canConfirm ? (
+                <SecondaryButton onClick={() => void handleAction("confirm", consulta)} disabled={isMutating}>
+                  Confirmar consulta
+                </SecondaryButton>
+              ) : null}
+
+              {canStart ? (
+                <PrimaryButton onClick={() => void handleAction("start", consulta)} disabled={isMutating}>
                   Iniciar atendimento
                 </PrimaryButton>
               ) : null}
 
-              {canFinish(consulta.status) ? (
-                <PrimaryButton onClick={() => void handlePrimaryAction(consulta)} disabled={workflowPending}>
+              {canFinish ? (
+                <PrimaryButton onClick={() => void handleAction("finish", consulta)} disabled={isMutating}>
                   Finalizar atendimento
                 </PrimaryButton>
               ) : null}
 
-              <SecondaryButton onClick={() => navigate(`/consultas/${consulta.id}/editar`)}>
-                Editar
-              </SecondaryButton>
+              {canEdit ? (
+                <SecondaryButton onClick={() => navigate(`/consultas/${consulta.id}/editar`)}>
+                  Editar
+                </SecondaryButton>
+              ) : null}
+
+              {canCancel ? (
+                <SecondaryButton onClick={() => void handleAction("cancel", consulta)} disabled={isMutating}>
+                  Cancelar consulta
+                </SecondaryButton>
+              ) : null}
 
               <SecondaryButton onClick={() => navigate("/consultas")}>
                 Voltar

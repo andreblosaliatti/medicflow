@@ -5,6 +5,7 @@ import { useConsultaDetailsQuery, useConsultaMetadataQuery, useUpdateConsultaMut
 import type { ConsultaDetailsViewModel, ConsultaUpdatePayload } from "../../../../api/consultas/types";
 import { usePacientesQuery } from "../../../../api/pacientes/hooks";
 import type { DuracaoMinutos, MeioPagamento, TipoConsulta } from "../../../../domain/enums/statusConsulta";
+import { canEditConsulta } from "../../../../domain/consulta/workflow";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../../components/ui/Card";
 import Input from "../../../../components/form/Input";
@@ -153,6 +154,17 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
 
   const error = updateMutation.error ?? pacientesQuery.error ?? metadataQuery.error;
   const canSave = Boolean(form.pacienteId && form.motivo.trim() && !updateMutation.isPending);
+
+  if (!canEditConsulta(initialDetails.status)) {
+    return (
+      <div className="consultas-page consultas-page--form">
+        <PageHeader
+          title="Editar consulta"
+          subtitle="Esta consulta não pode mais ser editada no status atual."
+        />
+      </div>
+    );
+  }
 
   return (
     <>
