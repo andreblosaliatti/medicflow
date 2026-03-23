@@ -22,6 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class PacienteService {
 
@@ -54,9 +60,22 @@ public class PacienteService {
                                         String convenio,
                                         Pageable pageable) {
         Boolean ativoFilter = ativo != null ? ativo : Boolean.TRUE;
-        Page<Paciente> page = repository.search(normalizarFiltro(nome), normalizarFiltro(cpf), ativoFilter,
-                normalizarFiltro(convenio), pageable);
-        return page.map(this::toPacienteListDTO);
+
+        Page<Paciente> page = repository.search(
+                normalizarFiltro(nome),
+                normalizarFiltro(cpf),
+                ativoFilter,
+                normalizarFiltro(convenio),
+                pageable
+        );
+
+        List<Paciente> pacientes = page.getContent();
+        Map<Long, LocalDateTime> ultimasConsultasPorPaciente = buscarUltimasConsultasPorPaciente(pacientes);
+
+        return page.map(paciente -> new PacienteListDTO(
+                paciente,
+                ultimasConsultasPorPaciente.get(paciente.getId())
+        ));
     }
 
     @Transactional(readOnly = true)
@@ -116,16 +135,31 @@ public class PacienteService {
 
     private Paciente getPacienteAtivo(Long id) {
         return repository.findByIdAndAtivoTrue(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente")));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.PACIENTE_NOT_FOUND,
+                        ExceptionMessages.notFound("Paciente")
+                ));
     }
 
-    private PacienteListDTO toPacienteListDTO(Paciente paciente) {
-        return new PacienteListDTO(
-                paciente,
-                consultaRepository.findTopByPacienteIdOrderByDataHoraDesc(paciente.getId())
-                        .map(Consulta::getDataHora)
-                        .orElse(null)
-        );
+    private Map<Long, LocalDateTime> buscarUltimasConsultasPorPaciente(List<Paciente> pacientes) {
+        if (pacientes == null || pacientes.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Long> pacienteIds = pacientes.stream()
+                .map(Paciente::getId)
+                .toList();
+
+        List<Consulta> consultas = consultaRepository.buscarConsultasOrdenadasPorPacienteEDataDesc(pacienteIds);
+
+        Map<Long, LocalDateTime> mapa = new HashMap<>();
+
+        for (Consulta consulta : consultas) {
+            Long pacienteId = consulta.getPaciente().getId();
+            mapa.putIfAbsent(pacienteId, consulta.getDataHora());
+        }
+
+        return mapa;
     }
 
     private String normalizarFiltro(String valor) {

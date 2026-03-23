@@ -1,7 +1,13 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useApiMutation, useApiQuery } from "../shared/hooks";
 import { emptyPageResponse } from "../shared/types";
-import { createPaciente, getPacienteById, getPacienteProfileById, listPacientesRows, updatePaciente } from "./service";
+import {
+  createPaciente,
+  getPacienteById,
+  getPacienteProfileById,
+  listPacientesRows,
+  updatePaciente,
+} from "./service";
 import type {
   PacienteApi,
   PacienteFormValues,
@@ -10,9 +16,20 @@ import type {
   PacienteRowsPageViewModel,
 } from "./types";
 
-export function usePacientesQuery(params: PacienteListParams = {}) {
-  const queryFn = useCallback(() => listPacientesRows(params), [params]);
-  return useApiQuery<PacienteRowsPageViewModel>(["pacientes", "list", params], emptyPageResponse(), queryFn);
+const EMPTY_PARAMS: PacienteListParams = {};
+
+export function usePacientesQuery(params?: PacienteListParams) {
+  const stableParams = useMemo(() => params ?? EMPTY_PARAMS, [params]);
+
+  const queryFn = useCallback(() => {
+    return listPacientesRows(stableParams);
+  }, [stableParams]);
+
+  return useApiQuery<PacienteRowsPageViewModel>(
+    ["pacientes", "list", stableParams],
+    emptyPageResponse(),
+    queryFn,
+  );
 }
 
 export function usePacienteByIdQuery(id: number | null) {
@@ -21,7 +38,11 @@ export function usePacienteByIdQuery(id: number | null) {
     return getPacienteById(id);
   }, [id]);
 
-  return useApiQuery<PacienteApi | null>(["pacientes", "detail", id], null, queryFn);
+  return useApiQuery<PacienteApi | null>(
+    ["pacientes", "detail", id],
+    null,
+    queryFn,
+  );
 }
 
 export function usePacienteProfileQuery(id: number | null) {
@@ -30,7 +51,11 @@ export function usePacienteProfileQuery(id: number | null) {
     return getPacienteProfileById(id);
   }, [id]);
 
-  return useApiQuery<PacienteProfileViewModel | null>(["pacientes", "profile", id], null, queryFn);
+  return useApiQuery<PacienteProfileViewModel | null>(
+    ["pacientes", "profile", id],
+    null,
+    queryFn,
+  );
 }
 
 export function useCreatePacienteMutation() {
@@ -38,7 +63,7 @@ export function useCreatePacienteMutation() {
 }
 
 export function useUpdatePacienteMutation() {
-  return useApiMutation<{ id: number; values: PacienteFormValues }, PacienteApi>(({ id, values }) =>
-    updatePaciente(id, values),
+  return useApiMutation<{ id: number; values: PacienteFormValues }, PacienteApi>(
+    ({ id, values }) => updatePaciente(id, values),
   );
 }
