@@ -196,14 +196,31 @@ public class MedicamentoService {
             MedicamentoBase base = medicamentoBaseRepository.findById(dados.getMedicamentoBaseId())
                     .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICAMENTO_BASE_NOT_FOUND, ExceptionMessages.notFound("Medicamento base")));
 
-            String nomeResolvido = base.getPrincipioAtivo() != null && !base.getPrincipioAtivo().isBlank()
-                    ? base.getPrincipioAtivo().trim()
-                    : base.getNomeComercial().trim();
+            String nomeResolvido = resolveNomeMedicamentoBase(base);
 
             return new MedicamentoResolvido(base, nomeResolvido);
         }
 
         return new MedicamentoResolvido(null, dados.getNome().trim());
+    }
+
+    private String resolveNomeMedicamentoBase(MedicamentoBase base) {
+        if (base.getPrincipioAtivo() != null && !base.getPrincipioAtivo().isBlank()) {
+            return base.getPrincipioAtivo().trim();
+        }
+
+        if (base.getNomeComercial() != null && !base.getNomeComercial().isBlank()) {
+            return base.getNomeComercial().trim();
+        }
+
+        if (base.getDcb() != null && !base.getDcb().isBlank()) {
+            return base.getDcb().trim();
+        }
+
+        throw new BusinessRuleException(
+                ErrorCodes.MEDICAMENTO_BUSINESS_RULE,
+                "O medicamento base selecionado não possui um nome válido para prescrição."
+        );
     }
 
     private record MedicamentoResolvido(MedicamentoBase medicamentoBase, String nome) {
