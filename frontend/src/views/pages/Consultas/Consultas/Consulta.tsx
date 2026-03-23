@@ -8,7 +8,7 @@ import RowMenu from "../../../../components/ui/RowMenu/RowMenu";
 
 import { TableWrap, Table, THead, TBody, Tr, Th, Td } from "../../../../components/ui/Table/Table";
 
-import { useConsultasQuery } from "../../../../api/consultas/hooks";
+import { useCancelConsultaMutation, useConsultasQuery } from "../../../../api/consultas/hooks";
 import type { ConsultaRowViewModel } from "../../../../api/consultas/types";
 
 import "./styles.css";
@@ -16,7 +16,8 @@ import "./styles.css";
 export default function ConsultasPage() {
   const navigate = useNavigate();
   const [menuId, setMenuId] = useState<string | null>(null);
-  const { data: rows, isLoading, error } = useConsultasQuery();
+  const { data: rows, isLoading, error, refetch } = useConsultasQuery();
+  const cancelMutation = useCancelConsultaMutation();
 
   return (
     <AppPage
@@ -38,6 +39,7 @@ export default function ConsultasPage() {
       <div className="mf-page-content">
         <Panel title="Lista de Consultas" icon="🗓️">
           {error ? <div className="mf-muted">{error}</div> : null}
+          {cancelMutation.error ? <div className="mf-muted">{cancelMutation.error}</div> : null}
 
           <TableWrap>
             <Table>
@@ -111,7 +113,11 @@ export default function ConsultasPage() {
                           onSelect={(key) => {
                             if (key === "details") navigate(`/consultas/${c.id}`);
                             if (key === "edit") navigate(`/consultas/${c.id}/editar`);
-                            if (key === "cancel") console.log("Cancelar (mock):", c.id);
+                            if (key === "cancel") {
+                              void cancelMutation.mutateAsync(Number(c.id)).then((result) => {
+                                if (result) void refetch();
+                              });
+                            }
                           }}
                         />
                       </div>

@@ -5,11 +5,10 @@ import type { ConsultaDraft } from "./AppointmentDetailDrawer";
 type Mode = "create" | "edit";
 
 type Params = {
-  doctorId: string;
+  doctorId: number;
   doctorName: string;
-
-  emptyDraft: (doctorId: string, doctorName: string) => ConsultaDraft;
-  fromEventToDraft: (ev: AppointmentEvent, doctorId: string, doctorName: string) => ConsultaDraft;
+  emptyDraft: (doctorId: number, doctorName: string) => ConsultaDraft;
+  fromEventToDraft: (event: AppointmentEvent, doctorId: number, doctorName: string) => ConsultaDraft;
 };
 
 type Controller = {
@@ -18,13 +17,11 @@ type Controller = {
   value: ConsultaDraft | null;
   editingEventId: string | null;
   drawerKey: string;
-
   openCreate: () => void;
-  openCreateForPaciente: (pacienteId: string, pacienteNome: string) => void;
-  openEditFromEvent: (ev: AppointmentEvent) => void;
+  openCreateForPaciente: (pacienteId: number, pacienteNome: string) => void;
+  openEditFromEvent: (event: AppointmentEvent) => void;
   close: () => void;
-
-  setValue: (v: ConsultaDraft) => void;
+  setValue: (value: ConsultaDraft) => void;
 };
 
 export function useConsultaDrawerController(params: Params): Controller {
@@ -33,8 +30,6 @@ export function useConsultaDrawerController(params: Params): Controller {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("create");
   const [value, setValue] = useState<ConsultaDraft | null>(null);
-
-  // ✅ guarda o id do evento quando estiver editando
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
 
   function close() {
@@ -48,24 +43,24 @@ export function useConsultaDrawerController(params: Params): Controller {
     setOpen(true);
   }
 
-  function openEditFromEvent(ev: AppointmentEvent) {
+  function openEditFromEvent(event: AppointmentEvent) {
     setMode("edit");
-    setEditingEventId(ev.id);
-    setValue(fromEventToDraft(ev, doctorId, doctorName));
+    setEditingEventId(event.id);
+    setValue(fromEventToDraft(event, doctorId, doctorName));
     setOpen(true);
   }
 
-  function openCreateForPaciente(pacienteId: string, pacienteNome: string) {
-  setMode("create");
-  setEditingEventId(null);
+  function openCreateForPaciente(pacienteId: number, pacienteNome: string) {
+    setMode("create");
+    setEditingEventId(null);
 
-  const d = emptyDraft(doctorId, doctorName);
-  d.pacienteId = pacienteId;
-  d.pacienteNome = pacienteNome;
+    const draft = emptyDraft(doctorId, doctorName);
+    draft.pacienteId = pacienteId;
+    draft.pacienteNome = pacienteNome;
 
-  setValue(d);
-  setOpen(true);
-}
+    setValue(draft);
+    setOpen(true);
+  }
 
   const drawerKey = useMemo(() => {
     const suffix = value?.dataHora ?? "x";
@@ -75,15 +70,15 @@ export function useConsultaDrawerController(params: Params): Controller {
   }, [mode, editingEventId, value?.dataHora]);
 
   return {
-  open,
-  mode,
-  value,
-  editingEventId,
-  drawerKey,
-  openCreate,
-  openCreateForPaciente,  // ✅ ADD
-  openEditFromEvent,
-  close,
-  setValue,
-};
+    open,
+    mode,
+    value,
+    editingEventId,
+    drawerKey,
+    openCreate,
+    openCreateForPaciente,
+    openEditFromEvent,
+    close,
+    setValue,
+  };
 }

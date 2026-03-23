@@ -16,12 +16,35 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-type Props = {
-  events: AppointmentEvent[];
-  onSelectEvent: (ev: AppointmentEvent) => void;
+type CalendarRange = {
+  start: Date;
+  end: Date;
 };
 
-export default function CalendarView({ events, onSelectEvent }: Props) {
+type Props = {
+  events: AppointmentEvent[];
+  onSelectEvent: (event: AppointmentEvent) => void;
+  onRangeChange?: (range: CalendarRange) => void;
+};
+
+function toRange(value: Date[] | { start: Date; end: Date } | Date): CalendarRange | null {
+  if (Array.isArray(value)) {
+    if (value.length === 0) return null;
+    return { start: value[0], end: value[value.length - 1] };
+  }
+
+  if (value instanceof Date) {
+    return { start: value, end: value };
+  }
+
+  if (value && "start" in value && "end" in value) {
+    return { start: value.start, end: value.end };
+  }
+
+  return null;
+}
+
+export default function CalendarView({ events, onSelectEvent, onRangeChange }: Props) {
   const [view, setView] = useState<View>(Views.WEEK);
   const [date, setDate] = useState<Date>(new Date());
 
@@ -40,29 +63,36 @@ export default function CalendarView({ events, onSelectEvent }: Props) {
       noEventsInRange: "Sem eventos neste período",
       showMore: (total: number) => `+${total} mais`,
     }),
-    []
+    [],
   );
 
   const formats = useMemo(
     () => ({
-      dayHeaderFormat: (d: Date) => format(d, "EEEE, dd/MM", { locale: ptBR }),
-      weekdayFormat: (d: Date) => format(d, "EEE", { locale: ptBR }),
+      dayHeaderFormat: (value: Date) => format(value, "EEEE, dd/MM", { locale: ptBR }),
+      weekdayFormat: (value: Date) => format(value, "EEE", { locale: ptBR }),
       dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
         `${format(start, "dd/MM", { locale: ptBR })} — ${format(end, "dd/MM", { locale: ptBR })}`,
-      timeGutterFormat: (d: Date) => format(d, "HH:mm", { locale: ptBR }),
+      timeGutterFormat: (value: Date) => format(value, "HH:mm", { locale: ptBR }),
       eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
         `${format(start, "HH:mm", { locale: ptBR })}–${format(end, "HH:mm", { locale: ptBR })}`,
-      agendaDateFormat: (d: Date) => format(d, "dd/MM/yyyy", { locale: ptBR }),
-      agendaTimeFormat: (d: Date) => format(d, "HH:mm", { locale: ptBR }),
+      agendaDateFormat: (value: Date) => format(value, "dd/MM/yyyy", { locale: ptBR }),
+      agendaTimeFormat: (value: Date) => format(value, "HH:mm", { locale: ptBR }),
       agendaHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
         `${format(start, "dd/MM/yyyy", { locale: ptBR })} — ${format(end, "dd/MM/yyyy", { locale: ptBR })}`,
     }),
-    []
+    [],
   );
 
-  const handleSelectEvent = useCallback(
-    (ev: AppointmentEvent) => onSelectEvent(ev),
-    [onSelectEvent]
+  const handleSelectEvent = useCallback((event: AppointmentEvent) => onSelectEvent(event), [onSelectEvent]);
+
+  const handleRangeChange = useCallback(
+    (range: Date[] | { start: Date; end: Date } | Date) => {
+      const normalized = toRange(range);
+      if (normalized && onRangeChange) {
+        onRangeChange(normalized);
+      }
+    },
+    [onRangeChange],
   );
 
   const eventPropGetter = useCallback((event: AppointmentEvent) => {
@@ -72,8 +102,8 @@ export default function CalendarView({ events, onSelectEvent }: Props) {
       status === "CONFIRMADA"
         ? styles.evConfirmed
         : status === "CANCELADA"
-        ? styles.evCanceled
-        : styles.evPending;
+          ? styles.evCanceled
+          : styles.evPending;
 
     return { className };
   }, []);
@@ -91,6 +121,7 @@ export default function CalendarView({ events, onSelectEvent }: Props) {
         onView={setView}
         date={date}
         onNavigate={setDate}
+        onRangeChange={handleRangeChange}
         popup
         messages={messages}
         formats={formats}

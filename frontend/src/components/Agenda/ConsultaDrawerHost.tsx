@@ -1,21 +1,18 @@
+import type { SelectOption } from "../form/SelectField/SelectField";
 import ConsultaFormDrawer, { type ConsultaDraft } from "./AppointmentDetailDrawer";
 
 type Props = {
   open: boolean;
   mode: "create" | "edit";
   drawerKey: string;
-
   value: ConsultaDraft | null;
-
-  doctorId: string;
+  doctorId: number;
   doctorName: string;
-
-  // ✅ ADD (opcional)
+  patientOptions: readonly SelectOption<number>[];
   lockPaciente?: boolean;
-
+  isSaving?: boolean;
   onClose: () => void;
   onSave: (data: ConsultaDraft, mode: "create" | "edit") => void;
-  
 };
 
 export default function ConsultaDrawerHost({
@@ -25,7 +22,9 @@ export default function ConsultaDrawerHost({
   value,
   doctorId,
   doctorName,
+  patientOptions,
   lockPaciente,
+  isSaving,
   onClose,
   onSave,
 }: Props) {
@@ -37,7 +36,9 @@ export default function ConsultaDrawerHost({
       initialValue={value}
       doctorId={doctorId}
       doctorName={doctorName}
+      patientOptions={patientOptions}
       lockPaciente={lockPaciente}
+      isSaving={isSaving}
       onClose={onClose}
       onSave={(data) => onSave(data, mode)}
     />
