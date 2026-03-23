@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { useApiMutation, useApiQuery } from "../shared/hooks";
 import {
   createMedicamentoPrescrito,
@@ -33,9 +33,12 @@ export function useMedicamentosByConsultaQuery(consultaId: number | null) {
 }
 
 export function useMedicamentoBaseSearchQuery(query: string) {
-  const normalizedQuery = query.trim();
-  const stableQuery = useMemo(() => normalizedQuery, [normalizedQuery]);
-  const queryFn = useCallback(() => searchMedicamentosBase(stableQuery), [stableQuery]);
+  const stableQuery = query.trim();
+
+  const queryFn = useCallback(() => {
+    if (!stableQuery) return Promise.resolve([] as MedicamentoBaseOptionViewModel[]);
+    return searchMedicamentosBase(stableQuery);
+  }, [stableQuery]);
 
   return useApiQuery<MedicamentoBaseOptionViewModel[]>(["medicamentos-base", stableQuery], [], queryFn);
 }

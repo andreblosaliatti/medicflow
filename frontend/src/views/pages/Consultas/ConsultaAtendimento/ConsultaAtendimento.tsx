@@ -32,7 +32,6 @@ import {
   canFinishConsulta,
   canStartConsulta,
 } from "../../../../domain/consulta/workflow";
-import type { ExameViewModel } from "../../../../api/exames/types";
 
 import "./styles.css";
 import "../base.css";
@@ -108,12 +107,15 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   const [tab, setTab] = useState<Tab>("ANAMNESE");
   const [form, setForm] = useState<AtendimentoForm>(() => toForm(consulta));
   const [currentStatus, setCurrentStatus] = useState(consulta.status);
+
   const [medicationErrors, setMedicationErrors] = useState<MedicationFormErrors>({
     medication: null,
     dosagem: null,
     frequencia: null,
   });
+
   const [examErrors, setExamErrors] = useState<ExamFormErrors>({ exameBaseId: null });
+
   const [medDraft, setMedDraft] = useState<MedicamentoDraft>({
     medicamentoBaseId: null,
     nome: "",
@@ -121,12 +123,14 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
     frequencia: "",
     via: "VO",
   });
+
   const [exameDraft, setExameDraft] = useState<ExameDraft>({
     exameBaseId: null,
     nome: "",
     justificativa: "",
     observacoes: "",
   });
+
   const [addedMedicamentos, setAddedMedicamentos] = useState<MedicamentoViewModel[]>([]);
   const [removedMedicamentoIds, setRemovedMedicamentoIds] = useState<number[]>([]);
   const [addedExames, setAddedExames] = useState<ExameViewModel[]>([]);
@@ -135,18 +139,16 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   const updateMutation = useUpdateConsultaMutation();
   const startMutation = useStartConsultaMutation();
   const finishMutation = useFinishConsultaMutation();
+
   const medicamentosQuery = useMedicamentosByConsultaQuery(Number(consulta.id));
   const medicamentoBaseQuery = useMedicamentoBaseSearchQuery(medDraft.nome);
   const createMedicamentoMutation = useCreateMedicamentoPrescritoMutation();
   const deleteMedicamentoMutation = useDeleteMedicamentoPrescritoMutation();
+
   const examesQuery = useExamesByConsultaQuery(Number(consulta.id));
   const exameBaseQuery = useExameBaseSearchQuery(exameDraft.nome);
   const createExameMutation = useCreateExameSolicitadoMutation();
   const deleteExameMutation = useDeleteExameSolicitadoMutation();
-  const [addedMedicamentos, setAddedMedicamentos] = useState<MedicamentoViewModel[]>([]);
-  const [removedMedicamentoIds, setRemovedMedicamentoIds] = useState<number[]>([]);
-  const [addedExames, setAddedExames] = useState<ExameViewModel[]>([]);
-  const [removedExameIds, setRemovedExameIds] = useState<number[]>([]);
 
   const medicamentoOptions = useMemo<readonly AutocompleteOption<number>[]>(() => {
     return medicamentoBaseQuery.data.map((item) => ({
@@ -229,6 +231,7 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
     if (!started) return;
 
     const nomeDigitado = medDraft.nome.trim();
+
     const nextErrors: MedicationFormErrors = {
       medication: nomeDigitado ? null : "Selecione um medicamento da lista ou digite um nome livre.",
       dosagem: medDraft.dosagem.trim() ? null : "Informe a dosagem.",
@@ -249,10 +252,20 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
       via: medDraft.via,
     };
 
-    const created = await createMedicamentoMutation.mutateAsync({ consultaId: Number(consulta.id), payload });
+    const created = await createMedicamentoMutation.mutateAsync({
+      consultaId: Number(consulta.id),
+      payload,
+    });
+
     if (created) {
       setMedicationErrors({ medication: null, dosagem: null, frequencia: null });
-      setMedDraft({ medicamentoBaseId: null, nome: "", dosagem: "", frequencia: "", via: "VO" });
+      setMedDraft({
+        medicamentoBaseId: null,
+        nome: "",
+        dosagem: "",
+        frequencia: "",
+        via: "VO",
+      });
       setAddedMedicamentos((current) => [...current.filter((item) => item.id !== created.id), created]);
       setRemovedMedicamentoIds((current) => current.filter((id) => id !== created.id));
       await medicamentosQuery.refetch();
@@ -262,6 +275,7 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   async function handleDeleteMedicamento(id: number) {
     const removed = await deleteMedicamentoMutation.mutateAsync(id);
     if (removed === null) return;
+
     setAddedMedicamentos((current) => current.filter((item) => item.id !== id));
     setRemovedMedicamentoIds((current) => (current.includes(id) ? current : [...current, id]));
     await medicamentosQuery.refetch();
@@ -289,7 +303,12 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
 
     if (created) {
       setExamErrors({ exameBaseId: null });
-      setExameDraft({ exameBaseId: null, nome: "", justificativa: "", observacoes: "" });
+      setExameDraft({
+        exameBaseId: null,
+        nome: "",
+        justificativa: "",
+        observacoes: "",
+      });
       setAddedExames((current) => [...current.filter((item) => item.id !== created.id), created]);
       setRemovedExameIds((current) => current.filter((id) => id !== created.id));
       await examesQuery.refetch();
@@ -299,6 +318,7 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   async function handleDeleteExame(id: number) {
     const removed = await deleteExameMutation.mutateAsync(id);
     if (removed === null) return;
+
     setAddedExames((current) => current.filter((item) => item.id !== id));
     setRemovedExameIds((current) => (current.includes(id) ? current : [...current, id]));
     await examesQuery.refetch();
@@ -309,6 +329,7 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   const isBusy = updateMutation.isPending || startMutation.isPending || finishMutation.isPending;
   const medicationBusy = createMedicamentoMutation.isPending || deleteMedicamentoMutation.isPending;
   const examBusy = createExameMutation.isPending || deleteExameMutation.isPending;
+
   const mutationError =
     updateMutation.error ??
     startMutation.error ??
@@ -331,12 +352,28 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
           <div className="atd-meta">
             <span className="atd-pill">{consulta.dataHoraLabel}</span>
             <span className="atd-pill">{consulta.tipo}</span>
-            <span className="atd-pill">{currentStatus === "EM_ATENDIMENTO" ? "Em atendimento" : consulta.statusLabel}</span>
+            <span className="atd-pill">
+              {currentStatus === "EM_ATENDIMENTO" ? "Em atendimento" : consulta.statusLabel}
+            </span>
           </div>
         }
         actions={[
-          { label: isBusy ? "Salvando..." : "Salvar evolução", variant: "highlight", onClick: () => void handleSave(), disabled: isBusy },
-          ...(canFinish ? [{ label: "Finalizar atendimento", variant: "primary" as const, onClick: () => void handleFinish(), disabled: isBusy }] : []),
+          {
+            label: isBusy ? "Salvando..." : "Salvar evolução",
+            variant: "highlight",
+            onClick: () => void handleSave(),
+            disabled: isBusy,
+          },
+          ...(canFinish
+            ? [
+                {
+                  label: "Finalizar atendimento",
+                  variant: "primary" as const,
+                  onClick: () => void handleFinish(),
+                  disabled: isBusy,
+                },
+              ]
+            : []),
         ]}
       />
 
@@ -411,6 +448,7 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                     }}
                     onSelect={(option) => {
                       const selected = medicamentoBaseQuery.data.find((item) => item.id === option.value) ?? null;
+
                       setMedDraft((current) => ({
                         ...current,
                         nome: option.label,
@@ -418,6 +456,7 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                         dosagem: current.dosagem || selected?.dosagemPadrao || "",
                         via: current.via === "VO" ? selected?.viaAdministracao || current.via : current.via,
                       }));
+
                       setMedicationErrors((current) => ({ ...current, medication: null }));
                     }}
                     options={medicamentoOptions}
@@ -426,7 +465,9 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                     loading={medDraft.nome.trim().length > 0 && medicamentoBaseQuery.isLoading}
                     emptyMessage="Nenhum medicamento da base encontrado. Você pode adicionar como nome livre."
                   />
-                  {medicationErrors.medication ? <span className="atd-fieldError">{medicationErrors.medication}</span> : null}
+                  {medicationErrors.medication ? (
+                    <span className="atd-fieldError">{medicationErrors.medication}</span>
+                  ) : null}
                 </label>
 
                 <label className="atd-field">
@@ -466,11 +507,15 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                     }}
                     placeholder="8/8h por 5 dias"
                   />
-                  {medicationErrors.frequencia ? <span className="atd-fieldError">{medicationErrors.frequencia}</span> : null}
+                  {medicationErrors.frequencia ? (
+                    <span className="atd-fieldError">{medicationErrors.frequencia}</span>
+                  ) : null}
                 </label>
               </div>
 
-              {medicationErrors.medication ? <div className="atd-formError">{medicationErrors.medication}</div> : null}
+              {medicationErrors.medication ? (
+                <div className="atd-formError">{medicationErrors.medication}</div>
+              ) : null}
 
               <div className="atd-sectionActions">
                 <PrimaryButton onClick={() => void handleAddMedicamento()} disabled={medicationBusy}>
@@ -486,11 +531,17 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                     <div key={medicamento.id} className="atd-item">
                       <div className="atd-itemHeader">
                         <strong className="atd-itemTitle">{medicamento.nome}</strong>
-                        <button type="button" className="atd-remove" onClick={() => void handleDeleteMedicamento(medicamento.id)}>
+                        <button
+                          type="button"
+                          className="atd-remove"
+                          onClick={() => void handleDeleteMedicamento(medicamento.id)}
+                        >
                           Remover
                         </button>
                       </div>
-                      <div className="atd-itemMeta">{medicamento.dosagem} • {medicamento.frequencia} • {medicamento.via}</div>
+                      <div className="atd-itemMeta">
+                        {medicamento.dosagem} • {medicamento.frequencia} • {medicamento.via}
+                      </div>
                     </div>
                   ))
                 )}
@@ -560,12 +611,18 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
                     <div key={exame.id} className="atd-item">
                       <div className="atd-itemHeader">
                         <strong className="atd-itemTitle">{exame.nome}</strong>
-                        <button type="button" className="atd-remove" onClick={() => void handleDeleteExame(exame.id)}>
+                        <button
+                          type="button"
+                          className="atd-remove"
+                          onClick={() => void handleDeleteExame(exame.id)}
+                        >
                           Remover
                         </button>
                       </div>
                       <div className="atd-itemMeta">Status: {exame.status}</div>
-                      {exame.justificativa ? <div className="atd-itemMeta">Justificativa: {exame.justificativa}</div> : null}
+                      {exame.justificativa ? (
+                        <div className="atd-itemMeta">Justificativa: {exame.justificativa}</div>
+                      ) : null}
                     </div>
                   ))
                 )}
@@ -586,8 +643,12 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
           ) : null}
 
           <div className="atd-actionsBottom">
-            <SecondaryButton onClick={() => navigate(`/consultas/${consulta.id}`)}>Voltar para detalhes</SecondaryButton>
-            <PrimaryButton onClick={() => void handleSave()} disabled={isBusy}>Salvar evolução</PrimaryButton>
+            <SecondaryButton onClick={() => navigate(`/consultas/${consulta.id}`)}>
+              Voltar para detalhes
+            </SecondaryButton>
+            <PrimaryButton onClick={() => void handleSave()} disabled={isBusy}>
+              Salvar evolução
+            </PrimaryButton>
             {canFinish ? (
               <PrimaryButton onClick={() => void handleFinish()} disabled={isBusy}>
                 Finalizar atendimento
@@ -603,10 +664,12 @@ function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
 export default function ConsultaAtendimento() {
   const navigate = useNavigate();
   const { id } = useParams();
+
   const consultaId = useMemo(() => {
     const parsed = Number(id);
     return Number.isFinite(parsed) ? parsed : null;
   }, [id]);
+
   const { data: consulta, isLoading, error } = useConsultaDetailsQuery(consultaId);
 
   if (consultaId === null) {

@@ -1,7 +1,9 @@
 package com.inflowia.medicflow.dto.medicamento;
 
 import com.inflowia.medicflow.domain.medicamento.MedicamentoBase;
+import lombok.Data;
 
+@Data
 public class MedicamentoBaseDTO {
 
     Long id;
