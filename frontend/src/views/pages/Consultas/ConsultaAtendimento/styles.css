@@ -17,7 +17,6 @@
   border-radius: 999px;
 }
 
-/* Tabs */
 .atd-tabs {
   display: flex;
   gap: 8px;
@@ -42,15 +41,37 @@
   box-shadow: 0 0 0 3px rgba(24, 198, 232, 0.12);
 }
 
-/* Panel */
 .atd-panel {
-  padding: 14px 12px 12px 12px;
+  padding: 20px 16px 16px 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 
-/* Fields */
+.atd-sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.atd-sectionHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--mf-dark);
+}
+
+.atd-sectionHeader p {
+  margin: 0;
+  color: var(--mf-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.atd-sectionActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .atd-field {
   display: flex;
   flex-direction: column;
@@ -77,12 +98,15 @@
   line-height: 1.4;
 }
 
+.atd-textarea--compact {
+  min-height: 96px;
+}
+
 .atd-textarea:focus {
   border-color: rgba(24, 198, 232, 0.45);
   box-shadow: 0 0 0 3px rgba(24, 198, 232, 0.12);
 }
 
-/* Inline add */
 .atd-inlineAdd {
   display: flex;
   gap: 10px;
@@ -93,7 +117,6 @@
   flex: 1;
 }
 
-/* List */
 .atd-list {
   display: flex;
   flex-direction: column;
@@ -106,12 +129,14 @@
   padding: 10px 0;
 }
 
-/* Item card */
 .atd-item {
   border: 1px solid var(--mf-border);
   background: var(--mf-surface);
   border-radius: 16px;
-  padding: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .atd-itemHeader {
@@ -119,12 +144,17 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 10px;
 }
 
 .atd-itemTitle {
   font-weight: 900;
   color: var(--mf-text);
+}
+
+.atd-itemMeta {
+  color: var(--mf-muted);
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .atd-remove {
@@ -138,15 +168,22 @@
 .atd-grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 14px;
 }
 
 .atd-actionsBottom {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding-top: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 14px;
   border-top: 1px solid var(--mf-border);
-  margin-top: 6px;
+  margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .atd-grid2 {
+    grid-template-columns: 1fr;
+  }
 }

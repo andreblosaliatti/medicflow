@@ -101,7 +101,7 @@ export default function PacientesPage() {
         state: {
           from: navState.from,
           novaConsulta: {
-            pacienteId: String(pacienteId),
+            pacienteId,
             pacienteNome: paciente?.nome ?? "",
           },
         },

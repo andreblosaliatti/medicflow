@@ -1,35 +1,30 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useCreateConsultaMutation, useConsultaMetadataQuery } from "../../../../api/consultas/hooks";
+import type { ConsultaCreatePayload } from "../../../../api/consultas/types";
+import { usePacientesQuery } from "../../../../api/pacientes/hooks";
+import type { DuracaoMinutos, MeioPagamento, TipoConsulta } from "../../../../domain/enums/statusConsulta";
+import { useAuth } from "../../../../context/useAuth";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import Input from "../../../../components/form/Input";
 import SelectField, { type SelectOption } from "../../../../components/form/SelectField/SelectField";
 import DateTimeField from "../../../../components/form/DateTimeField/DateTimeField";
-
 import SecondaryButton from "../../../../components/ui/SecondaryButton/SecondaryButton";
 import HighlightButton from "../../../../components/ui/HighlightButton/HighlightButton";
-
-import { seedPacientes } from "../../../../mocks/db/seed";
-
-import type {
-  DuracaoMinutos,
-  MeioPagamento,
-  TipoConsulta,
-} from "../../../../domain/enums/statusConsulta";
+import Panel from "../../../../components/ui/Panel/Panel";
 
 import "../base.css";
 import "./styles.css";
-import Panel from "../../../../components/ui/Panel/Panel";
 
 type ConsultaCreateForm = {
-  pacienteId: number;
+  pacienteId: number | null;
+  medicoId: number;
   medicoNome: string;
-
   dataHora: string;
   duracaoMinutos: DuracaoMinutos;
   tipo: TipoConsulta;
   motivo: string;
-
   valorConsulta: string;
   meioPagamento: MeioPagamento;
   pago: boolean;
@@ -37,30 +32,11 @@ type ConsultaCreateForm = {
 };
 
 const DURACOES: DuracaoMinutos[] = [15, 30, 45, 60];
-const TIPOS: TipoConsulta[] = ["PRESENCIAL", "TELECONSULTA", "RETORNO"];
-const MEIOS: MeioPagamento[] = ["PIX", "CARTAO", "DINHEIRO"];
 
 const duracaoOptions: readonly SelectOption<DuracaoMinutos>[] = DURACOES.map((d) => ({
   value: d,
   label: `${d} min`,
 }));
-
-const tipoOptions: readonly SelectOption<TipoConsulta>[] = TIPOS.map((t) => ({
-  value: t,
-  label: t,
-}));
-
-const pagamentoOptions: readonly SelectOption<MeioPagamento>[] = MEIOS.map((m) => ({
-  value: m,
-  label: m === "CARTAO" ? "Cartão" : m === "DINHEIRO" ? "Dinheiro" : "PIX",
-}));
-
-function toPacienteOptions(): readonly SelectOption<number>[] {
-  return seedPacientes.map((p) => ({
-    value: p.id,
-    label: `${p.primeiroNome} ${p.sobrenome}`,
-  }));
-}
 
 function toIsoLocal(d: Date) {
   const yyyy = d.getFullYear();
@@ -78,23 +54,69 @@ function normalizeDateTimeLocal(value: string): string {
   return value;
 }
 
+function parseMoneyToNumber(input: string): number {
+  const raw = (input ?? "").trim();
+  if (!raw) return 0;
+
+  const cleaned = raw.replace(/[R$\s]/g, "");
+
+  if (cleaned.includes(",")) {
+    const normalized = cleaned.replace(/\./g, "").replace(",", ".");
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export default function ConsultaCreate() {
   const navigate = useNavigate();
-  const pacienteOptions = useMemo(() => toPacienteOptions(), []);
+  const { user } = useAuth();
+  const metadataQuery = useConsultaMetadataQuery();
+  const pacientesQuery = usePacientesQuery({ size: 200, sort: "primeiroNome,asc" });
+  const createMutation = useCreateConsultaMutation();
+
+  const medicoId = Number(user?.id ?? 0);
+  const medicoNome = user?.name ?? "Profissional";
+
+  const pacienteOptions = useMemo<readonly SelectOption<number>[]>(() => {
+    return pacientesQuery.data.content.map((paciente) => ({
+      value: paciente.id,
+      label: paciente.nome,
+    }));
+  }, [pacientesQuery.data.content]);
+
+  const tipoOptions = useMemo<readonly SelectOption<TipoConsulta>[]>(() => {
+    const options = metadataQuery.data?.tipos ?? [];
+    return options
+      .filter((option): option is { code: TipoConsulta; label: string } => (
+        option.code === "PRESENCIAL" || option.code === "TELECONSULTA" || option.code === "RETORNO"
+      ))
+      .map((option) => ({ value: option.code, label: option.label }));
+  }, [metadataQuery.data]);
+
+  const pagamentoOptions = useMemo<readonly SelectOption<MeioPagamento>[]>(() => {
+    const options = metadataQuery.data?.meiosPagamento ?? [];
+    return options
+      .filter((option): option is { code: MeioPagamento; label: string } => (
+        option.code === "PIX" || option.code === "CARTAO" || option.code === "DINHEIRO"
+      ))
+      .map((option) => ({ value: option.code, label: option.label }));
+  }, [metadataQuery.data]);
 
   const [form, setForm] = useState<ConsultaCreateForm>(() => {
     const now = new Date();
     now.setMinutes(0, 0, 0);
 
     return {
-      pacienteId: seedPacientes[0]?.id ?? 1,
-      medicoNome: "Dr. João Carvalho",
-
+      pacienteId: null,
+      medicoId,
+      medicoNome,
       dataHora: toIsoLocal(now),
       duracaoMinutos: 30,
       tipo: "PRESENCIAL",
       motivo: "",
-
       valorConsulta: "",
       meioPagamento: "PIX",
       pago: false,
@@ -102,139 +124,179 @@ export default function ConsultaCreate() {
     };
   });
 
-  function save() {
-    console.log("Criar consulta (mock):", form);
-    navigate("/consultas");
+  async function save() {
+    if (!form.pacienteId) return;
+
+    const payload: ConsultaCreatePayload = {
+      dataHora: normalizeDateTimeLocal(form.dataHora),
+      tipo: form.tipo,
+      status: "AGENDADA",
+      valorConsulta: parseMoneyToNumber(form.valorConsulta),
+      meioPagamento: form.meioPagamento,
+      pago: form.pago,
+      dataPagamento: form.pago ? normalizeDateTimeLocal(form.dataPagamento || form.dataHora) : null,
+      duracaoMinutos: form.duracaoMinutos,
+      retorno: form.tipo === "RETORNO",
+      dataLimiteRetorno: null,
+      teleconsulta: form.tipo === "TELECONSULTA",
+      linkAcesso: null,
+      planoSaude: null,
+      numeroCarteirinha: null,
+      motivo: form.motivo.trim(),
+      anamnese: null,
+      exameFisico: null,
+      diagnostico: null,
+      prescricao: null,
+      observacoes: null,
+      pacienteId: form.pacienteId,
+      medicoId: form.medicoId,
+    };
+
+    const created = await createMutation.mutateAsync(payload);
+    if (created) {
+      navigate(`/consultas/${created.id}`);
+    }
   }
+
+  const error = createMutation.error ?? pacientesQuery.error ?? metadataQuery.error;
+  const isLoading = pacientesQuery.isLoading || metadataQuery.isLoading;
+  const canSave = Boolean(form.pacienteId && form.motivo.trim() && !createMutation.isPending && !isLoading);
 
   return (
     <>
-      <PageHeader title="Nova consulta"/>
+      <PageHeader title="Nova consulta" />
 
       <div className="mf-page-content">
-      <Panel title="">
-        <div className="consultas-formWrap">
-          <div className="consultas-form">
-            <div className="consultas-row2">
-              <div className="consultas-field">
-                <span className="consultas-label">Paciente</span>
-                <SelectField<number>
-                  value={form.pacienteId}
-                  onChange={(pacienteId) => setForm((s) => ({ ...s, pacienteId }))}
-                  options={pacienteOptions}
-                  ariaLabel="Selecionar paciente"
-                />
-              </div>
+        <Panel title="">
+          <div className="consultas-formWrap">
+            <div className="consultas-form">
+              {error ? <div className="mf-muted">{error}</div> : null}
 
-              <div className="consultas-field">
-                <span className="consultas-label">Médico</span>
-                <Input value={form.medicoNome} disabled />
-              </div>
-            </div>
-
-            <div className="consultas-row3">
-              <div className="consultas-field">
-                <span className="consultas-label">Data/Hora</span>
-                <DateTimeField
-                  value={normalizeDateTimeLocal(form.dataHora)}
-                  onChange={(dataHora) => setForm((s) => ({ ...s, dataHora: normalizeDateTimeLocal(dataHora) }))}
-                  step={60}
-                  aria-label="Data e hora"
-                />
-              </div>
-
-              <div className="consultas-field">
-                <span className="consultas-label">Duração</span>
-                <SelectField<DuracaoMinutos>
-                  value={form.duracaoMinutos}
-                  onChange={(duracaoMinutos) => setForm((s) => ({ ...s, duracaoMinutos }))}
-                  options={duracaoOptions}
-                  ariaLabel="Selecionar duração"
-                />
-              </div>
-
-              <div className="consultas-field">
-                <span className="consultas-label">Tipo</span>
-                <SelectField<TipoConsulta>
-                  value={form.tipo}
-                  onChange={(tipo) => setForm((s) => ({ ...s, tipo }))}
-                  options={tipoOptions}
-                  ariaLabel="Selecionar tipo"
-                />
-              </div>
-            </div>
-
-            <div className="consultas-field">
-              <span className="consultas-label">Motivo</span>
-              <textarea
-                className="consultas-textarea"
-                value={form.motivo}
-                onChange={(e) => setForm((s) => ({ ...s, motivo: e.target.value }))}
-                placeholder="Descreva a queixa principal..."
-              />
-            </div>
-
-            <div className="consultas-divider" />
-
-            {/* Pagamento */}
-            <div className="consultas-rowPay">
-              <div className="consultas-field">
-                <span className="consultas-label">Valor (R$)</span>
-                <Input
-                  value={form.valorConsulta}
-                  onChange={(e) => setForm((s) => ({ ...s, valorConsulta: e.target.value }))}
-                  placeholder="150,00"
-                />
-              </div>
-
-              <div className="consultas-field">
-                <span className="consultas-label">Meio de pagamento</span>
-                <SelectField<MeioPagamento>
-                  value={form.meioPagamento}
-                  onChange={(meioPagamento) => setForm((s) => ({ ...s, meioPagamento }))}
-                  options={pagamentoOptions}
-                  ariaLabel="Selecionar meio de pagamento"
-                />
-              </div>
-
-              <div className="consultas-fieldInline">
-                <label className="consultas-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={form.pago}
-                    onChange={(e) =>
-                      setForm((s) => ({
-                        ...s,
-                        pago: e.target.checked,
-                        dataPagamento: e.target.checked ? (s.dataPagamento || s.dataHora) : "",
-                      }))
-                    }
+              <div className="consultas-row2">
+                <div className="consultas-field">
+                  <span className="consultas-label">Paciente</span>
+                  <SelectField<number>
+                    value={form.pacienteId}
+                    onChange={(pacienteId) => setForm((s) => ({ ...s, pacienteId }))}
+                    options={pacienteOptions}
+                    placeholder={isLoading ? "Carregando pacientes..." : "Selecionar paciente"}
+                    ariaLabel="Selecionar paciente"
+                    disabled={isLoading || pacienteOptions.length === 0}
                   />
-                  <span>Pago</span>
-                </label>
-              </div>
-            </div>
+                </div>
 
-            {form.pago ? (
+                <div className="consultas-field">
+                  <span className="consultas-label">Médico</span>
+                  <Input value={form.medicoNome} disabled />
+                </div>
+              </div>
+
+              <div className="consultas-row3">
+                <div className="consultas-field">
+                  <span className="consultas-label">Data/Hora</span>
+                  <DateTimeField
+                    value={normalizeDateTimeLocal(form.dataHora)}
+                    onChange={(dataHora) => setForm((s) => ({ ...s, dataHora: normalizeDateTimeLocal(dataHora) }))}
+                    step={60}
+                    aria-label="Data e hora"
+                  />
+                </div>
+
+                <div className="consultas-field">
+                  <span className="consultas-label">Duração</span>
+                  <SelectField<DuracaoMinutos>
+                    value={form.duracaoMinutos}
+                    onChange={(duracaoMinutos) => setForm((s) => ({ ...s, duracaoMinutos }))}
+                    options={duracaoOptions}
+                    ariaLabel="Selecionar duração"
+                  />
+                </div>
+
+                <div className="consultas-field">
+                  <span className="consultas-label">Tipo</span>
+                  <SelectField<TipoConsulta>
+                    value={form.tipo}
+                    onChange={(tipo) => setForm((s) => ({ ...s, tipo }))}
+                    options={tipoOptions}
+                    ariaLabel="Selecionar tipo"
+                    disabled={tipoOptions.length === 0}
+                  />
+                </div>
+              </div>
+
               <div className="consultas-field">
-                <span className="consultas-label">Data do pagamento</span>
-                <DateTimeField
-                  value={normalizeDateTimeLocal(form.dataPagamento)}
-                  onChange={(v) => setForm((s) => ({ ...s, dataPagamento: normalizeDateTimeLocal(v) }))}
-                  step={60}
-                  aria-label="Data do pagamento"
+                <span className="consultas-label">Motivo</span>
+                <textarea
+                  className="consultas-textarea"
+                  value={form.motivo}
+                  onChange={(e) => setForm((s) => ({ ...s, motivo: e.target.value }))}
+                  placeholder="Descreva a queixa principal..."
                 />
               </div>
-            ) : null}
 
-            <div className="consultas-actionsBottom">
-              <SecondaryButton onClick={() => navigate("/consultas")}>Cancelar</SecondaryButton>
-              <HighlightButton onClick={save}>Salvar</HighlightButton>
+              <div className="consultas-divider" />
+
+              <div className="consultas-rowPay">
+                <div className="consultas-field">
+                  <span className="consultas-label">Valor (R$)</span>
+                  <Input
+                    value={form.valorConsulta}
+                    onChange={(e) => setForm((s) => ({ ...s, valorConsulta: e.target.value }))}
+                    placeholder="150,00"
+                  />
+                </div>
+
+                <div className="consultas-field">
+                  <span className="consultas-label">Meio de pagamento</span>
+                  <SelectField<MeioPagamento>
+                    value={form.meioPagamento}
+                    onChange={(meioPagamento) => setForm((s) => ({ ...s, meioPagamento }))}
+                    options={pagamentoOptions}
+                    ariaLabel="Selecionar meio de pagamento"
+                    disabled={pagamentoOptions.length === 0}
+                  />
+                </div>
+
+                <div className="consultas-fieldInline">
+                  <label className="consultas-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={form.pago}
+                      onChange={(e) =>
+                        setForm((s) => ({
+                          ...s,
+                          pago: e.target.checked,
+                          dataPagamento: e.target.checked ? (s.dataPagamento || s.dataHora) : "",
+                        }))
+                      }
+                    />
+                    <span>Pago</span>
+                  </label>
+                </div>
+              </div>
+
+              {form.pago ? (
+                <div className="consultas-field">
+                  <span className="consultas-label">Data do pagamento</span>
+                  <DateTimeField
+                    value={normalizeDateTimeLocal(form.dataPagamento)}
+                    onChange={(v) => setForm((s) => ({ ...s, dataPagamento: normalizeDateTimeLocal(v) }))}
+                    step={60}
+                    aria-label="Data do pagamento"
+                  />
+                </div>
+              ) : null}
+
+              <div className="consultas-actionsBottom">
+                <SecondaryButton onClick={() => navigate("/consultas")}>Cancelar</SecondaryButton>
+                <HighlightButton onClick={() => void save()} disabled={!canSave}>
+                  {createMutation.isPending ? "Salvando..." : "Salvar"}
+                </HighlightButton>
+              </div>
             </div>
           </div>
-        </div>
-      </Panel>
-    </div>
+        </Panel>
+      </div>
     </>
   );
 }
