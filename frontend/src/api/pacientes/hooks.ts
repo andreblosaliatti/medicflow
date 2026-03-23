@@ -19,7 +19,8 @@ import type {
 const EMPTY_PARAMS: PacienteListParams = {};
 
 export function usePacientesQuery(params?: PacienteListParams) {
-  const stableParams = useMemo(() => params ?? EMPTY_PARAMS, [params]);
+  const serializedParams = JSON.stringify(params ?? EMPTY_PARAMS);
+  const stableParams = useMemo(() => JSON.parse(serializedParams) as PacienteListParams, [serializedParams]);
 
   const queryFn = useCallback(() => {
     return listPacientesRows(stableParams);

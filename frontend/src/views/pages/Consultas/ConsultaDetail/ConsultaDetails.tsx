@@ -1,19 +1,12 @@
-// src/views/pages/Consultas/ConsultaDetails.tsx
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { useConsultaDetailsQuery, useFinishConsultaMutation, useStartConsultaMutation } from "../../../../api/consultas/hooks";
+import type { ConsultaDetailsViewModel } from "../../../../api/consultas/types";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../../components/ui/Card";
 import PrimaryButton from "../../../../components/ui/PrimaryButton/PrimaryButton";
 import SecondaryButton from "../../../../components/ui/SecondaryButton/SecondaryButton";
-
-import {
-  toConsultaDetailsModel,
-  type ConsultaDetailsModel,
-  iniciarAtendimento,
-  finalizarAtendimento,
-} from "../../../../mocks/mappers";
-
 import type { StatusConsulta } from "../../../../domain/enums/statusConsulta";
 
 import "./styles.css";
@@ -30,154 +23,181 @@ function canFinish(status: StatusConsulta) {
 export default function ConsultaDetails() {
   const navigate = useNavigate();
   const { id } = useParams();
-
-  const consulta: ConsultaDetailsModel | null = useMemo(() => {
-    if (!id) return null;
-    return toConsultaDetailsModel(id);
+  const consultaId = useMemo(() => {
+    const parsed = Number(id);
+    return Number.isFinite(parsed) ? parsed : null;
   }, [id]);
 
-  if (!consulta) {
+  const { data: consulta, isLoading, error } = useConsultaDetailsQuery(consultaId);
+  const startMutation = useStartConsultaMutation();
+  const finishMutation = useFinishConsultaMutation();
+
+  async function handlePrimaryAction(current: ConsultaDetailsViewModel) {
+    if (canStart(current.status)) {
+      const started = await startMutation.mutateAsync(Number(current.id));
+      if (started) {
+        navigate(`/consultas/${current.id}/atendimento`, { replace: true });
+      }
+      return;
+    }
+
+    if (canFinish(current.status)) {
+      const finished = await finishMutation.mutateAsync(Number(current.id));
+      if (finished) {
+        navigate(`/consultas/${current.id}`, { replace: true });
+      }
+      return;
+    }
+
+    navigate(`/consultas/${current.id}/editar`);
+  }
+
+  if (consultaId === null) {
     return (
       <div className="consultas-page">
-        <PageHeader title="Consulta" subtitle="Não encontrada" />
+        <PageHeader title="Consulta" subtitle="Identificador inválido" />
       </div>
     );
   }
 
-  const status = consulta.status as StatusConsulta;
+  if (isLoading) {
+    return (
+      <div className="consultas-page">
+        <PageHeader title="Consulta" subtitle="Carregando detalhes" />
+      </div>
+    );
+  }
 
-  // PageHeader aceita só 1 action -> aqui fica a ação principal contextual.
-  const headerActionLabel = canStart(status)
+  if (!consulta) {
+    return (
+      <div className="consultas-page">
+        <PageHeader title="Consulta" subtitle={error ?? "Não encontrada"} />
+      </div>
+    );
+  }
+
+  const headerActionLabel = canStart(consulta.status)
     ? "Iniciar atendimento"
-    : canFinish(status)
+    : canFinish(consulta.status)
       ? "Finalizar atendimento"
       : "Editar";
 
-  const onHeaderAction = () => {
-    if (canStart(status)) {
-      iniciarAtendimento(consulta.id);
-      navigate(`/consultas/${consulta.id}/atendimento`);
-      return;
-    }
-    if (canFinish(status)) {
-      finalizarAtendimento(consulta.id);
-      navigate(`/consultas/${consulta.id}`);
-      return;
-    }
-    navigate(`/consultas/${consulta.id}/editar`);
-  };
+  const workflowError = startMutation.error ?? finishMutation.error;
+  const workflowPending = startMutation.isPending || finishMutation.isPending;
 
   return (
     <>
       <PageHeader
         title={`Consulta • ${consulta.pacienteNome}`}
         actionLabel={headerActionLabel}
-        onAction={onHeaderAction} />
-      
+        onAction={() => void handlePrimaryAction(consulta)}
+      />
+
       <div className="mf-page-content">
-      <div className="consultas-detailsGrid">
-        <Card>
-          <div className="consultas-detailHeader">
-            <span className={`mf-badge mf-badge--${consulta.statusTone}`}>
-              {consulta.statusLabel}
-            </span>
-          </div>
-
-          <div className="consultas-kv">
-            <div className="consultas-kvItem">
-              <span className="consultas-k">Médico</span>
-              <span className="consultas-v">{consulta.medicoNome}</span>
+        <div className="consultas-detailsGrid">
+          <Card>
+            <div className="consultas-detailHeader">
+              <span className={`mf-badge mf-badge--${consulta.statusTone}`}>
+                {consulta.statusLabel}
+              </span>
             </div>
 
-            <div className="consultas-kvItem">
-              <span className="consultas-k">Tipo</span>
-              <span className="consultas-v">{consulta.tipo}</span>
-            </div>
-
-            <div className="consultas-kvItem">
-              <span className="consultas-k">Duração</span>
-              <span className="consultas-v">{consulta.duracaoMinutos} min</span>
-            </div>
-
-            <div className="consultas-kvItem">
-              <span className="consultas-k">Sala</span>
-              <span className="consultas-v">{consulta.sala ?? "—"}</span>
-            </div>
-
-            <div className="consultas-kvItem">
-              <span className="consultas-k">Contato</span>
-              <span className="consultas-v">{consulta.telefoneContato ?? "—"}</span>
-            </div>
-          </div>
-
-          <div className="consultas-block">
-            <div className="consultas-blockTitle">Motivo</div>
-            <div className="consultas-blockBody">{consulta.motivo || "—"}</div>
-          </div>
-
-          <div className="consultas-actionsBottom">
-            {canStart(status) && (
-              <PrimaryButton
-                onClick={() => {
-                  iniciarAtendimento(consulta.id);
-                  navigate(`/consultas/${consulta.id}/atendimento`);
-                }}
-              >
-                Iniciar atendimento
-              </PrimaryButton>
-            )}
-
-            {canFinish(status) && (
-              <PrimaryButton
-                onClick={() => {
-                  finalizarAtendimento(consulta.id);
-                  navigate(`/consultas/${consulta.id}`);
-                }}
-              >
-                Finalizar atendimento
-              </PrimaryButton>
-            )}
-
-            <SecondaryButton onClick={() => navigate(`/consultas/${consulta.id}/editar`)}>
-              Editar
-            </SecondaryButton>
-
-            <SecondaryButton onClick={() => navigate("/consultas")}>
-              Voltar
-            </SecondaryButton>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="consultas-block">
-            <div className="consultas-blockTitle">Financeiro</div>
+            {workflowError ? <div className="mf-muted">{workflowError}</div> : null}
+            {error ? <div className="mf-muted">{error}</div> : null}
 
             <div className="consultas-kv">
               <div className="consultas-kvItem">
-                <span className="consultas-k">Valor</span>
-                <span className="consultas-v">{consulta.valorConsultaLabel}</span>
+                <span className="consultas-k">Data/Hora</span>
+                <span className="consultas-v">{consulta.dataHoraLabel}</span>
               </div>
 
               <div className="consultas-kvItem">
-                <span className="consultas-k">Pago</span>
-                <span className="consultas-v">{consulta.pagoLabel}</span>
+                <span className="consultas-k">Paciente</span>
+                <span className="consultas-v">{consulta.pacienteNome}</span>
               </div>
 
               <div className="consultas-kvItem">
-                <span className="consultas-k">Meio</span>
-                <span className="consultas-v">{consulta.meioPagamentoLabel}</span>
+                <span className="consultas-k">Médico</span>
+                <span className="consultas-v">{consulta.medicoNome}</span>
+              </div>
+
+              <div className="consultas-kvItem">
+                <span className="consultas-k">Tipo</span>
+                <span className="consultas-v">{consulta.tipo}</span>
+              </div>
+
+              <div className="consultas-kvItem">
+                <span className="consultas-k">Duração</span>
+                <span className="consultas-v">{consulta.duracaoMinutos} min</span>
+              </div>
+
+              <div className="consultas-kvItem">
+                <span className="consultas-k">Sala</span>
+                <span className="consultas-v">{consulta.sala ?? "—"}</span>
+              </div>
+
+              <div className="consultas-kvItem">
+                <span className="consultas-k">Link</span>
+                <span className="consultas-v">{consulta.linkAcesso ?? "—"}</span>
               </div>
             </div>
-          </div>
 
-          <div className="consultas-actionsBottom">
-            <PrimaryButton onClick={() => navigate("/consultas")}>
-              Voltar
-            </PrimaryButton>
-          </div>
-        </Card>
+            <div className="consultas-block">
+              <div className="consultas-blockTitle">Motivo</div>
+              <div className="consultas-blockBody">{consulta.motivo || "—"}</div>
+            </div>
+
+            <div className="consultas-actionsBottom">
+              {canStart(consulta.status) ? (
+                <PrimaryButton onClick={() => void handlePrimaryAction(consulta)} disabled={workflowPending}>
+                  Iniciar atendimento
+                </PrimaryButton>
+              ) : null}
+
+              {canFinish(consulta.status) ? (
+                <PrimaryButton onClick={() => void handlePrimaryAction(consulta)} disabled={workflowPending}>
+                  Finalizar atendimento
+                </PrimaryButton>
+              ) : null}
+
+              <SecondaryButton onClick={() => navigate(`/consultas/${consulta.id}/editar`)}>
+                Editar
+              </SecondaryButton>
+
+              <SecondaryButton onClick={() => navigate("/consultas")}>
+                Voltar
+              </SecondaryButton>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="consultas-block">
+              <div className="consultas-blockTitle">Financeiro</div>
+
+              <div className="consultas-kv">
+                <div className="consultas-kvItem">
+                  <span className="consultas-k">Valor</span>
+                  <span className="consultas-v">{consulta.valorConsultaLabel}</span>
+                </div>
+
+                <div className="consultas-kvItem">
+                  <span className="consultas-k">Pago</span>
+                  <span className="consultas-v">{consulta.pagoLabel}</span>
+                </div>
+
+                <div className="consultas-kvItem">
+                  <span className="consultas-k">Meio</span>
+                  <span className="consultas-v">{consulta.meioPagamentoLabel}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="consultas-actionsBottom">
+              <PrimaryButton onClick={() => navigate("/consultas")}>Voltar</PrimaryButton>
+            </div>
+          </Card>
+        </div>
       </div>
-    </div>
     </>
   );
 }

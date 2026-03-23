@@ -4,7 +4,7 @@ import Drawer from "../ui/Drawer/Drawer";
 import SecondaryButton from "../ui/SecondaryButton/SecondaryButton";
 import HighlightButton from "../ui/HighlightButton/HighlightButton";
 import Input from "../form/Input";
-import SelectField from "../form/SelectField/SelectField";
+import SelectField, { type SelectOption } from "../form/SelectField/SelectField";
 import DateTimeField from "../form/DateTimeField/DateTimeField";
 
 import type {
@@ -17,44 +17,34 @@ import type {
 import "./styles.css";
 
 export type ConsultaDraft = {
-  pacienteId: string;
+  pacienteId: number | null;
   pacienteNome: string;
-
-  medicoId: string;
+  medicoId: number;
   medicoNome: string;
-
-  dataHora: string; // yyyy-mm-ddThh:mm
+  dataHora: string;
   duracaoMinutos: DuracaoMinutos;
-
   tipo: TipoConsulta;
-
   motivo: string;
-
   teleconsulta: boolean;
   linkAcesso: string;
-
   retorno: boolean;
   dataLimiteRetorno: string;
-
   valorConsulta: string;
   meioPagamento: MeioPagamento;
   pago: boolean;
   dataPagamento: string;
-
-  status: StatusConsulta; // sempre AGENDADA no create
+  status: StatusConsulta;
 };
 
 type Props = {
   open: boolean;
   mode: "create" | "edit";
   initialValue: ConsultaDraft | null;
-
-  doctorId: string;
+  doctorId: number;
   doctorName: string;
-
-  // ✅ ADD (opcional)
+  patientOptions: readonly SelectOption<number>[];
   lockPaciente?: boolean;
-
+  isSaving?: boolean;
   onClose: () => void;
   onSave: (data: ConsultaDraft) => void;
 };
@@ -68,31 +58,24 @@ function toIsoLocal(d: Date) {
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
 }
 
-function emptyDraft(doctorId: string, doctorName: string): ConsultaDraft {
+function emptyDraft(doctorId: number, doctorName: string): ConsultaDraft {
   const now = new Date();
   now.setMinutes(0, 0, 0);
 
   return {
-    pacienteId: "",
+    pacienteId: null,
     pacienteNome: "",
-
     medicoId: doctorId,
     medicoNome: doctorName,
-
     dataHora: toIsoLocal(now),
     duracaoMinutos: 30,
-
     tipo: "PRESENCIAL",
     status: "AGENDADA",
-
     motivo: "",
-
     teleconsulta: false,
     linkAcesso: "",
-
     retorno: false,
     dataLimiteRetorno: "",
-
     valorConsulta: "",
     meioPagamento: "PIX",
     pago: false,
@@ -125,7 +108,9 @@ export default function ConsultaFormDrawer({
   initialValue,
   doctorId,
   doctorName,
+  patientOptions,
   lockPaciente,
+  isSaving = false,
   onClose,
   onSave,
 }: Props) {
@@ -139,17 +124,16 @@ export default function ConsultaFormDrawer({
   }, [open]);
 
   const base = useMemo<ConsultaDraft>(() => {
-    const v = initialValue ?? emptyDraft(doctorId, doctorName);
+    const value = initialValue ?? emptyDraft(doctorId, doctorName);
     return {
-      ...v,
+      ...value,
       medicoId: doctorId,
       medicoNome: doctorName,
-      status: mode === "create" ? "AGENDADA" : v.status,
+      status: mode === "create" ? "AGENDADA" : value.status,
     };
   }, [initialValue, doctorId, doctorName, mode]);
 
   const [form, setForm] = useState<ConsultaDraft>(base);
-
   const title = mode === "create" ? "Novo agendamento" : "Editar agendamento";
 
   function set<K extends keyof ConsultaDraft>(key: K, value: ConsultaDraft[K]) {
@@ -166,6 +150,8 @@ export default function ConsultaFormDrawer({
     onSave(payload);
   }
 
+  const canSave = Boolean(form.pacienteId && form.motivo.trim() && !isSaving);
+
   return (
     <Drawer
       open={open}
@@ -180,11 +166,20 @@ export default function ConsultaFormDrawer({
         <div className="consultaDrawerGrid2">
           <div className="consultaDrawerField">
             <label className="consultaDrawerLabel">Paciente</label>
-            <Input
-              value={form.pacienteNome}
-              onChange={(e) => set("pacienteNome", e.target.value)}
-              placeholder="Nome do paciente"
-              disabled={Boolean(lockPaciente)}
+            <SelectField<number>
+              value={form.pacienteId}
+              onChange={(pacienteId) => {
+                const option = patientOptions.find((item) => item.value === pacienteId) ?? null;
+                setForm((prev) => ({
+                  ...prev,
+                  pacienteId,
+                  pacienteNome: option?.label ?? prev.pacienteNome,
+                }));
+              }}
+              options={patientOptions}
+              placeholder="Selecione o paciente"
+              ariaLabel="Paciente"
+              disabled={Boolean(lockPaciente) || patientOptions.length === 0}
             />
           </div>
 
@@ -199,7 +194,7 @@ export default function ConsultaFormDrawer({
             <label className="consultaDrawerLabel">Data e hora</label>
             <DateTimeField
               value={form.dataHora}
-              onChange={(v) => set("dataHora", v)}
+              onChange={(value) => set("dataHora", value)}
               step={60}
               aria-label="Data e hora"
             />
@@ -209,7 +204,7 @@ export default function ConsultaFormDrawer({
             <label className="consultaDrawerLabel">Duração</label>
             <SelectField<DuracaoMinutos>
               value={form.duracaoMinutos}
-              onChange={(v) => set("duracaoMinutos", v)}
+              onChange={(value) => set("duracaoMinutos", value)}
               placeholder="Duração"
               options={duracaoOptions}
             />
@@ -220,12 +215,12 @@ export default function ConsultaFormDrawer({
           <label className="consultaDrawerLabel">Tipo</label>
           <SelectField<TipoConsulta>
             value={form.tipo}
-            onChange={(v) => {
-              set("tipo", v);
-              set("teleconsulta", v === "TELECONSULTA");
-              set("retorno", v === "RETORNO");
-              if (v !== "TELECONSULTA") set("linkAcesso", "");
-              if (v !== "RETORNO") set("dataLimiteRetorno", "");
+            onChange={(value) => {
+              set("tipo", value);
+              set("teleconsulta", value === "TELECONSULTA");
+              set("retorno", value === "RETORNO");
+              if (value !== "TELECONSULTA") set("linkAcesso", "");
+              if (value !== "RETORNO") set("dataLimiteRetorno", "");
             }}
             placeholder="Selecione"
             options={tipoOptions}
@@ -248,7 +243,7 @@ export default function ConsultaFormDrawer({
             <label className="consultaDrawerLabel">Data limite para retorno</label>
             <DateTimeField
               value={form.dataLimiteRetorno}
-              onChange={(v) => set("dataLimiteRetorno", v)}
+              onChange={(value) => set("dataLimiteRetorno", value)}
               step={60}
               aria-label="Data limite para retorno"
             />
@@ -281,7 +276,7 @@ export default function ConsultaFormDrawer({
             <label className="consultaDrawerLabel">Meio de pagamento</label>
             <SelectField<MeioPagamento>
               value={form.meioPagamento}
-              onChange={(v) => set("meioPagamento", v)}
+              onChange={(value) => set("meioPagamento", value)}
               placeholder="Selecione"
               options={pagamentoOptions}
             />
@@ -292,7 +287,13 @@ export default function ConsultaFormDrawer({
               <input
                 type="checkbox"
                 checked={form.pago}
-                onChange={(e) => set("pago", e.target.checked)}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    pago: e.target.checked,
+                    dataPagamento: e.target.checked ? (prev.dataPagamento || prev.dataHora) : "",
+                  }))
+                }
               />
               <span>Pago</span>
             </label>
@@ -304,7 +305,7 @@ export default function ConsultaFormDrawer({
             <label className="consultaDrawerLabel">Data do pagamento</label>
             <DateTimeField
               value={form.dataPagamento}
-              onChange={(v) => set("dataPagamento", v)}
+              onChange={(value) => set("dataPagamento", value)}
               step={60}
               aria-label="Data do pagamento"
             />
@@ -313,7 +314,9 @@ export default function ConsultaFormDrawer({
 
         <div className="consultaDrawerActions">
           <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>
-          <HighlightButton onClick={submit}>Salvar</HighlightButton>
+          <HighlightButton onClick={submit} disabled={!canSave}>
+            {isSaving ? "Salvando..." : "Salvar"}
+          </HighlightButton>
         </div>
       </div>
     </Drawer>

@@ -1,27 +1,61 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useConfirmConsultaMutation, useTodayConsultasQuery } from "../../../api/consultas/hooks";
 import AppPage from "../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import StatCard from "../../../components/ui/StatCard";
 import Card from "../../../components/ui/Card";
 import ConsultaItem from "../../../components/consulta/ConsultaItem";
 
-import { toConsultasHojeItems } from "../../../mocks/mappers";
-
 import "./styles.css";
+
+function toLocalDateTimeParam(date: Date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mi = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;
+}
+
+function startOfToday() {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return toLocalDateTimeParam(date);
+}
+
+function endOfToday() {
+  const date = new Date();
+  date.setHours(23, 59, 59, 999);
+  return toLocalDateTimeParam(date);
+}
 
 export default function DoctorDashboard() {
   const navigate = useNavigate();
+  const consultasQuery = useTodayConsultasQuery({
+    dataHoraInicio: startOfToday(),
+    dataHoraFim: endOfToday(),
+    size: 100,
+    sort: "dataHora,asc",
+  });
+  const confirmMutation = useConfirmConsultaMutation();
 
-  const consultasHoje = useMemo(() => toConsultasHojeItems(), []);
+  const consultasHoje = consultasQuery.data;
   const totalHoje = consultasHoje.length;
 
   const proxima = useMemo(() => {
     if (!consultasHoje.length) return null;
-    const sorted = [...consultasHoje].sort((a, b) => a.hora.localeCompare(b.hora));
-    return sorted[0];
+    return consultasHoje[0];
   }, [consultasHoje]);
+
+  async function handleConfirm(id: string) {
+    const updated = await confirmMutation.mutateAsync(Number(id));
+    if (updated) {
+      void consultasQuery.refetch();
+    }
+  }
 
   return (
     <AppPage
@@ -34,7 +68,7 @@ export default function DoctorDashboard() {
               label: "Nova Consulta",
               variant: "primary",
               icon: "➕",
-              onClick: () => navigate("/agenda/nova-consulta"),
+              onClick: () => navigate("/consultas/nova"),
             },
             {
               label: "Agenda",
@@ -95,14 +129,14 @@ export default function DoctorDashboard() {
             <span>Agenda Hoje</span>
           </div>
 
-          <button
-            className="link-btn"
-            type="button"
-            onClick={() => navigate("/agenda")}
-          >
+          <button className="link-btn" type="button" onClick={() => navigate("/agenda")}>
             Ver agenda completa
           </button>
         </div>
+
+        {(consultasQuery.error || confirmMutation.error) ? (
+          <div className="mf-muted">{consultasQuery.error ?? confirmMutation.error}</div>
+        ) : null}
 
         <div className="table-wrap">
           <table className="table">
@@ -117,20 +151,20 @@ export default function DoctorDashboard() {
             </thead>
 
             <tbody>
-              {consultasHoje.length === 0 ? (
+              {!consultasQuery.isLoading && consultasHoje.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="table-empty">
                     Nenhuma consulta agendada para hoje.
                   </td>
                 </tr>
               ) : (
-                consultasHoje.map((c) => (
+                consultasHoje.map((consulta) => (
                   <ConsultaItem
-                    key={c.id}
-                    data={c}
-                    onView={(id) => navigate(`/consultas/${id}`)}
-                    onConfirm={(id) => console.log("Confirmar", id)}
-                    onMore={(id) => console.log("Mais", id)}
+                    key={consulta.id}
+                    data={consulta}
+                    onView={(currentId) => navigate(`/consultas/${currentId}`)}
+                    onConfirm={(currentId) => void handleConfirm(currentId)}
+                    onMore={(currentId) => navigate(`/consultas/${currentId}`)}
                   />
                 ))
               )}
@@ -151,35 +185,19 @@ export default function DoctorDashboard() {
           </div>
 
           <div className="quick-grid">
-            <button
-              className="quick-tile"
-              type="button"
-              onClick={() => navigate("/pacientes")}
-            >
+            <button className="quick-tile" type="button" onClick={() => navigate("/pacientes")}>
               👥 <span>Pacientes</span>
             </button>
 
-            <button
-              className="quick-tile"
-              type="button"
-              onClick={() => navigate("/agenda")}
-            >
+            <button className="quick-tile" type="button" onClick={() => navigate("/agenda")}>
               🗓️ <span>Agenda</span>
             </button>
 
-            <button
-              className="quick-tile"
-              type="button"
-              onClick={() => navigate("/consultas")}
-            >
+            <button className="quick-tile" type="button" onClick={() => navigate("/consultas")}>
               🩺 <span>Consultas</span>
             </button>
 
-            <button
-              className="quick-tile"
-              type="button"
-              onClick={() => navigate("/pendencias")}
-            >
+            <button className="quick-tile" type="button" onClick={() => navigate("/pendencias")}>
               ⚠️ <span>Pendências</span>
             </button>
           </div>
