@@ -78,6 +78,20 @@ class MedicamentoServiceTest {
     }
 
     @Test
+    void listarHistoricoPorPacienteMustQueryByPacienteId() {
+        Long pacienteId = 11L;
+        var pageable = PageRequest.of(0, 10);
+
+        when(pacienteRepository.existsByIdAndAtivoTrue(pacienteId)).thenReturn(true);
+        when(medicamentoPrescritoRepository.findByConsultaPacienteId(pacienteId, pageable))
+                .thenReturn(new PageImpl<>(List.of()));
+
+        service.listarHistoricoPorPaciente(pacienteId, pageable);
+
+        verify(medicamentoPrescritoRepository).findByConsultaPacienteId(pacienteId, pageable);
+    }
+
+    @Test
     void adicionarMedicamentoMustReturnBusinessRuleWhenNameAndBaseAreMissing() {
         Long consultaId = 10L;
         MedicamentoPrescritoDTO dto = new MedicamentoPrescritoDTO(null, null, "500mg", "8/8h", "Oral");

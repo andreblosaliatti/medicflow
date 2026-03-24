@@ -7,6 +7,7 @@ import com.inflowia.medicflow.dto.exame.ExameSolicitadoUpdateDTO;
 import com.inflowia.medicflow.domain.consulta.Consulta;
 import com.inflowia.medicflow.domain.exame.ExameBase;
 import com.inflowia.medicflow.domain.exame.ExameSolicitado;
+import com.inflowia.medicflow.domain.exame.StatusExame;
 import com.inflowia.medicflow.repository.ConsultaRepository;
 import com.inflowia.medicflow.repository.ExameBaseRepository;
 import com.inflowia.medicflow.repository.ExameSolicitadoRepository;
@@ -22,6 +23,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.EnumSet;
+import java.util.Set;
 
 @Service
 public class ExameSolicitadoService {
@@ -74,6 +79,7 @@ public class ExameSolicitadoService {
         ExameSolicitado entity = exameSolicitadoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_SOLICITADO_NOT_FOUND, ExceptionMessages.notFound("Exame solicitado")));
 
+        validatePatch(entity, dto);
         entity.setStatus(dto.getStatus());
         entity.setDataColeta(dto.getDataColeta());
         entity.setDataResultado(dto.getDataResultado());
@@ -87,6 +93,8 @@ public class ExameSolicitadoService {
     public ExameSolicitadoDetailsDTO atualizarParcialmente(Long id, ExameSolicitadoPatchDTO dto) {
         ExameSolicitado entity = exameSolicitadoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_SOLICITADO_NOT_FOUND, ExceptionMessages.notFound("Exame solicitado")));
+
+        validatePatch(entity, dto);
 
         if (dto.getStatus() != null) {
             entity.setStatus(dto.getStatus());
@@ -177,6 +185,52 @@ public class ExameSolicitadoService {
         ExameBase exameBase = exameBaseRepository.findById(dto.getExameBaseId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_BASE_NOT_FOUND, ExceptionMessages.notFound("Exame base")));
         entity.setExameBase(exameBase);
+    }
+
+    private void validatePatch(ExameSolicitado entity, ExameSolicitadoPatchDTO dto) {
+        validateStatusTransition(entity, dto);
+        validateDateConsistency(entity, dto);
+    }
+
+    private void validateStatusTransition(ExameSolicitado entity, ExameSolicitadoPatchDTO dto) {
+        if (dto.getStatus() == null || entity.getStatus() == null) {
+            return;
+        }
+
+        Set<StatusExame> allowedTargets = switch (entity.getStatus()) {
+            case SOLICITADO -> EnumSet.of(
+                    StatusExame.SOLICITADO,
+                    StatusExame.AGENDADO,
+                    StatusExame.REALIZADO,
+                    StatusExame.CANCELADO
+            );
+            case AGENDADO -> EnumSet.of(
+                    StatusExame.AGENDADO,
+                    StatusExame.REALIZADO,
+                    StatusExame.CANCELADO
+            );
+            case REALIZADO -> EnumSet.of(StatusExame.REALIZADO);
+            case CANCELADO -> EnumSet.of(StatusExame.CANCELADO);
+        };
+
+        if (!allowedTargets.contains(dto.getStatus())) {
+            throw new BusinessRuleException(
+                    ErrorCodes.EXAME_SOLICITADO_BUSINESS_RULE,
+                    "Transição de status de exame não permitida."
+            );
+        }
+    }
+
+    private void validateDateConsistency(ExameSolicitado entity, ExameSolicitadoPatchDTO dto) {
+        LocalDateTime dataColeta = dto.getDataColeta() != null ? dto.getDataColeta() : entity.getDataColeta();
+        LocalDateTime dataResultado = dto.getDataResultado() != null ? dto.getDataResultado() : entity.getDataResultado();
+
+        if (dataColeta != null && dataResultado != null && dataResultado.isBefore(dataColeta)) {
+            throw new BusinessRuleException(
+                    ErrorCodes.EXAME_SOLICITADO_BUSINESS_RULE,
+                    "A data de resultado não pode ser anterior à data de coleta."
+            );
+        }
     }
 
 }
