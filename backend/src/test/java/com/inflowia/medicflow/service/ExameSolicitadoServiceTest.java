@@ -18,11 +18,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 class ExameSolicitadoServiceTest {
@@ -98,6 +103,36 @@ class ExameSolicitadoServiceTest {
         assertEquals(LocalDateTime.of(2026, 3, 20, 9, 0), result.getDataColeta());
         assertEquals(dataResultado, result.getDataResultado());
         assertEquals("Jejum de 8h", result.getObservacoes());
+    }
+
+    @Test
+    void listarPorPacienteMustQueryRepositoryWithPacienteId() throws Exception {
+        injectDependencies();
+        Long pacienteId = 7L;
+        var pageable = PageRequest.of(0, 10);
+
+        when(pacienteRepository.existsByIdAndAtivoTrue(pacienteId)).thenReturn(true);
+        when(exameSolicitadoRepository.findByConsultaPacienteId(pacienteId, pageable))
+                .thenReturn(new PageImpl<>(List.of(exameSolicitadoComPaciente())));
+
+        service.listarPorPaciente(pacienteId, pageable);
+
+        verify(exameSolicitadoRepository).findByConsultaPacienteId(pacienteId, pageable);
+    }
+
+    @Test
+    void atualizarParcialmenteMustRejectInvalidStatusTransition() throws Exception {
+        injectDependencies();
+        ExameSolicitado entity = exameSolicitadoComPaciente();
+        entity.setStatus(StatusExame.CANCELADO);
+        ExameSolicitadoPatchDTO dto = new ExameSolicitadoPatchDTO(StatusExame.AGENDADO, null, null, null);
+
+        when(exameSolicitadoRepository.findById(1L)).thenReturn(Optional.of(entity));
+
+        assertThrows(
+                com.inflowia.medicflow.exception.BusinessRuleException.class,
+                () -> service.atualizarParcialmente(1L, dto)
+        );
     }
 
     private void injectDependencies() throws Exception {

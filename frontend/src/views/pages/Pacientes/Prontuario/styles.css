@@ -91,6 +91,10 @@
   background: rgba(32, 201, 151, 0.18);
 }
 
-.prontuario-chip-resultado {
-  background: rgba(24, 198, 232, 0.14);
+.prontuario-chip-agendado {
+  background: rgba(255, 176, 32, 0.28);
+}
+
+.prontuario-chip-cancelado {
+  background: rgba(239, 68, 68, 0.18);
 }
