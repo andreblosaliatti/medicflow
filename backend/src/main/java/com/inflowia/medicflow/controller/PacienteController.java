@@ -2,6 +2,7 @@ package com.inflowia.medicflow.controller;
 
 import com.inflowia.medicflow.dto.paciente.PacienteDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteListDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteProntuarioDetailsDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteProfileDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteUpdateDTO;
 import com.inflowia.medicflow.service.PacienteService;
@@ -75,6 +76,12 @@ public class PacienteController {
     @PreAuthorize("hasAuthority('pacientes:read')")
     public ResponseEntity<PacienteProfileDTO> buscarPerfil(@PathVariable Long id) {
         return ResponseEntity.ok(service.buscarPerfil(id));
+    }
+
+    @GetMapping("/{id}/prontuario")
+    @PreAuthorize("hasAuthority('pacientes:read')")
+    public ResponseEntity<PacienteProntuarioDetailsDTO> buscarProntuario(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarProntuario(id));
     }
 
     @PutMapping("/{id}")

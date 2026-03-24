@@ -1,10 +1,17 @@
 package com.inflowia.medicflow.service;
 
 import com.inflowia.medicflow.domain.consulta.Consulta;
+import com.inflowia.medicflow.domain.exame.ExameSolicitado;
+import com.inflowia.medicflow.domain.medicamento.MedicamentoPrescrito;
 import com.inflowia.medicflow.domain.paciente.Paciente;
 import com.inflowia.medicflow.dto.paciente.PacienteDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteHistoricoResumoDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteListDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteProntuarioConsultaDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteProntuarioDetailsDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteProntuarioDiagnosticoDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteProntuarioExameDTO;
+import com.inflowia.medicflow.dto.paciente.PacienteProntuarioMedicacaoDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteProfileDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteUltimaConsultaResumoDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteUpdateDTO;
@@ -27,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class PacienteService {
@@ -110,6 +118,49 @@ public class PacienteService {
         );
 
         return new PacienteProfileDTO(paciente, historico);
+    }
+
+    @Transactional(readOnly = true)
+    public PacienteProntuarioDetailsDTO buscarProntuario(Long id) {
+        Paciente paciente = getPacienteAtivo(id);
+        List<Consulta> consultas = consultaRepository.findByPacienteIdOrderByDataHoraDesc(id);
+        List<MedicamentoPrescrito> medicamentos = medicamentoPrescritoRepository.findByConsultaPacienteId(id);
+        List<ExameSolicitado> exames = exameSolicitadoRepository.findByConsultaPacienteId(id);
+
+        Map<Long, List<PacienteProntuarioMedicacaoDTO>> medicacoesPorConsulta = medicamentos.stream()
+                .collect(Collectors.groupingBy(
+                        med -> med.getConsulta().getId(),
+                        Collectors.mapping(this::toProntuarioMedicacao, Collectors.toList())
+                ));
+
+        Map<Long, List<PacienteProntuarioExameDTO>> examesPorConsulta = exames.stream()
+                .collect(Collectors.groupingBy(
+                        exame -> exame.getConsulta().getId(),
+                        Collectors.mapping(this::toProntuarioExame, Collectors.toList())
+                ));
+
+        List<PacienteProntuarioConsultaDTO> consultasDto = consultas.stream()
+                .map(consulta -> new PacienteProntuarioConsultaDTO(
+                        consulta.getId(),
+                        consulta.getDataHora(),
+                        composeNomeMedico(consulta),
+                        consulta.getMotivo(),
+                        consulta.getAnamnese(),
+                        consulta.getExameFisico(),
+                        consulta.getObservacoes(),
+                        toDiagnosticos(consulta.getDiagnostico()),
+                        medicacoesPorConsulta.getOrDefault(consulta.getId(), List.of()),
+                        examesPorConsulta.getOrDefault(consulta.getId(), List.of())
+                ))
+                .toList();
+
+        return new PacienteProntuarioDetailsDTO(
+                paciente.getId(),
+                composeNomePaciente(paciente),
+                paciente.getCpf(),
+                paciente.getDataNascimento(),
+                consultasDto
+        );
     }
 
     @Transactional
@@ -213,5 +264,56 @@ public class PacienteService {
         if (dto.getEndereco() != null) {
             entidade.setEndereco(dto.getEndereco().toEntity());
         }
+    }
+
+    private List<PacienteProntuarioDiagnosticoDTO> toDiagnosticos(String diagnostico) {
+        if (!StringUtils.hasText(diagnostico)) {
+            return List.of();
+        }
+        return List.of(new PacienteProntuarioDiagnosticoDTO(diagnostico.trim()));
+    }
+
+    private PacienteProntuarioMedicacaoDTO toProntuarioMedicacao(MedicamentoPrescrito medicamento) {
+        return new PacienteProntuarioMedicacaoDTO(
+                medicamento.getNome(),
+                medicamento.getDosagem(),
+                composePosologia(medicamento.getFrequencia(), medicamento.getVia())
+        );
+    }
+
+    private PacienteProntuarioExameDTO toProntuarioExame(ExameSolicitado exame) {
+        String nomeExame = exame.getExameBase() != null ? exame.getExameBase().getNome() : null;
+        return new PacienteProntuarioExameDTO(nomeExame, exame.getStatus());
+    }
+
+    private String composePosologia(String frequencia, String via) {
+        String freqNormalizada = StringUtils.hasText(frequencia) ? frequencia.trim() : null;
+        String viaNormalizada = StringUtils.hasText(via) ? via.trim() : null;
+
+        if (freqNormalizada == null && viaNormalizada == null) {
+            return null;
+        }
+        if (freqNormalizada == null) {
+            return viaNormalizada;
+        }
+        if (viaNormalizada == null) {
+            return freqNormalizada;
+        }
+        return freqNormalizada + " • " + viaNormalizada;
+    }
+
+    private String composeNomePaciente(Paciente paciente) {
+        String primeiroNome = paciente.getPrimeiroNome() != null ? paciente.getPrimeiroNome().trim() : "";
+        String sobrenome = paciente.getSobrenome() != null ? paciente.getSobrenome().trim() : "";
+        return (primeiroNome + " " + sobrenome).trim();
+    }
+
+    private String composeNomeMedico(Consulta consulta) {
+        if (consulta.getMedico() == null) {
+            return null;
+        }
+        String nome = consulta.getMedico().getNome() != null ? consulta.getMedico().getNome().trim() : "";
+        String sobrenome = consulta.getMedico().getSobrenome() != null ? consulta.getMedico().getSobrenome().trim() : "";
+        return (nome + " " + sobrenome).trim();
     }
 }
