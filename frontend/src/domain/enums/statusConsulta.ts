@@ -3,7 +3,8 @@ export type StatusConsulta =
   | "CONFIRMADA"
   | "EM_ATENDIMENTO"
   | "CONCLUIDA"
-  | "CANCELADA";
+  | "CANCELADA"
+  | "NAO_COMPARECEU";
 
 export type TipoConsulta =
   | "PRESENCIAL"
@@ -12,4 +13,4 @@ export type TipoConsulta =
 
 export type DuracaoMinutos = 15 | 30 | 45 | 60;
 
-export type MeioPagamento = "PIX" | "CARTAO" | "DINHEIRO";
+export type MeioPagamento = "DEBITO" | "CREDITO" | "PIX" | "DINHEIRO";

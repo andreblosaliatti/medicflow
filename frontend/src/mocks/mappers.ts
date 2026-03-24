@@ -60,7 +60,8 @@ export type AppointmentStatus =
   | "CONFIRMADA"
   | "EM_ATENDIMENTO"
   | "CONCLUIDA"
-  | "CANCELADA";
+  | "CANCELADA"
+  | "NAO_COMPARECEU";
 
 export type AppointmentEvent = {
   id: string;

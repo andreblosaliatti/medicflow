@@ -9,7 +9,7 @@ import java.util.Set;
 
 public enum MeioPagamento {
     DEBITO("Débito", "DEBIT", "CARTAO_DEBITO"),
-    CREDITO("Crédito", "CREDIT", "CARTAO_CREDITO"),
+    CREDITO("Crédito", "CREDIT", "CARTAO_CREDITO", "CARTAO"),
     PIX("Pix"),
     DINHEIRO("Dinheiro", "CASH");
 

@@ -19,5 +19,10 @@ export type SessionUserViewModel = SessionData["user"];
 export type AuthSessionViewModel = SessionData;
 
 export function isUserRole(value: string): value is UserRole {
-  return value === "MEDICO" || value === "SECRETARIA" || value === "ADMIN";
+  return value === "ADMIN"
+    || value === "MEDICO"
+    || value === "SECRETARIA"
+    || value === "ATENDENTE"
+    || value === "ENFERMEIRO"
+    || value === "PACIENTE";
 }

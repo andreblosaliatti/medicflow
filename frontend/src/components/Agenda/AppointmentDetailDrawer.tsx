@@ -97,8 +97,9 @@ const duracaoOptions = [
 ] as const;
 
 const pagamentoOptions = [
+  { value: "DEBITO", label: "Cartão de débito" },
+  { value: "CREDITO", label: "Cartão de crédito" },
   { value: "PIX", label: "PIX" },
-  { value: "CARTAO", label: "Cartão" },
   { value: "DINHEIRO", label: "Dinheiro" },
 ] as const;
 

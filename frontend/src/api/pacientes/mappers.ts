@@ -1,4 +1,6 @@
 import { mapPageResponse } from "../shared/types";
+import { statusLabel } from "../../domain/ui/statusLabel";
+import type { StatusConsulta } from "../../domain/enums/statusConsulta";
 import type {
   EnderecoApi,
   PacienteApi,
@@ -104,6 +106,23 @@ function formatAddressFull(endereco: EnderecoApi | null | undefined) {
   return parts.join(" • ") || "Endereço não informado";
 }
 
+function normalizeStatus(value: string | null | undefined): StatusConsulta | null {
+  if (!value) return null;
+
+  if (
+    value === "AGENDADA"
+    || value === "CONFIRMADA"
+    || value === "EM_ATENDIMENTO"
+    || value === "CONCLUIDA"
+    || value === "CANCELADA"
+    || value === "NAO_COMPARECEU"
+  ) {
+    return value;
+  }
+
+  return null;
+}
+
 export function emptyPacienteForm(): PacienteFormValues {
   return {
     id: 0,
@@ -175,6 +194,7 @@ export function toPacienteRows(page: PacienteListResponse): PacienteRowsPageView
 
 export function toPacienteProfileViewModel(api: PacienteProfileApi): PacienteProfileViewModel {
   const ultimaConsulta = api.historico.ultimaConsulta;
+  const consultaStatus = normalizeStatus(ultimaConsulta?.status);
 
   return {
     id: api.id,
@@ -201,7 +221,7 @@ export function toPacienteProfileViewModel(api: PacienteProfileApi): PacientePro
             dataLabel: formatDate(ultimaConsulta.dataHora),
             horaLabel: formatTime(ultimaConsulta.dataHora),
             medicoNome: ultimaConsulta.medicoNome?.trim() || "Profissional não informado",
-            statusLabel: toTitleCase(ultimaConsulta.status),
+            statusLabel: consultaStatus ? statusLabel(consultaStatus) : toTitleCase(ultimaConsulta.status),
             tipoLabel: toTitleCase(ultimaConsulta.tipo),
             motivo: ultimaConsulta.motivo?.trim() || "Motivo não informado",
           }

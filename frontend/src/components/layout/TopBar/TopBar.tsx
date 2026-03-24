@@ -16,7 +16,10 @@ function initials(name: string) {
 function formatRole(role: UserRole) {
   if (role === "MEDICO") return "Médico";
   if (role === "SECRETARIA") return "Secretaria";
-  return "Admin";
+  if (role === "ATENDENTE") return "Atendente";
+  if (role === "ENFERMEIRO") return "Enfermeiro";
+  if (role === "PACIENTE") return "Paciente";
+  return "Administrador";
 }
 
 type Props = {
