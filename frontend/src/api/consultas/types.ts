@@ -197,3 +197,12 @@ export type ConsultaTodayItemViewModel = {
   profissional: string;
   status: string;
 };
+
+
+export type OperationalPendingPriority = "ALTA" | "MEDIA" | "BAIXA";
+
+export type OperationalPendingItemViewModel = ConsultaRowViewModel & {
+  pendenciaLabel: string;
+  prioridade: OperationalPendingPriority;
+  prioridadeTone: "danger" | "warn" | "muted";
+};
