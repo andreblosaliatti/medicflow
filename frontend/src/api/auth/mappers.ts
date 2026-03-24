@@ -1,7 +1,7 @@
 import type { AuthSessionViewModel, LoginResponse, SessionUserViewModel } from "./types";
 import { isUserRole } from "./types";
 
-const ROLE_PRIORITY = ["ADMIN", "MEDICO", "SECRETARIA"] as const;
+const ROLE_PRIORITY = ["ADMIN", "MEDICO", "SECRETARIA", "ATENDENTE", "ENFERMEIRO", "PACIENTE"] as const;
 
 function resolveRole(roles: string[]): SessionUserViewModel["role"] {
   const normalized = roles.filter(isUserRole);

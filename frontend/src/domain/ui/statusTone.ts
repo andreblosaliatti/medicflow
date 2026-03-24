@@ -12,5 +12,7 @@ export function statusTone(status: StatusConsulta) {
       return "neutral";
     case "CANCELADA":
       return "danger";
+    case "NAO_COMPARECEU":
+      return "neutral";
   }
 }

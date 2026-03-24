@@ -18,16 +18,16 @@ export type ProntuarioExame = {
 };
 
 export type ProntuarioConsulta = {
-  id: string;
+  id: number;
   dataHora: string;
-  medicoNome: string;
-  motivo: string;
-  anamnese?: string;
-  exameFisico?: string;
+  medicoNome: string | null;
+  motivo: string | null;
+  anamnese: string | null;
+  exameFisico: string | null;
   diagnosticos: ProntuarioDiagnostico[];
   medicacoes: ProntuarioMedicacao[];
   exames: ProntuarioExame[];
-  observacoes?: string;
+  observacoes: string | null;
 };
 
 export type ProntuarioPaciente = {

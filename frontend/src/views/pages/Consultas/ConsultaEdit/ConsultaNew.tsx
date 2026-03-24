@@ -24,6 +24,7 @@ type ConsultaCreateForm = {
   dataHora: string;
   duracaoMinutos: DuracaoMinutos;
   tipo: TipoConsulta;
+  linkAcesso: string;
   motivo: string;
   valorConsulta: string;
   meioPagamento: MeioPagamento;
@@ -100,7 +101,10 @@ export default function ConsultaCreate() {
     const options = metadataQuery.data?.meiosPagamento ?? [];
     return options
       .filter((option): option is { code: MeioPagamento; label: string } => (
-        option.code === "PIX" || option.code === "CARTAO" || option.code === "DINHEIRO"
+        option.code === "DEBITO"
+        || option.code === "CREDITO"
+        || option.code === "PIX"
+        || option.code === "DINHEIRO"
       ))
       .map((option) => ({ value: option.code, label: option.label }));
   }, [metadataQuery.data]);
@@ -116,6 +120,7 @@ export default function ConsultaCreate() {
       dataHora: toIsoLocal(now),
       duracaoMinutos: 30,
       tipo: "PRESENCIAL",
+      linkAcesso: "",
       motivo: "",
       valorConsulta: "",
       meioPagamento: "PIX",
@@ -139,7 +144,7 @@ export default function ConsultaCreate() {
       retorno: form.tipo === "RETORNO",
       dataLimiteRetorno: null,
       teleconsulta: form.tipo === "TELECONSULTA",
-      linkAcesso: null,
+      linkAcesso: form.tipo === "TELECONSULTA" ? form.linkAcesso.trim() : null,
       planoSaude: null,
       numeroCarteirinha: null,
       motivo: form.motivo.trim(),
@@ -160,7 +165,8 @@ export default function ConsultaCreate() {
 
   const error = createMutation.error ?? pacientesQuery.error ?? metadataQuery.error;
   const isLoading = pacientesQuery.isLoading || metadataQuery.isLoading;
-  const canSave = Boolean(form.pacienteId && form.motivo.trim() && !createMutation.isPending && !isLoading);
+  const hasValidTeleconsultaLink = form.tipo !== "TELECONSULTA" || Boolean(form.linkAcesso.trim());
+  const canSave = Boolean(form.pacienteId && form.motivo.trim() && hasValidTeleconsultaLink && !createMutation.isPending && !isLoading);
 
   return (
     <>
@@ -216,7 +222,11 @@ export default function ConsultaCreate() {
                   <span className="consultas-label">Tipo</span>
                   <SelectField<TipoConsulta>
                     value={form.tipo}
-                    onChange={(tipo) => setForm((s) => ({ ...s, tipo }))}
+                    onChange={(tipo) => setForm((s) => ({
+                      ...s,
+                      tipo,
+                      linkAcesso: tipo === "TELECONSULTA" ? s.linkAcesso : "",
+                    }))}
                     options={tipoOptions}
                     ariaLabel="Selecionar tipo"
                     disabled={tipoOptions.length === 0}
@@ -224,6 +234,17 @@ export default function ConsultaCreate() {
                 </div>
               </div>
 
+
+              {form.tipo === "TELECONSULTA" ? (
+                <div className="consultas-field">
+                  <span className="consultas-label">Link de acesso</span>
+                  <Input
+                    value={form.linkAcesso}
+                    onChange={(e) => setForm((s) => ({ ...s, linkAcesso: e.target.value }))}
+                    placeholder="https://..."
+                  />
+                </div>
+              ) : null}
               <div className="consultas-field">
                 <span className="consultas-label">Motivo</span>
                 <textarea

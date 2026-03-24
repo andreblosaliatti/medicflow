@@ -15,16 +15,21 @@ type LoginResponse = {
   token: string;
 };
 
-const ROLE_PRIORITY: readonly UserRole[] = ["ADMIN", "MEDICO", "SECRETARIA"];
+const ROLE_PRIORITY: readonly UserRole[] = ["ADMIN", "MEDICO", "SECRETARIA", "ATENDENTE", "ENFERMEIRO", "PACIENTE"];
 
 function isUserRole(value: string): value is UserRole {
-  return value === "MEDICO" || value === "SECRETARIA" || value === "ADMIN";
+  return value === "ADMIN"
+    || value === "MEDICO"
+    || value === "SECRETARIA"
+    || value === "ATENDENTE"
+    || value === "ENFERMEIRO"
+    || value === "PACIENTE";
 }
 
 function resolveRole(roles: string[]): UserRole {
   const normalized = roles.filter(isUserRole);
   const prioritized = ROLE_PRIORITY.find((role) => normalized.includes(role));
-  return prioritized ?? "ADMIN";
+  return prioritized ?? "MEDICO";
 }
 
 function toSessionData(response: LoginResponse, payload: LoginPayload): SessionData {

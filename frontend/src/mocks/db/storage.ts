@@ -40,8 +40,10 @@ function normalizeConsulta(c: Partial<ConsultaDTO>): ConsultaDTO {
   const pago = typeof c.pago === "boolean" ? c.pago : false;
 
   const meioPagamento =
-    c.meioPagamento === "PIX" || c.meioPagamento === "CARTAO" || c.meioPagamento === "DINHEIRO"
+    c.meioPagamento === "DEBITO" || c.meioPagamento === "CREDITO" || c.meioPagamento === "PIX" || c.meioPagamento === "DINHEIRO"
       ? c.meioPagamento
+      : c.meioPagamento === "CARTAO"
+        ? "CREDITO"
       : "PIX";
 
   const dataPagamento = typeof c.dataPagamento === "string" ? c.dataPagamento : "";

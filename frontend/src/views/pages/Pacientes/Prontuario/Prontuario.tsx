@@ -88,7 +88,7 @@ export default function ProntuarioPage() {
                     {formatDateTime(c.dataHora)}
                   </div>
                   <div className="prontuario-medico">
-                    {c.medicoNome}
+                    {c.medicoNome || "Profissional não informado"}
                   </div>
                 </div>
 
@@ -101,7 +101,7 @@ export default function ProntuarioPage() {
               <div className="prontuario-section">
                 <div className="prontuario-label">Motivo</div>
                 <div className="prontuario-text">
-                  {c.motivo}
+                  {(!c.motivo || !c.motivo.trim()) ? "—" : c.motivo}
                 </div>
               </div>
 

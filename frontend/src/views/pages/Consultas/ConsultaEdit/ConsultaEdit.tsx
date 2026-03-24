@@ -24,6 +24,7 @@ type ConsultaFormModel = {
   dataHora: string;
   duracaoMinutos: DuracaoMinutos;
   tipo: TipoConsulta;
+  linkAcesso: string;
   motivo: string;
   valorConsulta: string;
   meioPagamento: MeioPagamento;
@@ -73,6 +74,7 @@ function toFormModel(details: ConsultaDetailsViewModel): ConsultaFormModel {
     dataHora: normalizeDateTimeLocal(details.dataHora),
     duracaoMinutos: (details.duracaoMinutos as DuracaoMinutos) || 30,
     tipo: details.tipo,
+    linkAcesso: details.linkAcesso ?? "",
     motivo: details.motivo === "—" ? "" : details.motivo,
     valorConsulta: formatMoneyBR(details.valorConsulta),
     meioPagamento: details.meioPagamento ?? "PIX",
@@ -113,7 +115,10 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
     const options = metadataQuery.data?.meiosPagamento ?? [];
     return options
       .filter((option): option is { code: MeioPagamento; label: string } => (
-        option.code === "PIX" || option.code === "CARTAO" || option.code === "DINHEIRO"
+        option.code === "DEBITO"
+        || option.code === "CREDITO"
+        || option.code === "PIX"
+        || option.code === "DINHEIRO"
       ))
       .map((option) => ({ value: option.code, label: option.label }));
   }, [metadataQuery.data]);
@@ -133,7 +138,7 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
       retorno: current.tipo === "RETORNO",
       dataLimiteRetorno: null,
       teleconsulta: current.tipo === "TELECONSULTA",
-      linkAcesso: null,
+      linkAcesso: current.tipo === "TELECONSULTA" ? current.linkAcesso.trim() : null,
       planoSaude: null,
       numeroCarteirinha: null,
     };
@@ -153,7 +158,8 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
   }
 
   const error = updateMutation.error ?? pacientesQuery.error ?? metadataQuery.error;
-  const canSave = Boolean(form.pacienteId && form.motivo.trim() && !updateMutation.isPending);
+  const hasValidTeleconsultaLink = form.tipo !== "TELECONSULTA" || Boolean(form.linkAcesso.trim());
+  const canSave = Boolean(form.pacienteId && form.motivo.trim() && hasValidTeleconsultaLink && !updateMutation.isPending);
 
   if (!canEditConsulta(initialDetails.status)) {
     return (
@@ -219,7 +225,11 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
                   <span className="consultas-label">Tipo</span>
                   <SelectField<TipoConsulta>
                     value={form.tipo}
-                    onChange={(tipo) => setForm((current) => ({ ...current, tipo }))}
+                    onChange={(tipo) => setForm((current) => ({
+                      ...current,
+                      tipo,
+                      linkAcesso: tipo === "TELECONSULTA" ? current.linkAcesso : "",
+                    }))}
                     options={tipoOptions}
                     ariaLabel="Selecionar tipo"
                     disabled={tipoOptions.length === 0}
@@ -227,6 +237,17 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
                 </div>
               </div>
 
+
+              {form.tipo === "TELECONSULTA" ? (
+                <div className="consultas-field">
+                  <span className="consultas-label">Link de acesso</span>
+                  <Input
+                    value={form.linkAcesso}
+                    onChange={(e) => setForm((current) => ({ ...current, linkAcesso: e.target.value }))}
+                    placeholder="https://..."
+                  />
+                </div>
+              ) : null}
               <div className="consultas-field">
                 <span className="consultas-label">Motivo</span>
                 <textarea

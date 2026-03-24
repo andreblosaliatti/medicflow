@@ -204,7 +204,7 @@ export const seedConsultas: ConsultaDTO[] = [
     telefoneContato: "(51) 98822-3344",
     valorConsulta: 220,
     pago: false,
-    meioPagamento: "CARTAO",
+    meioPagamento: "CREDITO",
     dataPagamento: "",
   },
   {
@@ -289,7 +289,7 @@ export const seedConsultas: ConsultaDTO[] = [
     telefoneContato: "(51) 98822-3344",
     valorConsulta: 250,
     pago: true,
-    meioPagamento: "CARTAO",
+    meioPagamento: "DEBITO",
     dataPagamento: "2026-02-13T11:00",
   },
   {

@@ -28,15 +28,30 @@ function normalizeTipo(tipo: string | null | undefined): TipoConsulta {
 }
 
 function normalizeMeioPagamento(meioPagamento: string | null | undefined): MeioPagamento | null {
-  if (meioPagamento === "PIX" || meioPagamento === "CARTAO" || meioPagamento === "DINHEIRO") {
+  if (
+    meioPagamento === "DEBITO"
+    || meioPagamento === "CREDITO"
+    || meioPagamento === "PIX"
+    || meioPagamento === "DINHEIRO"
+  ) {
     return meioPagamento;
+  }
+
+  if (meioPagamento === "CARTAO") {
+    return "CREDITO";
   }
 
   return null;
 }
 
 function normalizeStatus(status: string | null | undefined): StatusConsulta {
-  if (status === "CONFIRMADA" || status === "EM_ATENDIMENTO" || status === "CONCLUIDA" || status === "CANCELADA") {
+  if (
+    status === "CONFIRMADA"
+    || status === "EM_ATENDIMENTO"
+    || status === "CONCLUIDA"
+    || status === "CANCELADA"
+    || status === "NAO_COMPARECEU"
+  ) {
     return status;
   }
 
@@ -70,7 +85,8 @@ function formatMoneyBR(value: number | null | undefined) {
 }
 
 function formatMeioPagamento(value: MeioPagamento | null) {
-  if (value === "CARTAO") return "Cartão";
+  if (value === "DEBITO") return "Cartão de débito";
+  if (value === "CREDITO") return "Cartão de crédito";
   if (value === "DINHEIRO") return "Dinheiro";
   if (value === "PIX") return "PIX";
   return "—";
