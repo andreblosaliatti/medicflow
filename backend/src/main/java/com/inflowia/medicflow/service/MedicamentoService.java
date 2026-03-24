@@ -18,6 +18,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,6 +120,13 @@ public class MedicamentoService {
                 .frequencia(dados.getFrequencia().trim())
                 .via(dados.getVia().trim())
                 .consulta(consulta)
+                .paciente(consulta.getPaciente())
+                .dataInicio(
+                        consulta.getDataHora() != null
+                                ? consulta.getDataHora().toLocalDate()
+                                : LocalDate.now()
+                )
+                .ativo(true)
                 .build();
 
         consulta.getMedicamentoPrescrito().add(prescrito);
