@@ -1,7 +1,12 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useConfirmConsultaMutation, useTodayConsultasQuery } from "../../../api/consultas/hooks";
+import {
+  useConfirmConsultaMutation,
+  useOperationalPendingItemsQuery,
+  useTodayConsultasQuery,
+  useUpcomingAppointmentsQuery,
+} from "../../../api/consultas/hooks";
 import AppPage from "../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import StatCard from "../../../components/ui/StatCard";
@@ -20,40 +25,79 @@ function toLocalDateTimeParam(date: Date) {
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;
 }
 
-function startOfToday() {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  return toLocalDateTimeParam(date);
+function dayRange(offsetDays = 0) {
+  const start = new Date();
+  start.setDate(start.getDate() + offsetDays);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setHours(23, 59, 59, 999);
+
+  return {
+    start: toLocalDateTimeParam(start),
+    end: toLocalDateTimeParam(end),
+  };
 }
 
-function endOfToday() {
-  const date = new Date();
-  date.setHours(23, 59, 59, 999);
-  return toLocalDateTimeParam(date);
+function nextDaysRange(daysAhead: number) {
+  const start = new Date();
+  start.setSeconds(0, 0);
+
+  const end = new Date(start);
+  end.setDate(end.getDate() + daysAhead);
+  end.setHours(23, 59, 59, 999);
+
+  return {
+    start: toLocalDateTimeParam(start),
+    end: toLocalDateTimeParam(end),
+  };
 }
 
 export default function DoctorDashboard() {
   const navigate = useNavigate();
+  const today = dayRange();
+  const upcoming = nextDaysRange(7);
+
   const consultasQuery = useTodayConsultasQuery({
-    dataHoraInicio: startOfToday(),
-    dataHoraFim: endOfToday(),
+    dataHoraInicio: today.start,
+    dataHoraFim: today.end,
     size: 100,
     sort: "dataHora,asc",
   });
+
+  const upcomingQuery = useUpcomingAppointmentsQuery({
+    dataHoraInicio: upcoming.start,
+    dataHoraFim: upcoming.end,
+    size: 100,
+    sort: "dataHora,asc",
+  });
+
+  const pendingQuery = useOperationalPendingItemsQuery({
+    dataHoraInicio: upcoming.start,
+    dataHoraFim: upcoming.end,
+    size: 100,
+    sort: "dataHora,asc",
+  });
+
   const confirmMutation = useConfirmConsultaMutation();
 
   const consultasHoje = consultasQuery.data;
   const totalHoje = consultasHoje.length;
+  const totalPendencias = pendingQuery.data.length;
 
-  const proxima = useMemo(() => {
+  const proximaHoje = useMemo(() => {
     if (!consultasHoje.length) return null;
     return consultasHoje[0];
   }, [consultasHoje]);
 
+  const proximaAgendada = upcomingQuery.data[0] ?? null;
+
   async function handleConfirm(id: string) {
     const updated = await confirmMutation.mutateAsync(Number(id));
     if (updated) {
-      void consultasQuery.refetch();
+      await consultasQuery.refetch();
+      await upcomingQuery.refetch();
+      await pendingQuery.refetch();
     }
   }
 
@@ -96,24 +140,24 @@ export default function DoctorDashboard() {
 
           <StatCard
             title="Próxima Consulta"
-            value={proxima ? proxima.hora : "—"}
-            subtitle={proxima ? proxima.paciente : "Sem consultas hoje"}
+            value={proximaHoje ? proximaHoje.hora : "—"}
+            subtitle={proximaHoje ? proximaHoje.paciente : "Sem consultas hoje"}
             tone="green"
             icon="🕒"
           />
 
           <StatCard
-            title="Pacientes Novos"
-            value={0}
-            subtitle="na semana"
+            title="Próximos Agendamentos"
+            value={upcomingQuery.data.length}
+            subtitle={proximaAgendada ? `${proximaAgendada.pacienteNome} • ${proximaAgendada.dataHoraLabel}` : "Sem próximos agendamentos"}
             tone="amber"
-            icon="👥"
+            icon="📆"
           />
 
           <StatCard
             title="Pendências"
-            value={0}
-            subtitle="exames para revisar"
+            value={totalPendencias}
+            subtitle="fluxos operacionais em aberto"
             tone="gray"
             icon="⚠️"
           />
@@ -134,8 +178,8 @@ export default function DoctorDashboard() {
           </button>
         </div>
 
-        {(consultasQuery.error || confirmMutation.error) ? (
-          <div className="mf-muted">{consultasQuery.error ?? confirmMutation.error}</div>
+        {(consultasQuery.error || confirmMutation.error || upcomingQuery.error || pendingQuery.error) ? (
+          <div className="mf-muted">{consultasQuery.error ?? confirmMutation.error ?? upcomingQuery.error ?? pendingQuery.error}</div>
         ) : null}
 
         <div className="table-wrap">
@@ -214,12 +258,12 @@ export default function DoctorDashboard() {
           </div>
 
           <div className="quick-grid">
-            <button className="quick-tile quick-tile--disabled" type="button" disabled>
-              🧪 <span>Exames</span>
+            <button className="quick-tile" type="button" onClick={() => navigate("/pendencias")}>
+              ⚠️ <span>{totalPendencias} pendências</span>
             </button>
 
-            <button className="quick-tile quick-tile--disabled" type="button" disabled>
-              📝 <span>Laudos</span>
+            <button className="quick-tile" type="button" onClick={() => navigate("/consultas")}> 
+              📆 <span>{upcomingQuery.data.length} agendamentos</span>
             </button>
 
             <button className="quick-tile quick-tile--disabled" type="button" disabled>

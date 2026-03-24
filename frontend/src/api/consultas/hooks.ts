@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+
 import { useApiMutation, useApiQuery } from "../shared/hooks";
 import {
   cancelConsulta,
@@ -10,11 +11,12 @@ import {
   listAgendaEvents,
   listConsultasByPacienteId,
   listConsultasRows,
+  listOperationalPendingItems,
   listTodayConsultas,
+  listUpcomingAppointments,
   startConsulta,
   updateConsulta,
 } from "./service";
-import { notifyConsultasChanged, subscribeConsultasChanged } from "./events";
 import type {
   AppointmentEventViewModel,
   ConsultaCreatePayload,
@@ -25,51 +27,45 @@ import type {
   ConsultaRowViewModel,
   ConsultaTodayItemViewModel,
   ConsultaUpdatePayload,
+  OperationalPendingItemViewModel,
 } from "./types";
 
 const EMPTY_PARAMS: ConsultaListParams = {};
 
-function useConsultasVersion() {
-  const [version, setVersion] = useState(0);
-
-  useEffect(() => subscribeConsultasChanged(() => setVersion((current) => current + 1)), []);
-
-  return version;
+function useStableParams<TParams>(params: TParams): TParams {
+  const serializedParams = JSON.stringify(params);
+  return useMemo(() => JSON.parse(serializedParams) as TParams, [serializedParams]);
 }
 
-async function runAndNotify<TResult>(action: () => Promise<TResult>) {
-  const result = await action();
-  notifyConsultasChanged();
-  return result;
+function useMutationWithRefresh<TVariables>(
+  mutationFn: (variables: TVariables) => Promise<ConsultaDetailsViewModel>,
+) {
+  return useApiMutation<TVariables, ConsultaDetailsViewModel>(mutationFn);
 }
 
 export function useConsultasQuery(params?: ConsultaListParams) {
-  const version = useConsultasVersion();
-  const serializedParams = JSON.stringify(params ?? EMPTY_PARAMS);
-  const stableParams = useMemo(() => JSON.parse(serializedParams) as ConsultaListParams, [serializedParams]);
+  const stableParams = useStableParams(params ?? EMPTY_PARAMS);
   const queryFn = useCallback(() => listConsultasRows(stableParams), [stableParams]);
 
-  return useApiQuery<ConsultaRowViewModel[]>(["consultas", "list", stableParams, version], [], queryFn);
+  return useApiQuery<ConsultaRowViewModel[]>(["consultas", "list", stableParams], [], queryFn);
 }
 
 export function useConsultasByPacienteQuery(pacienteId: number | null) {
-  const version = useConsultasVersion();
   const queryFn = useCallback(() => {
     if (pacienteId === null) return Promise.resolve([] as ConsultaHistoryRowViewModel[]);
     return listConsultasByPacienteId(pacienteId);
   }, [pacienteId]);
 
-  return useApiQuery<ConsultaHistoryRowViewModel[]>(["consultas", "paciente", pacienteId, version], [], queryFn);
+  return useApiQuery<ConsultaHistoryRowViewModel[]>(["consultas", "paciente", pacienteId], [], queryFn);
 }
 
 export function useConsultaDetailsQuery(id: number | null) {
-  const version = useConsultasVersion();
   const queryFn = useCallback(() => {
     if (id === null) return Promise.resolve(null);
     return getConsultaDetails(id);
   }, [id]);
 
-  return useApiQuery<ConsultaDetailsViewModel | null>(["consultas", "detail", id, version], null, queryFn);
+  return useApiQuery<ConsultaDetailsViewModel | null>(["consultas", "detail", id], null, queryFn);
 }
 
 export function useConsultaMetadataQuery() {
@@ -78,45 +74,53 @@ export function useConsultaMetadataQuery() {
 }
 
 export function useAgendaEventsQuery(params: ConsultaListParams) {
-  const version = useConsultasVersion();
-  const serializedParams = JSON.stringify(params);
-  const stableParams = useMemo(() => JSON.parse(serializedParams) as ConsultaListParams, [serializedParams]);
+  const stableParams = useStableParams(params);
   const queryFn = useCallback(() => listAgendaEvents(stableParams), [stableParams]);
 
-  return useApiQuery<AppointmentEventViewModel[]>(["consultas", "agenda", stableParams, version], [], queryFn);
+  return useApiQuery<AppointmentEventViewModel[]>(["consultas", "agenda", stableParams], [], queryFn);
 }
 
 export function useTodayConsultasQuery(params: ConsultaListParams) {
-  const version = useConsultasVersion();
-  const serializedParams = JSON.stringify(params);
-  const stableParams = useMemo(() => JSON.parse(serializedParams) as ConsultaListParams, [serializedParams]);
+  const stableParams = useStableParams(params);
   const queryFn = useCallback(() => listTodayConsultas(stableParams), [stableParams]);
 
-  return useApiQuery<ConsultaTodayItemViewModel[]>(["consultas", "today", stableParams, version], [], queryFn);
+  return useApiQuery<ConsultaTodayItemViewModel[]>(["consultas", "today", stableParams], [], queryFn);
+}
+
+export function useUpcomingAppointmentsQuery(params: ConsultaListParams) {
+  const stableParams = useStableParams(params);
+  const queryFn = useCallback(() => listUpcomingAppointments(stableParams), [stableParams]);
+
+  return useApiQuery<ConsultaRowViewModel[]>(["consultas", "upcoming", stableParams], [], queryFn);
+}
+
+export function useOperationalPendingItemsQuery(params: ConsultaListParams) {
+  const stableParams = useStableParams(params);
+  const queryFn = useCallback(() => listOperationalPendingItems(stableParams), [stableParams]);
+
+  return useApiQuery<OperationalPendingItemViewModel[]>(["consultas", "pending", stableParams], [], queryFn);
 }
 
 export function useCreateConsultaMutation() {
-  return useApiMutation<ConsultaCreatePayload, ConsultaDetailsViewModel>((payload) => runAndNotify(() => createConsulta(payload)));
+  return useMutationWithRefresh<ConsultaCreatePayload>((payload) => createConsulta(payload));
 }
 
 export function useUpdateConsultaMutation() {
-  return useApiMutation<{ id: number; payload: ConsultaUpdatePayload }, ConsultaDetailsViewModel>(
-    ({ id, payload }) => runAndNotify(() => updateConsulta(id, payload)),
-  );
+  return useMutationWithRefresh<{ id: number; payload: ConsultaUpdatePayload }>(({ id, payload }) => updateConsulta(id, payload));
 }
 
 export function useConfirmConsultaMutation() {
-  return useApiMutation<number, ConsultaDetailsViewModel>((id) => runAndNotify(() => confirmConsulta(id)));
+  return useMutationWithRefresh<number>((id) => confirmConsulta(id));
 }
 
 export function useCancelConsultaMutation() {
-  return useApiMutation<number, ConsultaDetailsViewModel>((id) => runAndNotify(() => cancelConsulta(id)));
+  return useMutationWithRefresh<number>((id) => cancelConsulta(id));
 }
 
 export function useStartConsultaMutation() {
-  return useApiMutation<number, ConsultaDetailsViewModel>((id) => runAndNotify(() => startConsulta(id)));
+  return useMutationWithRefresh<number>((id) => startConsulta(id));
 }
 
 export function useFinishConsultaMutation() {
-  return useApiMutation<number, ConsultaDetailsViewModel>((id) => runAndNotify(() => finishConsulta(id)));
+  return useMutationWithRefresh<number>((id) => finishConsulta(id));
 }

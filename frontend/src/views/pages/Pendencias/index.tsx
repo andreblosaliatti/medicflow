@@ -1,75 +1,102 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
+import {
+  useCancelConsultaMutation,
+  useConfirmConsultaMutation,
+  useFinishConsultaMutation,
+  useOperationalPendingItemsQuery,
+  useStartConsultaMutation,
+} from "../../../api/consultas/hooks";
+import type { OperationalPendingItemViewModel } from "../../../api/consultas/types";
 import AppPage from "../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import Panel from "../../../components/ui/Panel/Panel";
 
 import { TableWrap, Table, THead, TBody, Tr, Th, Td } from "../../../components/ui/Table/Table";
 
-import { toConsultasRows, type ConsultaRowModel } from "../../../mocks/mappers";
-
 import "./styles.css";
 
-type Priority = "ALTA" | "MEDIA" | "BAIXA";
+function toLocalDateTimeParam(date: Date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mi = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;
+}
 
-type PendenciaRow = ConsultaRowModel & {
-  pendenciaLabel: string;
-  prioridade: Priority;
-  prioridadeTone: "danger" | "warn" | "muted";
-};
+function nowToNextDaysRange(days: number) {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(end.getDate() + days);
+  end.setHours(23, 59, 59, 999);
+
+  return {
+    start: toLocalDateTimeParam(start),
+    end: toLocalDateTimeParam(end),
+  };
+}
 
 export default function PendenciasPage() {
   const navigate = useNavigate();
 
+  const range = nowToNextDaysRange(7);
+  const pendingQuery = useOperationalPendingItemsQuery({
+    dataHoraInicio: range.start,
+    dataHoraFim: range.end,
+    sort: "dataHora,asc",
+    size: 200,
+  });
+
+  const confirmMutation = useConfirmConsultaMutation();
+  const cancelMutation = useCancelConsultaMutation();
+  const startMutation = useStartConsultaMutation();
+  const finishMutation = useFinishConsultaMutation();
+
+  const mutationError = confirmMutation.error ?? cancelMutation.error ?? startMutation.error ?? finishMutation.error;
+
   const { proximas, prioritarias, outras } = useMemo(() => {
-    const now = new Date();
+    const rows = pendingQuery.data;
 
-    const all = toConsultasRows()
-      .slice()
-      .sort((a, b) => {
-        const da = parseDateFromLabel(a.dataHoraLabel)?.getTime() ?? 0;
-        const db = parseDateFromLabel(b.dataHoraLabel)?.getTime() ?? 0;
-        return da - db;
-      })
-      .map((c) => toPendenciaRow(c, now));
+    return {
+      proximas: rows.slice(0, 6),
+      prioritarias: rows.filter((item) => item.prioridade === "ALTA" || item.status === "AGENDADA").slice(0, 6),
+      outras: rows.filter((item) => item.prioridade !== "ALTA" && item.status !== "AGENDADA").slice(0, 8),
+    };
+  }, [pendingQuery.data]);
 
-    const abertas = all.filter((x) => x.status !== "CANCELADA" && x.status !== "CONCLUIDA");
+  async function handleAction(row: OperationalPendingItemViewModel) {
+    const id = Number(row.id);
 
-    const proximas = abertas
-      .filter((x) => {
-        const dt = parseDateFromLabel(x.dataHoraLabel);
-        return dt ? dt.getTime() >= now.getTime() : false;
-      })
-      .slice(0, 6);
+    if (row.status === "AGENDADA") {
+      await confirmMutation.mutateAsync(id);
+    } else if (row.status === "CONFIRMADA") {
+      const started = await startMutation.mutateAsync(id);
+      if (started) {
+        navigate(`/consultas/${row.id}/atendimento`);
+        return;
+      }
+    } else if (row.status === "EM_ATENDIMENTO") {
+      await finishMutation.mutateAsync(id);
+    }
 
-    const prioritarias = abertas
-      .filter((x) => {
-        const dt = parseDateFromLabel(x.dataHoraLabel);
-        if (!dt) return false;
-
-        const diffMs = dt.getTime() - now.getTime();
-        const isOverdue = diffMs < 0;
-        const within24h = diffMs >= 0 && diffMs <= 24 * 60 * 60 * 1000;
-
-        return isOverdue || (within24h && x.status === "AGENDADA") || x.prioridade === "ALTA";
-      })
-      .slice(0, 6);
-
-    const used = new Set([...proximas, ...prioritarias].map((x) => x.id));
-    const outras = abertas.filter((x) => !used.has(x.id)).slice(0, 8);
-
-    return { proximas, prioritarias, outras };
-  }, []);
+    await pendingQuery.refetch();
+  }
 
   return (
     <AppPage header={<PageHeader title="Pendências" />}>
       <div className="mf-page-content pendencias-page">
+        {pendingQuery.error || mutationError ? <div className="mf-muted">{pendingQuery.error ?? mutationError}</div> : null}
+
         <Panel title="Próximas Consultas" icon="🗓️">
           <PendenciasTable
             rows={proximas}
             onOpen={(id) => navigate(`/consultas/${id}`)}
-            onConfirm={(id) => console.log("Confirmar (mock):", id)}
+            onAction={(row) => void handleAction(row)}
           />
         </Panel>
 
@@ -77,7 +104,7 @@ export default function PendenciasPage() {
           <PendenciasTable
             rows={prioritarias}
             onOpen={(id) => navigate(`/consultas/${id}`)}
-            onConfirm={(id) => console.log("Confirmar (mock):", id)}
+            onAction={(row) => void handleAction(row)}
           />
         </Panel>
 
@@ -85,7 +112,7 @@ export default function PendenciasPage() {
           <PendenciasTable
             rows={outras}
             onOpen={(id) => navigate(`/consultas/${id}`)}
-            onConfirm={(id) => console.log("Confirmar (mock):", id)}
+            onAction={(row) => void handleAction(row)}
           />
         </Panel>
       </div>
@@ -96,11 +123,11 @@ export default function PendenciasPage() {
 function PendenciasTable({
   rows,
   onOpen,
-  onConfirm,
+  onAction,
 }: {
-  rows: PendenciaRow[];
+  rows: OperationalPendingItemViewModel[];
   onOpen: (id: string) => void;
-  onConfirm: (id: string) => void;
+  onAction: (row: OperationalPendingItemViewModel) => void;
 }) {
   return (
     <TableWrap>
@@ -113,7 +140,7 @@ function PendenciasTable({
             <Th style={{ width: 120 }}>Prioridade</Th>
             <Th style={{ width: 150 }}>Status</Th>
             <Th style={{ width: 140 }} align="right">
-              Confirmar
+              Ação
             </Th>
           </tr>
         </THead>
@@ -140,7 +167,7 @@ function PendenciasTable({
                     <div className="pendencias-person">
                       <div className="mf-person__name">{r.pacienteNome}</div>
                       <div className="pendencias-sub mf-muted">
-                        {r.medicoNome} • {r.sala ?? "—"}
+                        {r.medicoNome}
                       </div>
                     </div>
                   </div>
@@ -161,13 +188,13 @@ function PendenciasTable({
                 </Td>
 
                 <Td align="right" onClick={(e) => e.stopPropagation()}>
-                  {r.status === "AGENDADA" ? (
+                  {(r.status === "AGENDADA" || r.status === "CONFIRMADA" || r.status === "EM_ATENDIMENTO") ? (
                     <button
                       type="button"
                       className="pendencias-action pendencias-action--primary"
-                      onClick={() => onConfirm(r.id)}
+                      onClick={() => onAction(r)}
                     >
-                      Confirmar
+                      {r.status === "AGENDADA" ? "Confirmar" : r.status === "CONFIRMADA" ? "Iniciar" : "Finalizar"}
                     </button>
                   ) : (
                     <span className="pendencias-noaction mf-muted">—</span>
@@ -180,52 +207,6 @@ function PendenciasTable({
       </Table>
     </TableWrap>
   );
-}
-
-function toPendenciaRow(c: ConsultaRowModel, now: Date): PendenciaRow {
-  const dt = parseDateFromLabel(c.dataHoraLabel);
-  const diffMs = dt ? dt.getTime() - now.getTime() : 0;
-
-  const isOverdue = dt ? diffMs < 0 : false;
-  const within24h = dt ? diffMs >= 0 && diffMs <= 24 * 60 * 60 * 1000 : false;
-  const within3d = dt ? diffMs > 24 * 60 * 60 * 1000 && diffMs <= 3 * 24 * 60 * 60 * 1000 : false;
-
-  let prioridade: Priority = "BAIXA";
-  if (isOverdue || (within24h && c.status === "AGENDADA")) prioridade = "ALTA";
-  else if (within3d) prioridade = "MEDIA";
-
-  const prioridadeTone = prioridade === "ALTA" ? "danger" : prioridade === "MEDIA" ? "warn" : "muted";
-
-  const pendenciaLabel =
-    c.status === "AGENDADA"
-      ? "Confirmar consulta"
-      : c.status === "CONFIRMADA"
-        ? "Aguardando atendimento"
-        : c.status === "EM_ATENDIMENTO"
-          ? "Em atendimento"
-          : "Revisar";
-
-  return {
-    ...c,
-    pendenciaLabel,
-    prioridade,
-    prioridadeTone,
-  };
-}
-
-// Converte "dd/mm/yyyy hh:mm" (que vem do teu datetimeLabel) em Date
-function parseDateFromLabel(label: string): Date | null {
-  const m = label.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
-  if (!m) return null;
-
-  const dd = Number(m[1]);
-  const mm = Number(m[2]);
-  const yyyy = Number(m[3]);
-  const hh = Number(m[4]);
-  const mi = Number(m[5]);
-
-  const dt = new Date(yyyy, mm - 1, dd, hh, mi, 0, 0);
-  return Number.isNaN(dt.getTime()) ? null : dt;
 }
 
 function initials(name: string) {
