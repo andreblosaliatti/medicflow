@@ -12,5 +12,7 @@ export function statusLabel(status: StatusConsulta): string {
       return "Concluída";
     case "CANCELADA":
       return "Cancelada";
+    case "NAO_COMPARECEU":
+      return "Não compareceu";
   }
 }

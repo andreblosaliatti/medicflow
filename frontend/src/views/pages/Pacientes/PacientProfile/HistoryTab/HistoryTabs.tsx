@@ -6,7 +6,7 @@ import type { ConsultaHistoryRowViewModel } from "../../../../../api/consultas/t
 
 import "./styles.css";
 
-type ConsultaStatus = "AGENDADA" | "CONFIRMADA" | "EM_ATENDIMENTO" | "CONCLUIDA" | "CANCELADA";
+type ConsultaStatus = "AGENDADA" | "CONFIRMADA" | "EM_ATENDIMENTO" | "CONCLUIDA" | "CANCELADA" | "NAO_COMPARECEU";
 
 type RowAction = "open" | "edit" | "cancel";
 
@@ -21,6 +21,7 @@ function statusLabel(s: ConsultaStatus) {
   if (s === "EM_ATENDIMENTO") return "Em atendimento";
   if (s === "CONCLUIDA") return "Concluída";
   if (s === "CANCELADA") return "Cancelada";
+  if (s === "NAO_COMPARECEU") return "Não compareceu";
   return "Agendada";
 }
 
@@ -28,6 +29,7 @@ function statusClass(s: ConsultaStatus) {
   if (s === "CONFIRMADA") return "is-success";
   if (s === "CONCLUIDA") return "is-success";
   if (s === "CANCELADA") return "is-danger";
+  if (s === "NAO_COMPARECEU") return "is-muted";
   if (s === "EM_ATENDIMENTO") return "is-info";
   return "is-muted";
 }

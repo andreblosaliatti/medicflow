@@ -9,7 +9,7 @@ export function canCancelConsulta(status: StatusConsulta) {
 }
 
 export function canStartConsulta(status: StatusConsulta) {
-  return status === "AGENDADA" || status === "CONFIRMADA";
+  return status === "CONFIRMADA";
 }
 
 export function canFinishConsulta(status: StatusConsulta) {
@@ -21,5 +21,5 @@ export function canEditConsulta(status: StatusConsulta) {
 }
 
 export function isTerminalConsulta(status: StatusConsulta) {
-  return status === "CONCLUIDA" || status === "CANCELADA";
+  return status === "CONCLUIDA" || status === "CANCELADA" || status === "NAO_COMPARECEU";
 }

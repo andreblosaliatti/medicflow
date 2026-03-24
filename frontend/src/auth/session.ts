@@ -1,4 +1,4 @@
-export type UserRole = "MEDICO" | "SECRETARIA" | "ADMIN";
+export type UserRole = "ADMIN" | "MEDICO" | "SECRETARIA" | "ATENDENTE" | "ENFERMEIRO" | "PACIENTE";
 
 export type SessionUser = {
   id: string;
@@ -25,7 +25,12 @@ type SessionClearedDetail = {
 };
 
 function isUserRole(value: unknown): value is UserRole {
-  return value === "MEDICO" || value === "SECRETARIA" || value === "ADMIN";
+  return value === "ADMIN"
+    || value === "MEDICO"
+    || value === "SECRETARIA"
+    || value === "ATENDENTE"
+    || value === "ENFERMEIRO"
+    || value === "PACIENTE";
 }
 
 function isSessionData(value: unknown): value is SessionData {

@@ -35,6 +35,7 @@ const statusOptions: readonly SelectOption<StatusFilter>[] = [
   { value: "EM_ATENDIMENTO", label: "Em atendimento" },
   { value: "CONCLUIDA", label: "Concluída" },
   { value: "CANCELADA", label: "Cancelada" },
+  { value: "NAO_COMPARECEU", label: "Não compareceu" },
 ] as const;
 
 export default function ConsultasPage() {

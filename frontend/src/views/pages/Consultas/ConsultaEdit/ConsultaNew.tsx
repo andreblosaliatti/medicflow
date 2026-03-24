@@ -100,7 +100,10 @@ export default function ConsultaCreate() {
     const options = metadataQuery.data?.meiosPagamento ?? [];
     return options
       .filter((option): option is { code: MeioPagamento; label: string } => (
-        option.code === "PIX" || option.code === "CARTAO" || option.code === "DINHEIRO"
+        option.code === "DEBITO"
+        || option.code === "CREDITO"
+        || option.code === "PIX"
+        || option.code === "DINHEIRO"
       ))
       .map((option) => ({ value: option.code, label: option.label }));
   }, [metadataQuery.data]);
