@@ -1,29 +1,39 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import {
+  useAgendaEventsQuery,
+  useCreateConsultaMutation,
+  useUpdateConsultaMutation,
+} from "../../../api/consultas/hooks";
+import { usePacientesQuery } from "../../../api/pacientes/hooks";
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../components/ui/Card";
 import PrimaryButton from "../../../components/ui/PrimaryButton/PrimaryButton";
 import Input from "../../../components/form/Input";
-
 import CalendarView from "../../../components/Agenda/CalendarView";
 import SelectField, { type SelectOption } from "../../../components/form/SelectField/SelectField";
-
-import { getSessionUser } from "../../../auth/session";
-
-import type { AppointmentEvent } from "./types";
+import { useAuth } from "../../../auth/useAuth";
 import type { StatusConsulta, TipoConsulta } from "../../../domain/enums/statusConsulta";
-
-import { toAppointmentEvents } from "../../../mocks/mappers";
-
 import ConsultaDrawerHost from "../../../components/Agenda/ConsultaDrawerHost";
 import { useConsultaDrawerController } from "../../../components/Agenda/useConsultaDrawerController";
 import type { ConsultaDraft } from "../../../components/Agenda/AppointmentDetailDrawer";
+import type { AppointmentEvent } from "./types";
 
 import "./styles.css";
 
 type StatusFilter = StatusConsulta | "TODOS";
 type TypeFilter = TipoConsulta | "TODOS";
+
+type VisibleRange = {
+  start: Date;
+  end: Date;
+};
+
+type NovaConsultaState = {
+  from?: string;
+  novaConsulta?: { pacienteId: number; pacienteNome: string };
+};
 
 const statusOptions: readonly SelectOption<StatusFilter>[] = [
   { value: "TODOS", label: "Todos" },
@@ -41,13 +51,20 @@ const typeOptions: readonly SelectOption<TypeFilter>[] = [
   { value: "RETORNO", label: "Retorno" },
 ] as const;
 
-type DuracaoMinutos = 15 | 30 | 45 | 60;
+function startOfWeek(date: Date) {
+  const result = new Date(date);
+  const day = result.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  result.setDate(result.getDate() + diff);
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
 
-function snapDuration(mins: number): DuracaoMinutos {
-  if (mins <= 15) return 15;
-  if (mins <= 30) return 30;
-  if (mins <= 45) return 45;
-  return 60;
+function endOfWeek(date: Date) {
+  const result = startOfWeek(date);
+  result.setDate(result.getDate() + 6);
+  result.setHours(23, 59, 59, 999);
+  return result;
 }
 
 function toIsoLocal(d: Date) {
@@ -59,35 +76,65 @@ function toIsoLocal(d: Date) {
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
 }
 
-function minutesBetween(start: Date, end: Date): DuracaoMinutos {
-  const mins = Math.max(10, Math.round((end.getTime() - start.getTime()) / 60000));
-  return snapDuration(mins);
+function parseMoneyToNumber(input: string): number {
+  const raw = (input ?? "").trim();
+  if (!raw) return 0;
+  const cleaned = raw.replace(/[R$\s]/g, "");
+
+  if (cleaned.includes(",")) {
+    const normalized = cleaned.replace(/\./g, "").replace(",", ".");
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function emptyDraft(doctorId: string, doctorName: string): ConsultaDraft {
+
+function toLocalDateTimeParam(date: Date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mi = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;
+}
+
+function normalizeDateTimeLocal(value: string): string {
+  if (!value) return "";
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return value;
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) return value.slice(0, 16);
+  return value;
+}
+
+
+function snapDuration(minutes: number): 15 | 30 | 45 | 60 {
+  if (minutes <= 15) return 15;
+  if (minutes <= 30) return 30;
+  if (minutes <= 45) return 45;
+  return 60;
+}
+
+function emptyDraft(doctorId: number, doctorName: string): ConsultaDraft {
   const now = new Date();
   now.setMinutes(0, 0, 0);
 
   return {
-    pacienteId: "",
+    pacienteId: null,
     pacienteNome: "",
-
     medicoId: doctorId,
     medicoNome: doctorName,
-
     dataHora: toIsoLocal(now),
     duracaoMinutos: 30,
-
     tipo: "PRESENCIAL",
     status: "AGENDADA",
     motivo: "",
-
     teleconsulta: false,
     linkAcesso: "",
-
     retorno: false,
     dataLimiteRetorno: "",
-
     valorConsulta: "",
     meioPagamento: "PIX",
     pago: false,
@@ -95,64 +142,58 @@ function emptyDraft(doctorId: string, doctorName: string): ConsultaDraft {
   };
 }
 
-function fromEventToDraft(ev: AppointmentEvent, doctorId: string, doctorName: string): ConsultaDraft {
+function fromEventToDraft(event: AppointmentEvent, doctorId: number, doctorName: string): ConsultaDraft {
   return {
     ...emptyDraft(doctorId, doctorName),
-
-    pacienteNome: ev.patientName,
-    medicoNome: ev.professionalName,
-
-    dataHora: toIsoLocal(ev.start),
-    duracaoMinutos: minutesBetween(ev.start, ev.end),
-
-    tipo: ev.type,
-    status: ev.status,
-
-    motivo: ev.notes ?? "",
-    teleconsulta: ev.type === "TELECONSULTA",
-    retorno: ev.type === "RETORNO",
+    pacienteId: event.patientId ?? null,
+    pacienteNome: event.patientName,
+    medicoId: event.professionalId ?? doctorId,
+    medicoNome: event.professionalName || doctorName,
+    dataHora: toIsoLocal(event.start),
+    duracaoMinutos: snapDuration(Math.round((event.end.getTime() - event.start.getTime()) / 60000)),
+    tipo: event.type,
+    status: event.status,
+    motivo: event.notes ?? "",
+    teleconsulta: event.type === "TELECONSULTA",
+    linkAcesso: event.linkAcesso ?? "",
+    retorno: event.type === "RETORNO",
+    dataLimiteRetorno: "",
   };
 }
-
-function draftToEvent(d: ConsultaDraft, id?: string): AppointmentEvent {
-  const start = new Date(d.dataHora);
-  const end = new Date(start.getTime() + d.duracaoMinutos * 60000);
-
-  return {
-    id: id ?? String(Date.now()),
-    patientName: d.pacienteNome || "Novo paciente",
-    professionalName: d.medicoNome || "Dr. João Carvalho",
-
-    type: d.tipo,
-    status: d.status,
-
-    start,
-    end,
-
-    room: d.tipo === "TELECONSULTA" ? "Teleconsulta" : "Sala 01",
-    phone: "",
-    notes: d.motivo,
-  };
-}
-
-type NovaConsultaState = {
-  from?: string;
-  novaConsulta?: { pacienteId: string; pacienteNome: string };
-};
 
 export default function AgendaPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const user = getSessionUser();
-  const doctorId = String(user.id ?? "1");
-  const doctorName = user.name ?? "Dr. João Carvalho";
+  const doctorId = Number(user?.id ?? 0);
+  const doctorName = user?.name ?? "Profissional";
 
-  const [allEvents, setAllEvents] = useState<AppointmentEvent[]>(() => toAppointmentEvents());
-
+  const [range, setRange] = useState<VisibleRange>(() => ({
+    start: startOfWeek(new Date()),
+    end: endOfWeek(new Date()),
+  }));
   const [status, setStatus] = useState<StatusFilter>("TODOS");
   const [type, setType] = useState<TypeFilter>("TODOS");
   const [search, setSearch] = useState("");
+  const [lockPaciente, setLockPaciente] = useState(false);
+
+  const pacientesQuery = usePacientesQuery({ size: 200, sort: "primeiroNome,asc" });
+  const agendaQuery = useAgendaEventsQuery({
+    dataHoraInicio: toLocalDateTimeParam(range.start),
+    dataHoraFim: toLocalDateTimeParam(range.end),
+    size: 500,
+    sort: "dataHora,asc",
+  });
+  const createMutation = useCreateConsultaMutation();
+  const updateMutation = useUpdateConsultaMutation();
+
+  const patientOptions = useMemo<readonly SelectOption<number>[]>(() => {
+    return pacientesQuery.data.content.map((paciente) => ({
+      value: paciente.id,
+      label: paciente.nome,
+    }));
+  }, [pacientesQuery.data.content]);
 
   const drawer = useConsultaDrawerController({
     doctorId,
@@ -161,36 +202,86 @@ export default function AgendaPage() {
     fromEventToDraft,
   });
 
-  // ✅ trava paciente quando vier do fluxo Pacientes -> Nova consulta
-  const [lockPaciente, setLockPaciente] = useState(false);
-
   useEffect(() => {
-    const st = (location.state ?? {}) as NovaConsultaState;
-    const nc = st.novaConsulta;
-    if (!nc) return;
+    const state = (location.state ?? {}) as NovaConsultaState;
+    const novaConsulta = state.novaConsulta;
+    if (!novaConsulta) return;
 
-    setLockPaciente(true);
-    drawer.openCreateForPaciente(nc.pacienteId, nc.pacienteNome);
+    const timer = window.setTimeout(() => {
+      setLockPaciente(true);
+      drawer.openCreateForPaciente(novaConsulta.pacienteId, novaConsulta.pacienteNome);
+      navigate(location.pathname, { replace: true, state: { ...state, novaConsulta: undefined } });
+    }, 0);
 
-    // limpa state pra não reabrir ao dar refresh / voltar
-    navigate(location.pathname, { replace: true, state: { ...st, novaConsulta: undefined } });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => window.clearTimeout(timer);
+  }, [drawer, location.pathname, location.state, navigate]);
 
   const events = useMemo(() => {
-    return allEvents.filter((e) => {
-      if (status !== "TODOS" && e.status !== status) return false;
-      if (type !== "TODOS" && e.type !== type) return false;
+    return agendaQuery.data.filter((event) => {
+      if (status !== "TODOS" && event.status !== status) return false;
+      if (type !== "TODOS" && event.type !== type) return false;
 
       if (search.trim()) {
         const q = search.trim().toLowerCase();
-        const hay = `${e.patientName} ${e.professionalName} ${e.type} ${e.status} ${e.notes ?? ""}`.toLowerCase();
-        if (!hay.includes(q)) return false;
+        const haystack = `${event.patientName} ${event.professionalName} ${event.type} ${event.status} ${event.notes ?? ""}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
       }
 
       return true;
     });
-  }, [allEvents, status, type, search]);
+  }, [agendaQuery.data, search, status, type]);
+
+  const error = agendaQuery.error ?? pacientesQuery.error ?? createMutation.error ?? updateMutation.error;
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  async function handleSave(data: ConsultaDraft, mode: "create" | "edit") {
+    if (!data.pacienteId) return;
+
+    const payload = {
+      pacienteId: data.pacienteId,
+      medicoId: data.medicoId,
+      dataHora: normalizeDateTimeLocal(data.dataHora),
+      duracaoMinutos: data.duracaoMinutos,
+      tipo: data.tipo,
+      status: mode === "create" ? "AGENDADA" : data.status,
+      motivo: data.motivo.trim(),
+      valorConsulta: parseMoneyToNumber(data.valorConsulta),
+      meioPagamento: data.meioPagamento,
+      pago: data.pago,
+      dataPagamento: data.pago ? normalizeDateTimeLocal(data.dataPagamento || data.dataHora) : null,
+      retorno: data.tipo === "RETORNO",
+      dataLimiteRetorno: data.tipo === "RETORNO" && data.dataLimiteRetorno ? normalizeDateTimeLocal(data.dataLimiteRetorno) : null,
+      teleconsulta: data.tipo === "TELECONSULTA",
+      linkAcesso: data.tipo === "TELECONSULTA" ? data.linkAcesso || null : null,
+      planoSaude: null,
+      numeroCarteirinha: null,
+      anamnese: null,
+      exameFisico: null,
+      diagnostico: null,
+      prescricao: null,
+      observacoes: null,
+    };
+
+    if (mode === "create") {
+      const created = await createMutation.mutateAsync(payload);
+      if (created) {
+        setLockPaciente(false);
+        drawer.close();
+        void agendaQuery.refetch();
+      }
+      return;
+    }
+
+    const editingId = drawer.editingEventId ? Number(drawer.editingEventId) : null;
+    if (!editingId) return;
+
+    const updated = await updateMutation.mutateAsync({ id: editingId, payload });
+    if (updated) {
+      setLockPaciente(false);
+      drawer.close();
+      void agendaQuery.refetch();
+    }
+  }
 
   return (
     <div className="agenda-page">
@@ -249,6 +340,8 @@ export default function AgendaPage() {
             />
           </div>
 
+          {error ? <div className="mf-muted">{error}</div> : null}
+
           <div className="agenda-legend">
             <span className="agenda-dot agenda-dotConfirmed" />
             <span className="mf-muted">Confirmada</span>
@@ -265,7 +358,11 @@ export default function AgendaPage() {
           <div className="agenda-sectionTitle">Calendário</div>
 
           <div className="agenda-calendarWrap">
-            <CalendarView events={events} onSelectEvent={drawer.openEditFromEvent} />
+            <CalendarView
+              events={events}
+              onSelectEvent={drawer.openEditFromEvent}
+              onRangeChange={setRange}
+            />
           </div>
         </Card>
       </div>
@@ -277,33 +374,14 @@ export default function AgendaPage() {
         value={drawer.value}
         doctorId={doctorId}
         doctorName={doctorName}
+        patientOptions={patientOptions}
         lockPaciente={lockPaciente}
+        isSaving={isSaving}
         onClose={() => {
           setLockPaciente(false);
           drawer.close();
         }}
-        onSave={(data, mode) => {
-          if (mode === "create") {
-            const newEv = draftToEvent(data);
-            setAllEvents((prev) => [newEv, ...prev]);
-            setLockPaciente(false);
-            drawer.close();
-            return;
-          }
-
-          const id = drawer.editingEventId;
-          if (!id) {
-            setLockPaciente(false);
-            drawer.close();
-            return;
-          }
-
-          const updated = draftToEvent(data, id);
-          setAllEvents((prev) => prev.map((ev) => (ev.id === id ? updated : ev)));
-
-          setLockPaciente(false);
-          drawer.close();
-        }}
+        onSave={(data, mode) => void handleSave(data, mode)}
       />
     </div>
   );

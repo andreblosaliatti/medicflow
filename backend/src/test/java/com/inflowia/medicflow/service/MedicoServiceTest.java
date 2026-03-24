@@ -52,7 +52,7 @@ class MedicoServiceTest {
                 .nome("Ana")
                 .sobrenome("Silva")
                 .email("ana@test.com")
-                .cpf("32844208606")
+                .cpf("86288366757")
                 .crm("12345")
                 .especialidade("Cardiologia")
                 .roles(Set.of("MEDICO", "ADMIN"))

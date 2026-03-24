@@ -1,51 +1,82 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import {
+  useConsultaDetailsQuery,
+  useFinishConsultaMutation,
+  useStartConsultaMutation,
+  useUpdateConsultaMutation,
+} from "../../../../api/consultas/hooks";
+import type { ConsultaDetailsViewModel, ConsultaUpdatePayload } from "../../../../api/consultas/types";
+import {
+  useCreateExameSolicitadoMutation,
+  useDeleteExameSolicitadoMutation,
+  useExameBaseSearchQuery,
+  useExamesByConsultaQuery,
+} from "../../../../api/exames/hooks";
+import type { ExameViewModel } from "../../../../api/exames/types";
+import {
+  useCreateMedicamentoPrescritoMutation,
+  useDeleteMedicamentoPrescritoMutation,
+  useMedicamentoBaseSearchQuery,
+  useMedicamentosByConsultaQuery,
+} from "../../../../api/medicamentos/hooks";
+import type { MedicamentoViewModel } from "../../../../api/medicamentos/types";
+import AutocompleteField, { type AutocompleteOption } from "../../../../components/form/AutocompleteField/AutocompleteField";
+import SelectField, { type SelectOption } from "../../../../components/form/SelectField/SelectField";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../../components/ui/Card";
 import PrimaryButton from "../../../../components/ui/PrimaryButton/PrimaryButton";
 import SecondaryButton from "../../../../components/ui/SecondaryButton/SecondaryButton";
-
-import Input from "../../../../components/form/Input";
-import SelectField, { type SelectOption } from "../../../../components/form/SelectField/SelectField";
-
 import {
-  getConsultaById,
-  iniciarAtendimento,
-  finalizarAtendimento,
-  getRegistroClinico,
-  salvarRegistroClinico,
-  pacienteNomeById,
-} from "../../../../mocks/mappers";
-
-import type {
-  RegistroClinicoDTO,
-  RegistroExameDTO,
-  RegistroMedicacaoDTO,
-} from "../../../../mocks/db/registroClinico.seed";
+  canFinishConsulta,
+  canStartConsulta,
+} from "../../../../domain/consulta/workflow";
 
 import "./styles.css";
 import "../base.css";
 
-type Tab = "ANAMNESE" | "EXAME_FISICO" | "DIAGNOSTICO" | "PRESCRICAO" | "EXAMES" | "OBS";
+type Tab = "ANAMNESE" | "EXAME_FISICO" | "DIAGNOSTICO" | "MEDICAMENTOS" | "EXAMES" | "OBS";
 
-function makeId(prefix: string) {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-}
+type AtendimentoForm = {
+  anamnese: string;
+  exameFisico: string;
+  diagnostico: string;
+  observacoes: string;
+};
+
+type MedicamentoDraft = {
+  medicamentoBaseId: number | null;
+  nome: string;
+  dosagem: string;
+  frequencia: string;
+  via: string;
+};
+
+type ExameDraft = {
+  exameBaseId: number | null;
+  nome: string;
+  justificativa: string;
+  observacoes: string;
+};
+
+type MedicationFormErrors = {
+  medication: string | null;
+  dosagem: string | null;
+  frequencia: string | null;
+};
+
+type ExamFormErrors = {
+  exameBaseId: string | null;
+};
 
 const tabOptions: readonly { key: Tab; label: string }[] = [
   { key: "ANAMNESE", label: "Anamnese" },
   { key: "EXAME_FISICO", label: "Exame físico" },
   { key: "DIAGNOSTICO", label: "Diagnóstico" },
-  { key: "PRESCRICAO", label: "Prescrição" },
+  { key: "MEDICAMENTOS", label: "Medicamentos" },
   { key: "EXAMES", label: "Exames" },
   { key: "OBS", label: "Observações" },
-] as const;
-
-const statusExameOptions: readonly SelectOption<RegistroExameDTO["status"]>[] = [
-  { value: "SOLICITADO", label: "Solicitado" },
-  { value: "REALIZADO", label: "Realizado" },
-  { value: "RESULTADO", label: "Resultado" },
 ] as const;
 
 const viaOptions: readonly SelectOption<string>[] = [
@@ -58,205 +89,306 @@ const viaOptions: readonly SelectOption<string>[] = [
   { value: "INAL", label: "Inalatória" },
 ] as const;
 
-export default function ConsultaAtendimento() {
+function toForm(details: ConsultaDetailsViewModel): AtendimentoForm {
+  return {
+    anamnese: details.anamnese ?? "",
+    exameFisico: details.exameFisico ?? "",
+    diagnostico: details.diagnostico ?? "",
+    observacoes: details.observacoes ?? "",
+  };
+}
+
+type AtendimentoEditorProps = {
+  consulta: ConsultaDetailsViewModel;
+};
+
+function AtendimentoEditor({ consulta }: AtendimentoEditorProps) {
   const navigate = useNavigate();
-
-  const { id } = useParams();
-  const consultaId = id; // string | undefined
-
-  // Hooks SEMPRE executam, sem return antes deles
-  const consulta = useMemo(() => {
-    if (!consultaId) return null;
-    return getConsultaById(consultaId);
-  }, [consultaId]);
-
   const [tab, setTab] = useState<Tab>("ANAMNESE");
-  const [reg, setReg] = useState<RegistroClinicoDTO | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [medQuery, setMedQuery] = useState("");
-  const [exameQuery, setExameQuery] = useState("");
+  const [form, setForm] = useState<AtendimentoForm>(() => toForm(consulta));
+  const [currentStatus, setCurrentStatus] = useState(consulta.status);
 
-
-
-const safeConsultaId = consultaId ?? ""; 
-  useEffect(() => {
-  if (!consultaId) return;
-
-  iniciarAtendimento(consultaId);
-
-  const r = getRegistroClinico(consultaId);
-
-  setReg({
-    ...r,
-    consultaId,
-    medicacoes: r.medicacoes ?? [],
-    exames: r.exames ?? [],
-    anamnese: r.anamnese ?? "",
-    exameFisico: r.exameFisico ?? "",
-    diagnostico: r.diagnostico ?? "",
-    prescricaoTexto: r.prescricaoTexto ?? "",
-    observacoes: r.observacoes ?? "",
-    updatedAt: r.updatedAt ?? new Date().toISOString(),
+  const [medicationErrors, setMedicationErrors] = useState<MedicationFormErrors>({
+    medication: null,
+    dosagem: null,
+    frequencia: null,
   });
-}, [consultaId]);
 
-  // Agora sim: renderização condicional pode acontecer aqui embaixo
+  const [examErrors, setExamErrors] = useState<ExamFormErrors>({ exameBaseId: null });
 
-  if (!consultaId) {
-    return (
-      <div className="consultas-page">
-        <PageHeader title="Atendimento" subtitle="Consulta inválida" />
-      </div>
-    );
+  const [medDraft, setMedDraft] = useState<MedicamentoDraft>({
+    medicamentoBaseId: null,
+    nome: "",
+    dosagem: "",
+    frequencia: "",
+    via: "VO",
+  });
+
+  const [exameDraft, setExameDraft] = useState<ExameDraft>({
+    exameBaseId: null,
+    nome: "",
+    justificativa: "",
+    observacoes: "",
+  });
+
+  const [addedMedicamentos, setAddedMedicamentos] = useState<MedicamentoViewModel[]>([]);
+  const [removedMedicamentoIds, setRemovedMedicamentoIds] = useState<number[]>([]);
+  const [addedExames, setAddedExames] = useState<ExameViewModel[]>([]);
+  const [removedExameIds, setRemovedExameIds] = useState<number[]>([]);
+
+  const updateMutation = useUpdateConsultaMutation();
+  const startMutation = useStartConsultaMutation();
+  const finishMutation = useFinishConsultaMutation();
+
+  const medicamentosQuery = useMedicamentosByConsultaQuery(Number(consulta.id));
+  const medicamentoBaseQuery = useMedicamentoBaseSearchQuery(medDraft.nome);
+  const createMedicamentoMutation = useCreateMedicamentoPrescritoMutation();
+  const deleteMedicamentoMutation = useDeleteMedicamentoPrescritoMutation();
+
+  const examesQuery = useExamesByConsultaQuery(Number(consulta.id));
+  const exameBaseQuery = useExameBaseSearchQuery(exameDraft.nome);
+  const createExameMutation = useCreateExameSolicitadoMutation();
+  const deleteExameMutation = useDeleteExameSolicitadoMutation();
+
+  const medicamentoOptions = useMemo<readonly AutocompleteOption<number>[]>(() => {
+    return medicamentoBaseQuery.data.map((item) => ({
+      value: item.id,
+      label: item.label,
+      description: item.subtitle,
+    }));
+  }, [medicamentoBaseQuery.data]);
+
+  const exameOptions = useMemo<readonly AutocompleteOption<number>[]>(() => {
+    return exameBaseQuery.data.map((item) => ({
+      value: item.id,
+      label: item.label,
+      description: item.subtitle,
+    }));
+  }, [exameBaseQuery.data]);
+
+  const medicamentosList = useMemo(() => {
+    const removedIds = new Set(removedMedicamentoIds);
+    const queryItems = medicamentosQuery.data.filter((item) => !removedIds.has(item.id));
+    const queryIds = new Set(queryItems.map((item) => item.id));
+    const localItems = addedMedicamentos.filter((item) => !removedIds.has(item.id) && !queryIds.has(item.id));
+    return [...queryItems, ...localItems];
+  }, [addedMedicamentos, medicamentosQuery.data, removedMedicamentoIds]);
+
+  const examesList = useMemo(() => {
+    const removedIds = new Set(removedExameIds);
+    const queryItems = examesQuery.data.filter((item) => !removedIds.has(item.id));
+    const queryIds = new Set(queryItems.map((item) => item.id));
+    const localItems = addedExames.filter((item) => !removedIds.has(item.id) && !queryIds.has(item.id));
+    return [...queryItems, ...localItems];
+  }, [addedExames, examesQuery.data, removedExameIds]);
+
+  async function saveProgress() {
+    const payload: ConsultaUpdatePayload = {
+      anamnese: form.anamnese.trim() || null,
+      exameFisico: form.exameFisico.trim() || null,
+      diagnostico: form.diagnostico.trim() || null,
+      observacoes: form.observacoes.trim() || null,
+    };
+
+    return updateMutation.mutateAsync({ id: Number(consulta.id), payload });
   }
 
-  if (!consulta) {
-    return (
-      <div className="consultas-page">
-        <PageHeader title="Atendimento" subtitle="Consulta não encontrada" />
-        <Card>
-          <div style={{ padding: 14 }}>
-            <PrimaryButton onClick={() => navigate("/consultas")}>Voltar</PrimaryButton>
-          </div>
-        </Card>
-      </div>
-    );
+  async function ensureStarted() {
+    if (currentStatus === "EM_ATENDIMENTO") return true;
+    if (!canStartConsulta(currentStatus)) return false;
+
+    const started = await startMutation.mutateAsync(Number(consulta.id));
+    if (started) {
+      setCurrentStatus(started.status);
+      return true;
+    }
+
+    return false;
   }
 
-  const pacienteNome = pacienteNomeById(consulta.pacienteId);
+  async function handleSave() {
+    const started = await ensureStarted();
+    if (!started) return;
+    await saveProgress();
+  }
 
-  function handleSave() {
-    if (!reg) return;
+  async function handleFinish() {
+    const started = await ensureStarted();
+    if (!started) return;
 
-    setSaving(true);
-    try {
-      const payload: RegistroClinicoDTO = {
-        ...reg,
-        consultaId: safeConsultaId,
-        medicacoes: reg.medicacoes ?? [],
-        exames: reg.exames ?? [],
-        updatedAt: new Date().toISOString(),
-      };
+    const saved = await saveProgress();
+    if (!saved) return;
 
-      const saved = salvarRegistroClinico(payload);
-
-      setReg({
-        ...saved,
-        consultaId: safeConsultaId,
-        medicacoes: saved.medicacoes ?? [],
-        exames: saved.exames ?? [],
-        updatedAt: saved.updatedAt ?? new Date().toISOString(),
-      });
-    } finally {
-      setSaving(false);
+    const finished = await finishMutation.mutateAsync(Number(consulta.id));
+    if (finished) {
+      setCurrentStatus(finished.status);
+      navigate(`/consultas/${consulta.id}`, { replace: true });
     }
   }
 
-  function handleFinalizar() {
-  if (!consultaId) return; 
+  async function handleAddMedicamento() {
+    const started = await ensureStarted();
+    if (!started) return;
 
-  handleSave();
-  finalizarAtendimento(consultaId);
-  navigate(`/consultas/${consultaId}`);
-}
+    const nomeDigitado = medDraft.nome.trim();
 
-  function addMedicacao() {
-    const nome = medQuery.trim();
-    if (!nome) return;
-
-    const next: RegistroMedicacaoDTO = {
-      id: makeId("med"),
-      nome,
-      dosagem: "",
-      frequencia: "",
-      via: "VO",
+    const nextErrors: MedicationFormErrors = {
+      medication: nomeDigitado ? null : "Selecione um medicamento da lista ou digite um nome livre.",
+      dosagem: medDraft.dosagem.trim() ? null : "Informe a dosagem.",
+      frequencia: medDraft.frequencia.trim() ? null : "Informe a frequência / posologia.",
     };
 
-    setReg((s) => (s ? { ...s, medicacoes: [...(s.medicacoes ?? []), next] } : s));
-    setMedQuery("");
-  }
+    setMedicationErrors(nextErrors);
 
-  function updateMedicacao(medId: string, patch: Partial<RegistroMedicacaoDTO>) {
-    setReg((s) => {
-      if (!s) return s;
-      const next = (s.medicacoes ?? []).map((m) => (m.id === medId ? { ...m, ...patch } : m));
-      return { ...s, medicacoes: next };
+    if (nextErrors.medication || nextErrors.dosagem || nextErrors.frequencia) {
+      return;
+    }
+
+    const payload = {
+      medicamentoBaseId: medDraft.medicamentoBaseId,
+      nome: medDraft.medicamentoBaseId ? null : nomeDigitado,
+      dosagem: medDraft.dosagem.trim(),
+      frequencia: medDraft.frequencia.trim(),
+      via: medDraft.via,
+    };
+
+    const created = await createMedicamentoMutation.mutateAsync({
+      consultaId: Number(consulta.id),
+      payload,
     });
+
+    if (created) {
+      setMedicationErrors({ medication: null, dosagem: null, frequencia: null });
+      setMedDraft({
+        medicamentoBaseId: null,
+        nome: "",
+        dosagem: "",
+        frequencia: "",
+        via: "VO",
+      });
+      setAddedMedicamentos((current) => [...current.filter((item) => item.id !== created.id), created]);
+      setRemovedMedicamentoIds((current) => current.filter((id) => id !== created.id));
+      await medicamentosQuery.refetch();
+    }
   }
 
-  function removeMedicacao(medId: string) {
-    setReg((s) => {
-      if (!s) return s;
-      return { ...s, medicacoes: (s.medicacoes ?? []).filter((m) => m.id !== medId) };
-    });
+  async function handleDeleteMedicamento(id: number) {
+    const removed = await deleteMedicamentoMutation.mutateAsync(id);
+    if (removed === null) return;
+
+    setAddedMedicamentos((current) => current.filter((item) => item.id !== id));
+    setRemovedMedicamentoIds((current) => (current.includes(id) ? current : [...current, id]));
+    await medicamentosQuery.refetch();
   }
 
-  function addExame() {
-    const nome = exameQuery.trim();
-    if (!nome) return;
+  async function handleAddExame() {
+    const started = await ensureStarted();
+    if (!started) return;
 
-    const next: RegistroExameDTO = {
-      id: makeId("ex"),
-      nome,
+    const nextErrors: ExamFormErrors = {
+      exameBaseId: exameDraft.exameBaseId ? null : "Selecione um exame sugerido da lista para adicionar.",
+    };
+
+    setExamErrors(nextErrors);
+
+    if (nextErrors.exameBaseId || !exameDraft.exameBaseId) return;
+
+    const created = await createExameMutation.mutateAsync({
+      consultaId: Number(consulta.id),
+      exameBaseId: exameDraft.exameBaseId,
       status: "SOLICITADO",
-      justificativa: "",
-      observacoes: "",
-    };
-
-    setReg((s) => (s ? { ...s, exames: [...(s.exames ?? []), next] } : s));
-    setExameQuery("");
-  }
-
-  function updateExame(exId: string, patch: Partial<RegistroExameDTO>) {
-    setReg((s) => {
-      if (!s) return s;
-      const next = (s.exames ?? []).map((e) => (e.id === exId ? { ...e, ...patch } : e));
-      return { ...s, exames: next };
+      justificativa: exameDraft.justificativa.trim() || undefined,
+      observacoes: exameDraft.observacoes.trim() || undefined,
     });
+
+    if (created) {
+      setExamErrors({ exameBaseId: null });
+      setExameDraft({
+        exameBaseId: null,
+        nome: "",
+        justificativa: "",
+        observacoes: "",
+      });
+      setAddedExames((current) => [...current.filter((item) => item.id !== created.id), created]);
+      setRemovedExameIds((current) => current.filter((id) => id !== created.id));
+      await examesQuery.refetch();
+    }
   }
 
-  function removeExame(exId: string) {
-    setReg((s) => {
-      if (!s) return s;
-      return { ...s, exames: (s.exames ?? []).filter((e) => e.id !== exId) };
-    });
+  async function handleDeleteExame(id: number) {
+    const removed = await deleteExameMutation.mutateAsync(id);
+    if (removed === null) return;
+
+    setAddedExames((current) => current.filter((item) => item.id !== id));
+    setRemovedExameIds((current) => (current.includes(id) ? current : [...current, id]));
+    await examesQuery.refetch();
   }
 
-  if (!reg) {
-    return (
-      <div className="consultas-page">
-        <PageHeader title={`Atendimento • ${pacienteNome}`} subtitle="Carregando..." />
-      </div>
-    );
-  }
+  const canStart = canStartConsulta(currentStatus);
+  const canFinish = canFinishConsulta(currentStatus) || canStart;
+  const isBusy = updateMutation.isPending || startMutation.isPending || finishMutation.isPending;
+  const medicationBusy = createMedicamentoMutation.isPending || deleteMedicamentoMutation.isPending;
+  const examBusy = createExameMutation.isPending || deleteExameMutation.isPending;
+
+  const mutationError =
+    updateMutation.error ??
+    startMutation.error ??
+    finishMutation.error ??
+    createMedicamentoMutation.error ??
+    deleteMedicamentoMutation.error ??
+    createExameMutation.error ??
+    deleteExameMutation.error ??
+    medicamentosQuery.error ??
+    examesQuery.error ??
+    medicamentoBaseQuery.error ??
+    exameBaseQuery.error;
 
   return (
     <div className="consultas-page">
       <PageHeader
-        title={`Atendimento • ${pacienteNome}`}
+        title={`Atendimento • ${consulta.pacienteNome}`}
+        subtitle={`Status atual: ${currentStatus === "EM_ATENDIMENTO" ? "Em atendimento" : consulta.statusLabel}`}
         rightSlot={
           <div className="atd-meta">
-            <span className="atd-pill">{consulta.dataHora}</span>
+            <span className="atd-pill">{consulta.dataHoraLabel}</span>
             <span className="atd-pill">{consulta.tipo}</span>
-            <span className="atd-pill">{consulta.status}</span>
+            <span className="atd-pill">
+              {currentStatus === "EM_ATENDIMENTO" ? "Em atendimento" : consulta.statusLabel}
+            </span>
           </div>
         }
         actions={[
-          { label: saving ? "Salvando..." : "Salvar", variant: "highlight", onClick: handleSave },
-          { label: "Finalizar", variant: "primary", onClick: handleFinalizar },
+          {
+            label: isBusy ? "Salvando..." : "Salvar evolução",
+            variant: "highlight",
+            onClick: () => void handleSave(),
+            disabled: isBusy,
+          },
+          ...(canFinish
+            ? [
+                {
+                  label: "Finalizar atendimento",
+                  variant: "primary" as const,
+                  onClick: () => void handleFinish(),
+                  disabled: isBusy,
+                },
+              ]
+            : []),
         ]}
       />
 
       <Card>
+        {mutationError ? <div className="mf-muted">{mutationError}</div> : null}
+
         <div className="atd-tabs">
-          {tabOptions.map((t) => (
+          {tabOptions.map((option) => (
             <button
-              key={t.key}
+              key={option.key}
               type="button"
-              className={`atd-tab ${tab === t.key ? "is-active" : ""}`}
-              onClick={() => setTab(t.key)}
+              className={`atd-tab ${tab === option.key ? "is-active" : ""}`}
+              onClick={() => setTab(option.key)}
             >
-              {t.label}
+              {option.label}
             </button>
           ))}
         </div>
@@ -267,8 +399,8 @@ const safeConsultaId = consultaId ?? "";
               <span className="atd-label">Anamnese</span>
               <textarea
                 className="atd-textarea"
-                value={reg.anamnese ?? ""}
-                onChange={(e) => setReg((s) => (s ? { ...s, anamnese: e.target.value } : s))}
+                value={form.anamnese}
+                onChange={(e) => setForm((current) => ({ ...current, anamnese: e.target.value }))}
                 placeholder="História clínica, queixa, antecedentes..."
               />
             </label>
@@ -279,8 +411,8 @@ const safeConsultaId = consultaId ?? "";
               <span className="atd-label">Exame físico</span>
               <textarea
                 className="atd-textarea"
-                value={reg.exameFisico ?? ""}
-                onChange={(e) => setReg((s) => (s ? { ...s, exameFisico: e.target.value } : s))}
+                value={form.exameFisico}
+                onChange={(e) => setForm((current) => ({ ...current, exameFisico: e.target.value }))}
                 placeholder="Sinais vitais, inspeção, palpação, ausculta..."
               />
             </label>
@@ -291,128 +423,206 @@ const safeConsultaId = consultaId ?? "";
               <span className="atd-label">Diagnóstico</span>
               <textarea
                 className="atd-textarea"
-                value={reg.diagnostico ?? ""}
-                onChange={(e) => setReg((s) => (s ? { ...s, diagnostico: e.target.value } : s))}
+                value={form.diagnostico}
+                onChange={(e) => setForm((current) => ({ ...current, diagnostico: e.target.value }))}
                 placeholder="CID, hipótese diagnóstica, diagnóstico final..."
               />
             </label>
           ) : null}
 
-          {tab === "PRESCRICAO" ? (
+          {tab === "MEDICAMENTOS" ? (
             <>
-              <div className="atd-inlineAdd">
-                <div className="atd-grow">
-                  <Input
-                    value={medQuery}
-                    onChange={(e) => setMedQuery(e.target.value)}
-                    placeholder="Digite o nome do medicamento e clique em Adicionar…"
+              <div className="atd-sectionHeader">
+                <h3>Medicamentos prescritos</h3>
+                <p>Digite o nome do medicamento para ver sugestões da base ou mantenha o texto como nome livre.</p>
+              </div>
+
+              <div className="atd-grid2 atd-grid2--top">
+                <label className="atd-field">
+                  <span className="atd-label">Medicamento</span>
+                  <AutocompleteField<number>
+                    value={medDraft.nome}
+                    onChange={(value) => {
+                      setMedDraft((current) => ({ ...current, nome: value, medicamentoBaseId: null }));
+                      setMedicationErrors((current) => ({ ...current, medication: null }));
+                    }}
+                    onSelect={(option) => {
+                      const selected = medicamentoBaseQuery.data.find((item) => item.id === option.value) ?? null;
+
+                      setMedDraft((current) => ({
+                        ...current,
+                        nome: option.label,
+                        medicamentoBaseId: option.value,
+                        dosagem: current.dosagem || selected?.dosagemPadrao || "",
+                        via: current.via === "VO" ? selected?.viaAdministracao || current.via : current.via,
+                      }));
+
+                      setMedicationErrors((current) => ({ ...current, medication: null }));
+                    }}
+                    options={medicamentoOptions}
+                    placeholder="Digite o nome do medicamento..."
+                    ariaLabel="Medicamento"
+                    loading={medDraft.nome.trim().length > 0 && medicamentoBaseQuery.isLoading}
+                    emptyMessage="Nenhum medicamento da base encontrado. Você pode adicionar como nome livre."
                   />
-                </div>
-                <PrimaryButton onClick={addMedicacao}>Adicionar</PrimaryButton>
+                  {medicationErrors.medication ? (
+                    <span className="atd-fieldError">{medicationErrors.medication}</span>
+                  ) : null}
+                </label>
+
+                <label className="atd-field">
+                  <span className="atd-label">Via</span>
+                  <SelectField<string>
+                    value={medDraft.via}
+                    onChange={(via) => setMedDraft((current) => ({ ...current, via }))}
+                    options={viaOptions}
+                    ariaLabel="Via de administração"
+                  />
+                </label>
+              </div>
+
+              <div className="atd-grid2">
+                <label className="atd-field">
+                  <span className="atd-label">Dosagem</span>
+                  <input
+                    className="atd-input"
+                    value={medDraft.dosagem}
+                    onChange={(e) => {
+                      setMedDraft((current) => ({ ...current, dosagem: e.target.value }));
+                      setMedicationErrors((current) => ({ ...current, dosagem: null }));
+                    }}
+                    placeholder="500 mg"
+                  />
+                  {medicationErrors.dosagem ? <span className="atd-fieldError">{medicationErrors.dosagem}</span> : null}
+                </label>
+
+                <label className="atd-field">
+                  <span className="atd-label">Frequência / posologia</span>
+                  <input
+                    className="atd-input"
+                    value={medDraft.frequencia}
+                    onChange={(e) => {
+                      setMedDraft((current) => ({ ...current, frequencia: e.target.value }));
+                      setMedicationErrors((current) => ({ ...current, frequencia: null }));
+                    }}
+                    placeholder="8/8h por 5 dias"
+                  />
+                  {medicationErrors.frequencia ? (
+                    <span className="atd-fieldError">{medicationErrors.frequencia}</span>
+                  ) : null}
+                </label>
+              </div>
+
+              {medicationErrors.medication ? (
+                <div className="atd-formError">{medicationErrors.medication}</div>
+              ) : null}
+
+              <div className="atd-sectionActions">
+                <PrimaryButton onClick={() => void handleAddMedicamento()} disabled={medicationBusy}>
+                  Adicionar medicamento
+                </PrimaryButton>
               </div>
 
               <div className="atd-list">
-                {(reg.medicacoes ?? []).length === 0 ? (
-                  <div className="atd-empty">Nenhuma medicação adicionada.</div>
+                {medicamentosList.length === 0 ? (
+                  <div className="atd-empty">Nenhum medicamento prescrito para esta consulta.</div>
                 ) : (
-                  (reg.medicacoes ?? []).map((m) => (
-                    <div key={m.id} className="atd-item">
+                  medicamentosList.map((medicamento) => (
+                    <div key={medicamento.id} className="atd-item">
                       <div className="atd-itemHeader">
-                        <strong className="atd-itemTitle">{m.nome}</strong>
-                        <button type="button" className="atd-remove" onClick={() => removeMedicacao(m.id)}>
+                        <strong className="atd-itemTitle">{medicamento.nome}</strong>
+                        <button
+                          type="button"
+                          className="atd-remove"
+                          onClick={() => void handleDeleteMedicamento(medicamento.id)}
+                        >
                           Remover
                         </button>
                       </div>
-
-                      <div className="atd-grid2">
-                        <Input
-                          value={m.dosagem ?? ""}
-                          onChange={(e) => updateMedicacao(m.id, { dosagem: e.target.value })}
-                          placeholder="Dosagem (ex: 500mg)"
-                        />
-
-                        <SelectField<string>
-                          label="Via"
-                          value={(m.via ?? "VO") as string}
-                          onChange={(v) => updateMedicacao(m.id, { via: v })}
-                          options={viaOptions}
-                          placeholder="Via..."
-                        />
+                      <div className="atd-itemMeta">
+                        {medicamento.dosagem} • {medicamento.frequencia} • {medicamento.via}
                       </div>
-
-                      <Input
-                        value={m.frequencia ?? ""}
-                        onChange={(e) => updateMedicacao(m.id, { frequencia: e.target.value })}
-                        placeholder="Frequência / posologia (ex: 8/8h por 5 dias)"
-                      />
                     </div>
                   ))
                 )}
               </div>
-
-              <label className="atd-field">
-                <span className="atd-label">Prescrição (texto livre)</span>
-                <textarea
-                  className="atd-textarea"
-                  value={reg.prescricaoTexto ?? ""}
-                  onChange={(e) => setReg((s) => (s ? { ...s, prescricaoTexto: e.target.value } : s))}
-                  placeholder="Se quiser registrar em texto corrido..."
-                />
-              </label>
             </>
           ) : null}
 
           {tab === "EXAMES" ? (
             <>
-              <div className="atd-inlineAdd">
-                <div className="atd-grow">
-                  <Input
-                    value={exameQuery}
-                    onChange={(e) => setExameQuery(e.target.value)}
-                    placeholder="Digite o nome do exame e clique em Adicionar…"
-                  />
-                </div>
-                <PrimaryButton onClick={addExame}>Adicionar</PrimaryButton>
+              <div className="atd-sectionHeader">
+                <h3>Exames solicitados</h3>
+                <p>Digite o nome do exame para pesquisar sugestões e selecione um item válido da base.</p>
+              </div>
+
+              <label className="atd-field">
+                <span className="atd-label">Exame</span>
+                <AutocompleteField<number>
+                  value={exameDraft.nome}
+                  onChange={(value) => {
+                    setExameDraft((current) => ({ ...current, nome: value, exameBaseId: null }));
+                    setExamErrors({ exameBaseId: null });
+                  }}
+                  onSelect={(option) => {
+                    setExameDraft((current) => ({ ...current, nome: option.label, exameBaseId: option.value }));
+                    setExamErrors({ exameBaseId: null });
+                  }}
+                  options={exameOptions}
+                  placeholder="Digite o nome do exame..."
+                  ariaLabel="Exame"
+                  loading={exameDraft.nome.trim().length > 0 && exameBaseQuery.isLoading}
+                  emptyMessage="Nenhum exame encontrado para este termo."
+                />
+                {examErrors.exameBaseId ? <span className="atd-fieldError">{examErrors.exameBaseId}</span> : null}
+              </label>
+
+              <label className="atd-field">
+                <span className="atd-label">Justificativa</span>
+                <textarea
+                  className="atd-textarea atd-textarea--compact"
+                  value={exameDraft.justificativa}
+                  onChange={(e) => setExameDraft((current) => ({ ...current, justificativa: e.target.value }))}
+                  placeholder="Justificativa clínica para o exame..."
+                />
+              </label>
+
+              <label className="atd-field">
+                <span className="atd-label">Observações do exame</span>
+                <textarea
+                  className="atd-textarea atd-textarea--compact"
+                  value={exameDraft.observacoes}
+                  onChange={(e) => setExameDraft((current) => ({ ...current, observacoes: e.target.value }))}
+                  placeholder="Orientações ou observações adicionais..."
+                />
+              </label>
+
+              <div className="atd-sectionActions">
+                <PrimaryButton onClick={() => void handleAddExame()} disabled={examBusy}>
+                  Adicionar exame
+                </PrimaryButton>
               </div>
 
               <div className="atd-list">
-                {(reg.exames ?? []).length === 0 ? (
-                  <div className="atd-empty">Nenhum exame adicionado.</div>
+                {examesList.length === 0 ? (
+                  <div className="atd-empty">Nenhum exame solicitado para esta consulta.</div>
                 ) : (
-                  (reg.exames ?? []).map((ex) => (
-                    <div key={ex.id} className="atd-item">
+                  examesList.map((exame) => (
+                    <div key={exame.id} className="atd-item">
                       <div className="atd-itemHeader">
-                        <strong className="atd-itemTitle">{ex.nome}</strong>
-                        <button type="button" className="atd-remove" onClick={() => removeExame(ex.id)}>
+                        <strong className="atd-itemTitle">{exame.nome}</strong>
+                        <button
+                          type="button"
+                          className="atd-remove"
+                          onClick={() => void handleDeleteExame(exame.id)}
+                        >
                           Remover
                         </button>
                       </div>
-
-                      <div className="atd-grid2">
-                        <SelectField<RegistroExameDTO["status"]>
-                          label="Status"
-                          value={ex.status}
-                          onChange={(v) => updateExame(ex.id, { status: v })}
-                          options={statusExameOptions}
-                          placeholder="Status..."
-                        />
-
-                        <Input
-                          value={ex.justificativa ?? ""}
-                          onChange={(e) => updateExame(ex.id, { justificativa: e.target.value })}
-                          placeholder="Justificativa"
-                        />
-                      </div>
-
-                      <label className="atd-field">
-                        <span className="atd-label">Observações</span>
-                        <textarea
-                          className="atd-textarea"
-                          value={ex.observacoes ?? ""}
-                          onChange={(e) => updateExame(ex.id, { observacoes: e.target.value })}
-                          placeholder="Observações do exame..."
-                        />
-                      </label>
+                      <div className="atd-itemMeta">Status: {exame.status}</div>
+                      {exame.justificativa ? (
+                        <div className="atd-itemMeta">Justificativa: {exame.justificativa}</div>
+                      ) : null}
                     </div>
                   ))
                 )}
@@ -425,19 +635,71 @@ const safeConsultaId = consultaId ?? "";
               <span className="atd-label">Observações gerais</span>
               <textarea
                 className="atd-textarea"
-                value={reg.observacoes ?? ""}
-                onChange={(e) => setReg((s) => (s ? { ...s, observacoes: e.target.value } : s))}
-                placeholder="Condutas, orientações, retorno..."
+                value={form.observacoes}
+                onChange={(e) => setForm((current) => ({ ...current, observacoes: e.target.value }))}
+                placeholder="Condutas, orientações e plano de retorno..."
               />
             </label>
           ) : null}
 
           <div className="atd-actionsBottom">
-            <SecondaryButton onClick={() => navigate(`/consultas/${consultaId}`)}>Voltar</SecondaryButton>
-            <PrimaryButton onClick={handleSave}>Salvar</PrimaryButton>
+            <SecondaryButton onClick={() => navigate(`/consultas/${consulta.id}`)}>
+              Voltar para detalhes
+            </SecondaryButton>
+            <PrimaryButton onClick={() => void handleSave()} disabled={isBusy}>
+              Salvar evolução
+            </PrimaryButton>
+            {canFinish ? (
+              <PrimaryButton onClick={() => void handleFinish()} disabled={isBusy}>
+                Finalizar atendimento
+              </PrimaryButton>
+            ) : null}
           </div>
         </div>
       </Card>
     </div>
   );
+}
+
+export default function ConsultaAtendimento() {
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+  const consultaId = useMemo(() => {
+    const parsed = Number(id);
+    return Number.isFinite(parsed) ? parsed : null;
+  }, [id]);
+
+  const { data: consulta, isLoading, error } = useConsultaDetailsQuery(consultaId);
+
+  if (consultaId === null) {
+    return (
+      <div className="consultas-page">
+        <PageHeader title="Atendimento" subtitle="Consulta inválida" />
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="consultas-page">
+        <PageHeader title="Atendimento" subtitle="Carregando consulta..." />
+      </div>
+    );
+  }
+
+  if (!consulta) {
+    return (
+      <div className="consultas-page">
+        <PageHeader title="Atendimento" subtitle={error ?? "Consulta não encontrada"} />
+        <Card>
+          <div style={{ padding: 14 }}>
+            <PrimaryButton onClick={() => navigate("/consultas")}>Voltar</PrimaryButton>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  return <AtendimentoEditor consulta={consulta} />;
 }

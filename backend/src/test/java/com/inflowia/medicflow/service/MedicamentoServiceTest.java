@@ -78,6 +78,20 @@ class MedicamentoServiceTest {
     }
 
     @Test
+    void listarHistoricoPorPacienteMustQueryByPacienteId() {
+        Long pacienteId = 11L;
+        var pageable = PageRequest.of(0, 10);
+
+        when(pacienteRepository.existsByIdAndAtivoTrue(pacienteId)).thenReturn(true);
+        when(medicamentoPrescritoRepository.findByConsultaPacienteId(pacienteId, pageable))
+                .thenReturn(new PageImpl<>(List.of()));
+
+        service.listarHistoricoPorPaciente(pacienteId, pageable);
+
+        verify(medicamentoPrescritoRepository).findByConsultaPacienteId(pacienteId, pageable);
+    }
+
+    @Test
     void adicionarMedicamentoMustReturnBusinessRuleWhenNameAndBaseAreMissing() {
         Long consultaId = 10L;
         MedicamentoPrescritoDTO dto = new MedicamentoPrescritoDTO(null, null, "500mg", "8/8h", "Oral");
@@ -151,6 +165,32 @@ class MedicamentoServiceTest {
         var result = service.adicionarMedicamento(consultaId, dto);
 
         assertEquals("Amoxicilina", result.getNome());
+        assertEquals(base, consulta.getMedicamentoPrescrito().get(0).getMedicamentoBase());
+    }
+
+    @Test
+    void adicionarMedicamentoMustFallbackToDcbWhenBaseHasNoPrincipioAtivoOrNomeComercial() {
+        Long consultaId = 10L;
+        Consulta consulta = consultaValida();
+        MedicamentoBase base = MedicamentoBase.builder()
+                .id(9L)
+                .dcb("Losartana")
+                .build();
+        MedicamentoPrescritoDTO dto = new MedicamentoPrescritoDTO(9L, null, "50mg", "1x/dia", "Oral");
+
+        when(consultaRepository.findById(consultaId)).thenReturn(Optional.of(consulta));
+        when(medicamentoBaseRepository.findById(9L)).thenReturn(Optional.of(base));
+        when(medicamentoPrescritoRepository.save(any(MedicamentoPrescrito.class)))
+                .thenAnswer(invocation -> {
+                    MedicamentoPrescrito salvo = invocation.getArgument(0);
+                    salvo.setId(99L);
+                    return salvo;
+                });
+
+        var result = service.adicionarMedicamento(consultaId, dto);
+
+        assertEquals(99L, result.getId());
+        assertEquals("Losartana", result.getNome());
         assertEquals(base, consulta.getMedicamentoPrescrito().get(0).getMedicamentoBase());
     }
 

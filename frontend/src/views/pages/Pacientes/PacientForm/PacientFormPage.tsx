@@ -1,47 +1,32 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import PacienteForm from "./PacientForm";
 
-import { emptyPaciente, type PacienteDTO } from "../../../../mocks/db/seed";
-import { getNextPacienteId, getPacienteById, savePaciente } from "./pacientStore";
+import { emptyPacienteForm, toPacienteFormValues } from "../../../../api/pacientes/mappers";
+import { useCreatePacienteMutation, usePacienteByIdQuery, useUpdatePacienteMutation } from "../../../../api/pacientes/hooks";
+import type { PacienteFormValues } from "../../../../api/pacientes/types";
 
 type NavState = { from?: string };
 
-export default function PacienteFormPage() {
+type FormMode = "create" | "edit";
+
+function PacienteFormScreen({
+  mode,
+  id,
+  initialModel,
+}: {
+  mode: FormMode;
+  id: number | null;
+  initialModel: PacienteFormValues;
+}) {
   const navigate = useNavigate();
   const location = useLocation();
-  const params = useParams();
+  const [model, setModel] = useState<PacienteFormValues>(initialModel);
 
-  const id = useMemo(() => {
-    const raw = params.id;
-    if (!raw) return null;
-    const n = Number(raw);
-    return Number.isFinite(n) ? n : null;
-  }, [params.id]);
-
-  const mode: "create" | "edit" = id !== null ? "edit" : "create";
-
-  const routeModel = useMemo<PacienteDTO>(() => {
-    if (id !== null) {
-      const found = getPacienteById(id);
-      return found ?? emptyPaciente(getNextPacienteId());
-    }
-    return emptyPaciente(getNextPacienteId());
-  }, [id]);
-
-  const [model, setModel] = useState<PacienteDTO>(routeModel);
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    setModel(routeModel);
-
-    if (id !== null) {
-      const exists = getPacienteById(id);
-      if (!exists) navigate("/pacientes", { replace: true });
-    }
-  }, [routeModel, id, navigate]);
+  const createMutation = useCreatePacienteMutation();
+  const updateMutation = useUpdatePacienteMutation();
 
   function handleCancel() {
     const state = location.state as NavState | null;
@@ -56,41 +41,76 @@ export default function PacienteFormPage() {
     navigate(from, { replace: true });
   }
 
-  function handleSubmit() {
-    try {
-      setSubmitting(true);
-
-      const saved = savePaciente(model);
-
-      if (mode === "create") {
-        navigate(`/pacientes/${saved.id}/editar`, { replace: true });
-        return;
-      }
-
-      const state = location.state as NavState | null;
-      const from = state?.from;
-      if (from) {
-        navigate(from, { replace: true });
-      } else {
-        navigate("/pacientes", { replace: true });
-      }
-    } finally {
-      setSubmitting(false);
+  async function handleSubmit() {
+    if (mode === "create") {
+      const created = await createMutation.mutateAsync(model);
+      if (!created) return;
+      navigate(`/pacientes/${created.id}`, { replace: true });
+      return;
     }
+
+    if (id === null) return;
+
+    const updated = await updateMutation.mutateAsync({ id, values: model });
+    if (!updated) return;
+
+    const state = location.state as NavState | null;
+    const from = state?.from;
+
+    if (from) {
+      navigate(from, { replace: true });
+      return;
+    }
+
+    navigate(`/pacientes/${id}`, { replace: true });
   }
+
+  const error = createMutation.error ?? updateMutation.error;
+  const submitting = createMutation.isPending || updateMutation.isPending;
+
+  return (
+    <>
+      {error ? <div className="mf-page-content mf-muted">{error}</div> : null}
+      <PacienteForm
+        value={model}
+        onChange={setModel}
+        onSubmit={() => void handleSubmit()}
+        submitting={submitting}
+        mode={mode}
+        onCancel={handleCancel}
+      />
+    </>
+  );
+}
+
+export default function PacienteFormPage() {
+  const params = useParams();
+
+  const id = params.id ? Number(params.id) : null;
+  const pacienteId = Number.isFinite(id) ? id : null;
+  const mode: FormMode = pacienteId !== null ? "edit" : "create";
+  const pacienteQuery = usePacienteByIdQuery(pacienteId);
 
   return (
     <>
       <PageHeader title={mode === "create" ? "Novo paciente" : "Editar paciente"} />
 
-      <PacienteForm
-        value={model}
-        onChange={setModel}
-        onSubmit={handleSubmit}
-        submitting={submitting}
-        mode={mode}
-        onCancel={handleCancel}
-      />
+      {mode === "create" ? <PacienteFormScreen key="create" mode="create" id={null} initialModel={emptyPacienteForm()} /> : null}
+
+      {mode === "edit" && pacienteQuery.isLoading && !pacienteQuery.data ? (
+        <div className="mf-page-content">Carregando paciente...</div>
+      ) : null}
+
+      {mode === "edit" && pacienteQuery.error ? <div className="mf-page-content mf-muted">{pacienteQuery.error}</div> : null}
+
+      {mode === "edit" && pacienteQuery.data ? (
+        <PacienteFormScreen
+          key={`edit-${pacienteQuery.data.id}`}
+          mode="edit"
+          id={pacienteQuery.data.id}
+          initialModel={toPacienteFormValues(pacienteQuery.data)}
+        />
+      ) : null}
     </>
   );
 }

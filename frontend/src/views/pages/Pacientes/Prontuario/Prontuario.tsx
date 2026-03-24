@@ -5,7 +5,7 @@ import AppPage from "../../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../../components/ui/Card";
 
-import { getProntuarioByPacienteId } from "../../../../mocks/prontuario";
+import { useProntuarioByPacienteQuery } from "../../../../api/prontuario/hooks";
 
 import "./styles.css";
 
@@ -30,10 +30,31 @@ export default function ProntuarioPage() {
     return Number.isFinite(n) ? n : null;
   }, [params.id]);
 
-  const prontuario = useMemo(() => {
-    if (pacienteId === null) return null;
-    return getProntuarioByPacienteId(pacienteId);
-  }, [pacienteId]);
+  const { data: prontuario, isLoading, error } = useProntuarioByPacienteQuery(pacienteId);
+
+  if (isLoading) {
+    return (
+      <AppPage
+        className="prontuario-page"
+        header={<PageHeader title="Prontuário" />}
+        contentClassName="prontuario-content"
+      >
+        <Card>Carregando prontuário...</Card>
+      </AppPage>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppPage
+        className="prontuario-page"
+        header={<PageHeader title="Prontuário" />}
+        contentClassName="prontuario-content"
+      >
+        <Card>Erro ao carregar prontuário: {error}</Card>
+      </AppPage>
+    );
+  }
 
   if (pacienteId === null || !prontuario) {
     return (
@@ -153,9 +174,7 @@ export default function ProntuarioPage() {
                         className="prontuario-exame"
                       >
                         <span>{e.nome}</span>
-                        <span
-                          className={`prontuario-chip prontuario-chip-${e.status.toLowerCase()}`}
-                        >
+                        <span className={`prontuario-chip prontuario-chip-${e.status.toLowerCase()}`}>
                           {e.status}
                         </span>
                       </li>

@@ -15,10 +15,21 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long>, JpaSp
 
     Optional<Consulta> findTopByPacienteIdOrderByDataHoraDesc(Long pacienteId);
 
-    @Query("SELECT DISTINCT c.paciente FROM Consulta c WHERE c.medico.id = :medicoId")
-    List<Paciente> findPacientesDistinctByMedicoId(@Param("medicoId") Long medicoId);
-
     Optional<Consulta> findTopByPacienteIdOrderByIdDesc(Long pacienteId);
 
     long countByPacienteId(Long pacienteId);
+
+    @Query("SELECT DISTINCT c.paciente FROM Consulta c WHERE c.medico.id = :medicoId")
+    List<Paciente> findPacientesDistinctByMedicoId(@Param("medicoId") Long medicoId);
+
+    // 🔥 NOVO MÉTODO (ESSENCIAL para resolver N+1)
+    @Query("""
+        SELECT c
+        FROM Consulta c
+        WHERE c.paciente.id IN :pacienteIds
+        ORDER BY c.paciente.id ASC, c.dataHora DESC
+    """)
+    List<Consulta> buscarConsultasOrdenadasPorPacienteEDataDesc(
+            @Param("pacienteIds") List<Long> pacienteIds
+    );
 }

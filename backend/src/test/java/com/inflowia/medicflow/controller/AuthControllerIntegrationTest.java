@@ -4,6 +4,7 @@ import com.inflowia.medicflow.domain.usuario.Role;
 import com.inflowia.medicflow.domain.usuario.Usuario;
 import com.inflowia.medicflow.repository.RoleRepository;
 import com.inflowia.medicflow.repository.UsuarioRepository;
+import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -114,7 +115,7 @@ class AuthControllerIntegrationTest {
     void shouldRequireAuthenticationForMeEndpoint() throws Exception {
         mockMvc.perform(get("/auth/me").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("AUTHENTICATION_ERROR"))
+                .andExpect(jsonPath("$.code").value(ErrorCodes.AUTH_AUTHENTICATION_ERROR))
                 .andExpect(jsonPath("$.path").value("/auth/me"));
     }
 }

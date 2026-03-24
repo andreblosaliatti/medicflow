@@ -69,7 +69,7 @@ class UsuarioControllerWebMvcTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code").value(ErrorCodes.VALIDATION_ERROR))
+                .andExpect(jsonPath("$.code").value(ErrorCodes.CORE_REQUEST_BODY_INVALID))
                 .andExpect(jsonPath("$.message").value("Dados inválidos."))
                 .andExpect(jsonPath("$.path").value("/usuarios"))
                 .andExpect(jsonPath("$.errors.length()").value(6));

@@ -42,7 +42,7 @@ class ControllerExceptionHandlerTest {
 
         assertEquals(404, response.getStatusCode().value());
         assertEquals("Not Found", response.getBody().getError());
-        assertEquals(ErrorCodes.RESOURCE_NOT_FOUND, response.getBody().getCode());
+        assertEquals(ErrorCodes.CONSULTA_NOT_FOUND, response.getBody().getCode());
         assertEquals("Paciente não encontrado.", response.getBody().getMessage());
         assertEquals("trace-123", response.getBody().getTraceId());
     }
@@ -53,7 +53,7 @@ class ControllerExceptionHandlerTest {
 
         assertEquals(422, response.getStatusCode().value());
         assertEquals("Unprocessable Entity", response.getBody().getError());
-        assertEquals(ErrorCodes.BUSINESS_RULE_VIOLATION, response.getBody().getCode());
+        assertEquals(ErrorCodes.CONSULTA_BUSINESS_RULE, response.getBody().getCode());
         assertEquals(ExceptionMessages.DOSAGE_REQUIRED, response.getBody().getMessage());
     }
 
@@ -69,7 +69,7 @@ class ControllerExceptionHandlerTest {
         var response = handler.constraintViolation(new ConstraintViolationException(Set.of(violation)), request);
 
         assertEquals(400, response.getStatusCode().value());
-        assertEquals(ErrorCodes.VALIDATION_ERROR, response.getBody().getCode());
+        assertEquals(ErrorCodes.CORE_REQUEST_INVALID, response.getBody().getCode());
         assertEquals(ExceptionMessages.INVALID_DATA, response.getBody().getMessage());
         ValidationError validationError = (ValidationError) response.getBody();
         assertEquals(1, validationError.getErrors().size());
@@ -84,7 +84,7 @@ class ControllerExceptionHandlerTest {
         );
 
         assertEquals(403, response.getStatusCode().value());
-        assertEquals(ErrorCodes.UNAUTHORIZED_OPERATION, response.getBody().getCode());
+        assertEquals(ErrorCodes.AUTH_UNAUTHORIZED_OPERATION, response.getBody().getCode());
         assertEquals(ExceptionMessages.ACCESS_DENIED, response.getBody().getMessage());
     }
 
@@ -93,7 +93,7 @@ class ControllerExceptionHandlerTest {
         var response = handler.authentication(new BadCredentialsException(ExceptionMessages.INVALID_LOGIN), request);
 
         assertEquals(401, response.getStatusCode().value());
-        assertEquals(ErrorCodes.AUTHENTICATION_ERROR, response.getBody().getCode());
+        assertEquals(ErrorCodes.AUTH_AUTHENTICATION_ERROR, response.getBody().getCode());
         assertEquals(ExceptionMessages.INVALID_LOGIN, response.getBody().getMessage());
     }
 
@@ -102,7 +102,7 @@ class ControllerExceptionHandlerTest {
         var response = handler.generic(new RuntimeException("db offline"), request);
 
         assertEquals(500, response.getStatusCode().value());
-        assertEquals(ErrorCodes.INTERNAL_ERROR, response.getBody().getCode());
+        assertEquals(ErrorCodes.CORE_INTERNAL_ERROR, response.getBody().getCode());
         assertEquals(ExceptionMessages.INTERNAL_ERROR, response.getBody().getMessage());
         assertEquals("trace-123", response.getBody().getTraceId());
     }

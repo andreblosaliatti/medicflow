@@ -8,24 +8,35 @@ import com.inflowia.medicflow.domain.medicamento.MedicamentoBase;
 import com.inflowia.medicflow.domain.medicamento.MedicamentoPrescrito;
 import com.inflowia.medicflow.domain.paciente.Paciente;
 import com.inflowia.medicflow.domain.usuario.Medico;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 
 @DataJpaTest
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@TestPropertySource(properties = {
+        "spring.flyway.enabled=false",
+        "spring.sql.init.mode=never"
+})
 class MedicamentoPrescritoRepositoryTest {
 
     @Autowired
@@ -49,7 +60,7 @@ class MedicamentoPrescritoRepositoryTest {
         Paciente paciente = Paciente.builder()
                 .primeiroNome("João")
                 .sobrenome("Silva")
-                .cpf("12345678909")
+                .cpf("86288366757")
                 .dataNascimento(LocalDate.of(1990, 1, 1))
                 .sexo("M")
                 .ativo(true)
@@ -115,7 +126,7 @@ class MedicamentoPrescritoRepositoryTest {
         Paciente paciente1 = Paciente.builder()
                 .primeiroNome("Ana")
                 .sobrenome("Souza")
-                .cpf("12345678062")
+                .cpf("39053344705")
                 .dataNascimento(LocalDate.of(1992, 2, 2))
                 .sexo("F")
                 .ativo(true)
@@ -125,7 +136,7 @@ class MedicamentoPrescritoRepositoryTest {
         Paciente paciente2 = Paciente.builder()
                 .primeiroNome("Carlos")
                 .sobrenome("Oliveira")
-                .cpf("12345678143")
+                .cpf("12345678909")
                 .dataNascimento(LocalDate.of(1988, 3, 3))
                 .sexo("M")
                 .ativo(true)
@@ -191,7 +202,7 @@ class MedicamentoPrescritoRepositoryTest {
         Paciente paciente = Paciente.builder()
                 .primeiroNome("Marina")
                 .sobrenome("Costa")
-                .cpf("12345678224")
+                .cpf("29537988001")
                 .dataNascimento(LocalDate.of(1995, 4, 4))
                 .sexo("F")
                 .ativo(true)
@@ -260,7 +271,6 @@ class MedicamentoPrescritoRepositoryTest {
         medico.setEmail("medico" + System.nanoTime() + "@test.com");
         medico.setCpf(gerarCpfUnicoValido());
         medico.setAtivo(true);
-
         medico.setCrm("CRM" + System.nanoTime());
         medico.setEspecialidade("Clínico Geral");
         medico.setSexo("M");
