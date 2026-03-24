@@ -326,7 +326,7 @@ WHERE NOT EXISTS (
     WHERE c.data_hora = v.data_hora
       AND c.medico_id = m.usuario_id
       AND c.paciente_id = p.id
-      AND c.motivo = v.motivo
+      AND c.motivo IS NOT DISTINCT FROM v.motivo
 );
 
 COMMIT;
