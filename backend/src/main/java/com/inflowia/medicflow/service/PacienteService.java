@@ -218,7 +218,7 @@ public class PacienteService {
     }
 
     private void copiarDtoParaEntidade(PacienteDTO dto, Paciente entidade) {
-        entidade.setPrimeiroNome(dto.getPrimeiroNome());
+        entidade.setNome(dto.getNome());
         entidade.setSobrenome(dto.getSobrenome());
         entidade.setCpf(dto.getCpf());
         entidade.setDataNascimento(dto.getDataNascimento());
@@ -233,8 +233,8 @@ public class PacienteService {
     }
 
     private void copiarUpdateDtoParaEntidade(PacienteUpdateDTO dto, Paciente entidade) {
-        if (dto.getPrimeiroNome() != null) {
-            entidade.setPrimeiroNome(dto.getPrimeiroNome());
+        if (dto.getNome() != null) {
+            entidade.setNome(dto.getNome());
         }
 
         if (dto.getSobrenome() != null) {
@@ -303,9 +303,9 @@ public class PacienteService {
     }
 
     private String composeNomePaciente(Paciente paciente) {
-        String primeiroNome = paciente.getPrimeiroNome() != null ? paciente.getPrimeiroNome().trim() : "";
+        String nome = paciente.getNome() != null ? paciente.getNome().trim() : "";
         String sobrenome = paciente.getSobrenome() != null ? paciente.getSobrenome().trim() : "";
-        return (primeiroNome + " " + sobrenome).trim();
+        return (nome + " " + sobrenome).trim();
     }
 
     private String composeNomeMedico(Consulta consulta) {

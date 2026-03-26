@@ -72,8 +72,8 @@ public class Paciente {
     private List<Consulta> consultas = new ArrayList<>();
 
     public void atualizarInformacoes(PacienteUpdateDTO dados) {
-        if (dados.getPrimeiroNome() != null) {
-            this.nome = dados.getPrimeiroNome();
+        if (dados.getNome() != null) {
+            this.nome = dados.getNome();
         }
         if (dados.getSobrenome() != null) {
             this.sobrenome = dados.getSobrenome();

@@ -23,7 +23,7 @@ public class PacienteDetailsDTO {
 
     public PacienteDetailsDTO(Paciente p) {
         this.id = p.getId();
-        this.nome = p.getnome();
+        this.nome = p.getNome();
         this.sobrenome = p.getSobrenome();
         this.cpf = p.getCpf();
         this.dataNascimento = p.getDataNascimento();

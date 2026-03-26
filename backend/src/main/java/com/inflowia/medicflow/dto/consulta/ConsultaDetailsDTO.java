@@ -50,6 +50,7 @@ public class ConsultaDetailsDTO {
     private String observacoes;
     private ConsultaAcompanhamentoDTO acompanhamento;
 
+    private Long pacienteId;
     private String pacienteNome;
     private Long medicoId;
     private String medicoNome;
@@ -80,17 +81,17 @@ public class ConsultaDetailsDTO {
         this.acompanhamento = new ConsultaAcompanhamentoDTO(entity);
         this.pacienteId = entity.getPaciente() != null ? entity.getPaciente().getId() : null;
         this.pacienteNome = entity.getPaciente() != null
-                ? composeName(entity.getPaciente().getPrimeiroNome(), entity.getPaciente().getSobrenome())
+                ? composeName(entity.getPaciente().getNome(), entity.getPaciente().getSobrenome())
                 : null;
         this.medicoId = entity.getMedico() != null ? entity.getMedico().getId() : null;
         this.medicoNome = entity.getMedico() != null
                 ? composeName(entity.getMedico().getNome(), entity.getMedico().getSobrenome())
                 : null;
-        this.medicamentosPrescritos = entity.getMedicamentoPrescrito() != null
-                ? entity.getMedicamentoPrescrito().stream().map(MedicamentoPrescritoMinDTO::new).toList()
+        this.medicamentosPrescritos = entity.getMedicamentosPrescritos() != null
+                ? entity.getMedicamentosPrescritos().stream().map(MedicamentoPrescritoMinDTO::new).toList()
                 : List.of();
-        this.examesSolicitados = entity.getExameSolicitado() != null
-                ? entity.getExameSolicitado().stream().map(ExameSolicitadoMinDTO::new).toList()
+        this.examesSolicitados = entity.getExamesSolicitados() != null
+                ? entity.getExamesSolicitados().stream().map(ExameSolicitadoMinDTO::new).toList()
                 : List.of();
     }
 

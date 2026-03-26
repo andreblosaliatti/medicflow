@@ -72,7 +72,7 @@ class PacienteServiceTest {
     void listarShouldApplyFiltersAndReturnTableDto() {
         Paciente paciente = Paciente.builder()
                 .id(1L)
-                .primeiroNome("Maria")
+                .nome("Maria")
                 .sobrenome("Oliveira")
                 .cpf("29537988001")
                 .telefone("(11) 99999-0000")
@@ -100,7 +100,7 @@ class PacienteServiceTest {
     void buscarPerfilShouldReturnConsolidatedSummary() {
         Paciente paciente = Paciente.builder()
                 .id(1L)
-                .primeiroNome("João")
+                .nome("João")
                 .sobrenome("da Silva")
                 .cpf("38475612040")
                 .dataNascimento(LocalDate.of(1980, 1, 1))
@@ -144,7 +144,7 @@ class PacienteServiceTest {
     void atualizarShouldCopyPlanoSaudeAndBirthDate() {
         Paciente paciente = Paciente.builder()
                 .id(1L)
-                .primeiroNome("João")
+                .nome("João")
                 .sobrenome("da Silva")
                 .planoSaude("Antigo")
                 .dataNascimento(LocalDate.of(1980, 1, 1))
@@ -175,7 +175,7 @@ class PacienteServiceTest {
     void buscarPerfilShouldHandlePacienteSemConsultas() {
         Paciente paciente = Paciente.builder()
                 .id(1L)
-                .primeiroNome("João")
+                .nome("João")
                 .sobrenome("da Silva")
                 .ativo(true)
                 .build();

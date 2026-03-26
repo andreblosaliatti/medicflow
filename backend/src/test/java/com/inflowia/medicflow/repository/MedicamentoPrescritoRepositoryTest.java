@@ -58,7 +58,7 @@ class MedicamentoPrescritoRepositoryTest {
     @DisplayName("findByConsultaId deve retornar somente medicamentos da consulta informada")
     void findByConsultaIdShouldReturnOnlyMedicamentosFromConsulta() {
         Paciente paciente = Paciente.builder()
-                .primeiroNome("João")
+                .nome("João")
                 .sobrenome("Silva")
                 .cpf("86288366757")
                 .dataNascimento(LocalDate.of(1990, 1, 1))
@@ -72,25 +72,21 @@ class MedicamentoPrescritoRepositoryTest {
         MedicamentoBase ibuprofenoBase = criarMedicamentoBaseValido("Ibuprofeno", "Ibuprofeno");
 
         Consulta consulta1 = Consulta.builder()
-                .paciente(paciente)
                 .medico(medico)
                 .meioPagamento(MeioPagamento.PIX)
                 .status(StatusConsulta.AGENDADA)
                 .tipo(TipoConsulta.PRESENCIAL)
                 .retorno(false)
-                .teleconsulta(false)
                 .dataHora(LocalDateTime.now())
                 .build();
         consulta1 = consultaRepository.save(consulta1);
 
         Consulta consulta2 = Consulta.builder()
-                .paciente(paciente)
                 .medico(medico)
                 .meioPagamento(MeioPagamento.PIX)
                 .status(StatusConsulta.AGENDADA)
                 .tipo(TipoConsulta.PRESENCIAL)
                 .retorno(false)
-                .teleconsulta(false)
                 .dataHora(LocalDateTime.now().plusDays(1))
                 .build();
         consulta2 = consultaRepository.save(consulta2);
@@ -124,7 +120,7 @@ class MedicamentoPrescritoRepositoryTest {
     @DisplayName("findByConsultaPacienteId não deve misturar medicamentos de outro paciente")
     void findByConsultaPacienteIdShouldNotMixOtherPaciente() {
         Paciente paciente1 = Paciente.builder()
-                .primeiroNome("Ana")
+                .nome("Ana")
                 .sobrenome("Souza")
                 .cpf("39053344705")
                 .dataNascimento(LocalDate.of(1992, 2, 2))
@@ -134,7 +130,7 @@ class MedicamentoPrescritoRepositoryTest {
         paciente1 = pacienteRepository.save(paciente1);
 
         Paciente paciente2 = Paciente.builder()
-                .primeiroNome("Carlos")
+                .nome("Carlos")
                 .sobrenome("Oliveira")
                 .cpf("12345678909")
                 .dataNascimento(LocalDate.of(1988, 3, 3))
@@ -148,25 +144,21 @@ class MedicamentoPrescritoRepositoryTest {
         MedicamentoBase omeprazolBase = criarMedicamentoBaseValido("Omeprazol", "Omeprazol");
 
         Consulta consultaPaciente1 = Consulta.builder()
-                .paciente(paciente1)
                 .medico(medico)
                 .meioPagamento(MeioPagamento.PIX)
                 .status(StatusConsulta.AGENDADA)
                 .tipo(TipoConsulta.PRESENCIAL)
                 .retorno(false)
-                .teleconsulta(false)
                 .dataHora(LocalDateTime.now())
                 .build();
         consultaPaciente1 = consultaRepository.save(consultaPaciente1);
 
         Consulta consultaPaciente2 = Consulta.builder()
-                .paciente(paciente2)
                 .medico(medico)
                 .meioPagamento(MeioPagamento.PIX)
                 .status(StatusConsulta.AGENDADA)
                 .tipo(TipoConsulta.PRESENCIAL)
                 .retorno(false)
-                .teleconsulta(false)
                 .dataHora(LocalDateTime.now().plusDays(1))
                 .build();
         consultaPaciente2 = consultaRepository.save(consultaPaciente2);
@@ -200,7 +192,7 @@ class MedicamentoPrescritoRepositoryTest {
     @DisplayName("findByConsultaId não deve trazer medicamentos de outra consulta do mesmo paciente")
     void findByConsultaIdShouldNotBringMedicamentosFromAnotherConsultaOfSamePaciente() {
         Paciente paciente = Paciente.builder()
-                .primeiroNome("Marina")
+                .nome("Marina")
                 .sobrenome("Costa")
                 .cpf("29537988001")
                 .dataNascimento(LocalDate.of(1995, 4, 4))
@@ -214,25 +206,21 @@ class MedicamentoPrescritoRepositoryTest {
         MedicamentoBase amoxicilinaBase = criarMedicamentoBaseValido("Amoxicilina", "Amoxicilina");
 
         Consulta consulta1 = Consulta.builder()
-                .paciente(paciente)
                 .medico(medico)
                 .meioPagamento(MeioPagamento.PIX)
                 .status(StatusConsulta.AGENDADA)
                 .tipo(TipoConsulta.PRESENCIAL)
                 .retorno(false)
-                .teleconsulta(false)
                 .dataHora(LocalDateTime.now())
                 .build();
         consulta1 = consultaRepository.save(consulta1);
 
         Consulta consulta2 = Consulta.builder()
-                .paciente(paciente)
                 .medico(medico)
                 .meioPagamento(MeioPagamento.PIX)
                 .status(StatusConsulta.AGENDADA)
                 .tipo(TipoConsulta.PRESENCIAL)
                 .retorno(false)
-                .teleconsulta(false)
                 .dataHora(LocalDateTime.now().plusDays(2))
                 .build();
         consulta2 = consultaRepository.save(consulta2);

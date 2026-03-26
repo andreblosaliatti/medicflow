@@ -19,7 +19,7 @@ public class PacienteListDTO {
     private final LocalDateTime ultimaConsulta;
 
     public PacienteListDTO(Paciente paciente, LocalDateTime ultimaConsulta) {
-        String nome = paciente.getnome() != null ? paciente.getnome() : "";
+        String nome = paciente.getNome() != null ? paciente.getNome() : "";
         String sobrenome = paciente.getSobrenome() != null ? paciente.getSobrenome() : "";
 
         this.id = paciente.getId();
