@@ -18,7 +18,7 @@ public class PacienteDTO {
 
     private Long id;
 
-    @NotBlank(message = "Primeiro nome é obrigatório")
+    @NotBlank(message = "Nome é obrigatório")
     private String nome;
 
     @NotBlank(message = "Sobrenome é obrigatório")
@@ -50,7 +50,7 @@ public class PacienteDTO {
 
     public PacienteDTO(Paciente p) {
         this.id = p.getId();
-        this.nome = p.getnome();
+        this.nome = p.getNome();
         this.sobrenome = p.getSobrenome();
         this.cpf = p.getCpf();
         this.dataNascimento = p.getDataNascimento();

@@ -61,6 +61,9 @@ public class ConsultaDTO {
         @Size(max = 500, message = "O motivo deve ter no máximo 500 caracteres")
         private String motivo;
 
+        @NotNull(message = "O paciente da consulta é obrigatório")
+        private Long pacienteId;
+
         @Size(max = 4000, message = "A anamnese deve ter no máximo 4000 caracteres")
         private String anamnese;
 

@@ -40,9 +40,6 @@ public final class ConsultaSpecifications {
             if (filtro.getRetorno() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("retorno"), filtro.getRetorno()));
             }
-            if (filtro.getTeleconsulta() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("teleconsulta"), filtro.getTeleconsulta()));
-            }
             if (filtro.getDataHoraInicio() != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("dataHora"), filtro.getDataHoraInicio()));
             }
@@ -52,7 +49,7 @@ public final class ConsultaSpecifications {
             if (StringUtils.hasText(filtro.getTermo())) {
                 String termo = "%" + filtro.getTermo().trim().toLowerCase() + "%";
                 predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.like(criteriaBuilder.lower(paciente.get("primeiroNome")), termo),
+                        criteriaBuilder.like(criteriaBuilder.lower(paciente.get("nome")), termo),
                         criteriaBuilder.like(criteriaBuilder.lower(paciente.get("sobrenome")), termo),
                         criteriaBuilder.like(criteriaBuilder.lower(medico.get("nome")), termo),
                         criteriaBuilder.like(criteriaBuilder.lower(medico.get("sobrenome")), termo),

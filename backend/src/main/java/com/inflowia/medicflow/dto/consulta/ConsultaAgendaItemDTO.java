@@ -20,6 +20,7 @@ public class ConsultaAgendaItemDTO {
     private TipoConsulta tipo;
     private StatusConsulta status;
     private String linkAcesso;
+    private Long pacienteId;
     private String pacienteNome;
     private Long medicoId;
     private String medicoNome;
@@ -34,7 +35,7 @@ public class ConsultaAgendaItemDTO {
         this.linkAcesso = entity.getLinkAcesso();
         this.pacienteId = entity.getPaciente() != null ? entity.getPaciente().getId() : null;
         this.pacienteNome = entity.getPaciente() != null
-                ? composeName(entity.getPaciente().getPrimeiroNome(), entity.getPaciente().getSobrenome())
+                ? composeName(entity.getPaciente().getNome(), entity.getPaciente().getSobrenome())
                 : null;
         this.medicoId = entity.getMedico() != null ? entity.getMedico().getId() : null;
         this.medicoNome = entity.getMedico() != null
@@ -49,11 +50,11 @@ public class ConsultaAgendaItemDTO {
             builder.append(first.trim());
         }
         if (second != null && !second.isBlank()) {
-            if (!builder.isEmpty()) {
+            if (builder.length() > 0) {
                 builder.append(" ");
             }
             builder.append(second.trim());
         }
-        return builder.isEmpty() ? null : builder.toString();
+        return builder.length() == 0 ? null : builder.toString();
     }
 }

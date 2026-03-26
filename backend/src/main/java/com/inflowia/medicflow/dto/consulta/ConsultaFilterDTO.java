@@ -19,13 +19,13 @@ import java.time.LocalDateTime;
 @Builder(toBuilder = true)
 public class ConsultaFilterDTO {
 
+    private Long pacienteId;
     private Long medicoId;
     private StatusConsulta status;
     private TipoConsulta tipo;
     private MeioPagamento meioPagamento;
     private Boolean pago;
     private Boolean retorno;
-    private Boolean teleconsulta;
     private String termo;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)

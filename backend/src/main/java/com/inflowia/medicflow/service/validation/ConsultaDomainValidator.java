@@ -66,7 +66,7 @@ public class ConsultaDomainValidator {
     }
 
     private void validateTeleconsulta(Consulta consulta) {
-        boolean isTeleconsulta = consulta.isTeleconsulta() || consulta.getTipo() == TipoConsulta.TELECONSULTA;
+        boolean isTeleconsulta = consulta.getTipo() == TipoConsulta.TELECONSULTA;
         if (isTeleconsulta && isBlank(consulta.getLinkAcesso())) {
             throw new BusinessRuleException(ErrorCodes.CONSULTA_BUSINESS_RULE, ExceptionMessages.TELECONSULTATION_LINK_REQUIRED);
         }

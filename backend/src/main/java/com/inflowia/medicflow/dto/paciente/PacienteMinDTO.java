@@ -13,7 +13,7 @@ public class PacienteMinDTO {
 
     public PacienteMinDTO(Paciente p) {
         this.id = p.getId();
-        this.nomeCompleto = (p.getnome() + " " + p.getSobrenome()).trim();
+        this.nomeCompleto = (p.getNome() + " " + p.getSobrenome()).trim();
         this.telefone = p.getTelefone();
         this.planoSaude = p.getPlanoSaude();
     }

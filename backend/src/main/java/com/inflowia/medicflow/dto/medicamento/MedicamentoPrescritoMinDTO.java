@@ -16,7 +16,6 @@ public class MedicamentoPrescritoMinDTO {
     private String frequencia;
     private String via;
     private Long consultaId;
-    private Long pacienteId;
     private Long medicamentoBaseId;
     private String pacienteNome;
 
@@ -27,13 +26,10 @@ public class MedicamentoPrescritoMinDTO {
         this.frequencia = m.getFrequencia();
         this.via = m.getVia();
         this.consultaId = m.getConsulta() != null ? m.getConsulta().getId() : null;
-        this.pacienteId = m.getConsulta() != null && m.getConsulta().getPaciente() != null
-                ? m.getConsulta().getPaciente().getId()
-                : null;
         this.medicamentoBaseId = m.getMedicamentoBase() != null ? m.getMedicamentoBase().getId() : null;
         this.pacienteNome = m.getConsulta() != null && m.getConsulta().getPaciente() != null
                 ? composeName(
-                m.getConsulta().getPaciente().getPrimeiroNome(),
+                m.getConsulta().getPaciente().getNome(),
                 m.getConsulta().getPaciente().getSobrenome())
                 : null;
     }

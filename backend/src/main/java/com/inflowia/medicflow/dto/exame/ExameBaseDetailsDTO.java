@@ -24,8 +24,8 @@ public class ExameBaseDetailsDTO {
         this.codigoTuss = entity.getCodigoTuss();
         this.tipo = entity.getTipo();
         this.prazoEstimado = entity.getPrazoEstimado();
-        this.quantidadeSolicitacoes = entity.getExameSolicitado() != null
-                ? (long) entity.getExameSolicitado().size()
+        this.quantidadeSolicitacoes = entity.getExamesSolicitados() != null
+                ? (long) entity.getExamesSolicitados().size()
                 : 0L;
     }
 }
