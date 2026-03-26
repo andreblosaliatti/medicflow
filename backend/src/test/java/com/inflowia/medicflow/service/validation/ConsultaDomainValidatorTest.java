@@ -22,7 +22,6 @@ class ConsultaDomainValidatorTest {
     void validateMustRequireLinkForTeleconsulta() {
         Consulta consulta = consultaBase();
         consulta.setTipo(TipoConsulta.TELECONSULTA);
-        consulta.setTeleconsulta(true);
         consulta.setLinkAcesso("   ");
 
         BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> validator.validate(consulta));
@@ -107,7 +106,6 @@ class ConsultaDomainValidatorTest {
         consulta.setStatus(StatusConsulta.AGENDADA);
         consulta.setMeioPagamento(MeioPagamento.PIX);
         consulta.setPago(false);
-        consulta.setTeleconsulta(false);
         consulta.setMotivo("Avaliação clínica");
         return consulta;
     }

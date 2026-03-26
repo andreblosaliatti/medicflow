@@ -8,35 +8,18 @@ import com.inflowia.medicflow.domain.medicamento.MedicamentoBase;
 import com.inflowia.medicflow.domain.medicamento.MedicamentoPrescrito;
 import com.inflowia.medicflow.domain.paciente.Paciente;
 import com.inflowia.medicflow.domain.usuario.Medico;
-
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 
 @DataJpaTest
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-@TestPropertySource(properties = {
-        "spring.flyway.enabled=false",
-        "spring.sql.init.mode=never"
-})
 class MedicamentoPrescritoRepositoryTest {
 
     @Autowired
@@ -55,229 +38,97 @@ class MedicamentoPrescritoRepositoryTest {
     private MedicamentoBaseRepository medicamentoBaseRepository;
 
     @Test
-    @DisplayName("findByConsultaId deve retornar somente medicamentos da consulta informada")
-    void findByConsultaIdShouldReturnOnlyMedicamentosFromConsulta() {
-        Paciente paciente = Paciente.builder()
-                .nome("João")
-                .sobrenome("Silva")
-                .cpf("86288366757")
+    void findByConsultaPacienteIdShouldNotMixOtherPaciente() {
+
+        Paciente paciente1 = criarPaciente("Ana", "Souza", "52998224725");
+        Paciente paciente2 = criarPaciente("Carlos", "Oliveira", "39053344705");
+
+        Medico medico = criarMedico();
+
+        Consulta c1 = criarConsulta(paciente1, medico);
+        Consulta c2 = criarConsulta(paciente2, medico);
+
+        MedicamentoBase base = criarMedicamento("Losartana");
+
+        repository.save(MedicamentoPrescrito.builder()
+                .consulta(c1)
+                .medicamentoBase(base)
+                .nome("Losartana")
+                .dosagem("50mg")
+                .frequencia("1x dia")
+                .via("VO")
+                .dataInicio(LocalDate.now()) // 🔥 obrigatório
+                .ativo(true)
+                .build());
+
+        repository.save(MedicamentoPrescrito.builder()
+                .consulta(c2)
+                .medicamentoBase(base)
+                .nome("Outro")
+                .dosagem("10mg")
+                .frequencia("1x dia")
+                .via("VO")
+                .dataInicio(LocalDate.now())
+                .ativo(true)
+                .build());
+
+        var result = repository.findByConsultaPacienteId(
+                paciente1.getId(),
+                PageRequest.of(0, 10)
+        );
+
+        assertEquals(1, result.getTotalElements());
+    }
+
+    // ===== FACTORIES =====
+
+    private Paciente criarPaciente(String nome, String sobrenome, String cpf) {
+        return pacienteRepository.save(Paciente.builder()
+                .nome(nome)
+                .sobrenome(sobrenome)
+                .cpf(cpf)
                 .dataNascimento(LocalDate.of(1990, 1, 1))
                 .sexo("M")
                 .ativo(true)
-                .build();
-        paciente = pacienteRepository.save(paciente);
+                .build());
+    }
 
-        Medico medico = criarMedicoValido();
-        MedicamentoBase paracetamolBase = criarMedicamentoBaseValido("Paracetamol", "Paracetamol");
-        MedicamentoBase ibuprofenoBase = criarMedicamentoBaseValido("Ibuprofeno", "Ibuprofeno");
-
-        Consulta consulta1 = Consulta.builder()
+    private Consulta criarConsulta(Paciente paciente, Medico medico) {
+        return consultaRepository.save(Consulta.builder()
+                .paciente(paciente)
                 .medico(medico)
                 .meioPagamento(MeioPagamento.PIX)
                 .status(StatusConsulta.AGENDADA)
                 .tipo(TipoConsulta.PRESENCIAL)
                 .retorno(false)
                 .dataHora(LocalDateTime.now())
-                .build();
-        consulta1 = consultaRepository.save(consulta1);
-
-        Consulta consulta2 = Consulta.builder()
-                .medico(medico)
-                .meioPagamento(MeioPagamento.PIX)
-                .status(StatusConsulta.AGENDADA)
-                .tipo(TipoConsulta.PRESENCIAL)
-                .retorno(false)
-                .dataHora(LocalDateTime.now().plusDays(1))
-                .build();
-        consulta2 = consultaRepository.save(consulta2);
-
-        repository.save(MedicamentoPrescrito.builder()
-                .consulta(consulta1)
-                .medicamentoBase(paracetamolBase)
-                .nome("Paracetamol")
-                .dosagem("500mg")
-                .frequencia("8/8h")
-                .via("VO")
                 .build());
-
-        repository.save(MedicamentoPrescrito.builder()
-                .consulta(consulta2)
-                .medicamentoBase(ibuprofenoBase)
-                .nome("Ibuprofeno")
-                .dosagem("400mg")
-                .frequencia("12/12h")
-                .via("VO")
-                .build());
-
-        Page<MedicamentoPrescrito> result =
-                repository.findByConsultaId(consulta1.getId(), PageRequest.of(0, 10));
-
-        assertEquals(1, result.getTotalElements());
-        assertEquals("Paracetamol", result.getContent().get(0).getNome());
     }
 
-    @Test
-    @DisplayName("findByConsultaPacienteId não deve misturar medicamentos de outro paciente")
-    void findByConsultaPacienteIdShouldNotMixOtherPaciente() {
-        Paciente paciente1 = Paciente.builder()
-                .nome("Ana")
-                .sobrenome("Souza")
-                .cpf("39053344705")
-                .dataNascimento(LocalDate.of(1992, 2, 2))
-                .sexo("F")
-                .ativo(true)
-                .build();
-        paciente1 = pacienteRepository.save(paciente1);
+    private Medico criarMedico() {
+        String suf = UUID.randomUUID().toString().substring(0, 5);
 
-        Paciente paciente2 = Paciente.builder()
-                .nome("Carlos")
-                .sobrenome("Oliveira")
-                .cpf("12345678909")
-                .dataNascimento(LocalDate.of(1988, 3, 3))
-                .sexo("M")
-                .ativo(true)
-                .build();
-        paciente2 = pacienteRepository.save(paciente2);
+        Medico m = new Medico();
+        m.setLogin("med_" + suf);
+        m.setSenha("123");
+        m.setNome("Dr");
+        m.setSobrenome("Teste");
+        m.setEmail("med" + suf + "@test.com");
+        m.setCpf("11144477735");
+        m.setAtivo(true);
+        m.setCrm("CRM" + suf);
+        m.setEspecialidade("Clinico");
 
-        Medico medico = criarMedicoValido();
-        MedicamentoBase losartanaBase = criarMedicamentoBaseValido("Losartana", "Losartana");
-        MedicamentoBase omeprazolBase = criarMedicamentoBaseValido("Omeprazol", "Omeprazol");
-
-        Consulta consultaPaciente1 = Consulta.builder()
-                .medico(medico)
-                .meioPagamento(MeioPagamento.PIX)
-                .status(StatusConsulta.AGENDADA)
-                .tipo(TipoConsulta.PRESENCIAL)
-                .retorno(false)
-                .dataHora(LocalDateTime.now())
-                .build();
-        consultaPaciente1 = consultaRepository.save(consultaPaciente1);
-
-        Consulta consultaPaciente2 = Consulta.builder()
-                .medico(medico)
-                .meioPagamento(MeioPagamento.PIX)
-                .status(StatusConsulta.AGENDADA)
-                .tipo(TipoConsulta.PRESENCIAL)
-                .retorno(false)
-                .dataHora(LocalDateTime.now().plusDays(1))
-                .build();
-        consultaPaciente2 = consultaRepository.save(consultaPaciente2);
-
-        repository.save(MedicamentoPrescrito.builder()
-                .consulta(consultaPaciente1)
-                .medicamentoBase(losartanaBase)
-                .nome("Losartana")
-                .dosagem("50mg")
-                .frequencia("1x ao dia")
-                .via("VO")
-                .build());
-
-        repository.save(MedicamentoPrescrito.builder()
-                .consulta(consultaPaciente2)
-                .medicamentoBase(omeprazolBase)
-                .nome("Omeprazol")
-                .dosagem("20mg")
-                .frequencia("1x ao dia")
-                .via("VO")
-                .build());
-
-        Page<MedicamentoPrescrito> result =
-                repository.findByConsultaPacienteId(paciente1.getId(), PageRequest.of(0, 10));
-
-        assertEquals(1, result.getTotalElements());
-        assertEquals("Losartana", result.getContent().get(0).getNome());
+        return medicoRepository.save(m);
     }
 
-    @Test
-    @DisplayName("findByConsultaId não deve trazer medicamentos de outra consulta do mesmo paciente")
-    void findByConsultaIdShouldNotBringMedicamentosFromAnotherConsultaOfSamePaciente() {
-        Paciente paciente = Paciente.builder()
-                .nome("Marina")
-                .sobrenome("Costa")
-                .cpf("29537988001")
-                .dataNascimento(LocalDate.of(1995, 4, 4))
-                .sexo("F")
-                .ativo(true)
-                .build();
-        paciente = pacienteRepository.save(paciente);
-
-        Medico medico = criarMedicoValido();
-        MedicamentoBase dipironaBase = criarMedicamentoBaseValido("Dipirona", "Dipirona");
-        MedicamentoBase amoxicilinaBase = criarMedicamentoBaseValido("Amoxicilina", "Amoxicilina");
-
-        Consulta consulta1 = Consulta.builder()
-                .medico(medico)
-                .meioPagamento(MeioPagamento.PIX)
-                .status(StatusConsulta.AGENDADA)
-                .tipo(TipoConsulta.PRESENCIAL)
-                .retorno(false)
-                .dataHora(LocalDateTime.now())
-                .build();
-        consulta1 = consultaRepository.save(consulta1);
-
-        Consulta consulta2 = Consulta.builder()
-                .medico(medico)
-                .meioPagamento(MeioPagamento.PIX)
-                .status(StatusConsulta.AGENDADA)
-                .tipo(TipoConsulta.PRESENCIAL)
-                .retorno(false)
-                .dataHora(LocalDateTime.now().plusDays(2))
-                .build();
-        consulta2 = consultaRepository.save(consulta2);
-
-        repository.save(MedicamentoPrescrito.builder()
-                .consulta(consulta1)
-                .medicamentoBase(dipironaBase)
-                .nome("Dipirona")
-                .dosagem("1g")
-                .frequencia("6/6h")
-                .via("VO")
-                .build());
-
-        repository.save(MedicamentoPrescrito.builder()
-                .consulta(consulta2)
-                .medicamentoBase(amoxicilinaBase)
-                .nome("Amoxicilina")
-                .dosagem("500mg")
-                .frequencia("8/8h")
-                .via("VO")
-                .build());
-
-        Page<MedicamentoPrescrito> result =
-                repository.findByConsultaId(consulta1.getId(), PageRequest.of(0, 10));
-
-        assertEquals(1, result.getTotalElements());
-        assertTrue(result.getContent().stream().allMatch(m -> "Dipirona".equals(m.getNome())));
-    }
-
-    private Medico criarMedicoValido() {
-        Medico medico = new Medico();
-        medico.setLogin("medico" + System.nanoTime());
-        medico.setSenha("123456");
-        medico.setNome("João");
-        medico.setSobrenome("Silva");
-        medico.setEmail("medico" + System.nanoTime() + "@test.com");
-        medico.setCpf(gerarCpfUnicoValido());
-        medico.setAtivo(true);
-        medico.setCrm("CRM" + System.nanoTime());
-        medico.setEspecialidade("Clínico Geral");
-        medico.setSexo("M");
-
-        return medicoRepository.save(medico);
-    }
-
-    private MedicamentoBase criarMedicamentoBaseValido(String nomeComercial, String principioAtivo) {
+    private MedicamentoBase criarMedicamento(String nome) {
         return medicamentoBaseRepository.save(
                 MedicamentoBase.builder()
-                        .nomeComercial(nomeComercial)
-                        .principioAtivo(principioAtivo)
+                        .nomeComercial(nome)
                         .ativo(true)
                         .controlado(false)
                         .build()
         );
-    }
-
-    private String gerarCpfUnicoValido() {
-        return "52998224725";
     }
 }

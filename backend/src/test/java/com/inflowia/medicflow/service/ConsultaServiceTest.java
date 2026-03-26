@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -59,24 +60,23 @@ class ConsultaServiceTest {
                 LocalDateTime.now().plusDays(1),
                 TipoConsulta.TELECONSULTA,
                 StatusConsulta.AGENDADA,
-                150.0,
+                new BigDecimal("150.00"),
                 MeioPagamento.PIX,
                 false,
                 null,
                 30,
                 false,
                 null,
-                true,
                 null,
                 null,
                 null,
                 "Revisão clínica",
-                null,
-                null,
-                null,
-                null,
-                null,
                 1L,
+                null,
+                null,
+                null,
+                null,
+                null,
                 2L
         );
 
@@ -136,7 +136,10 @@ class ConsultaServiceTest {
         when(consultaRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(consulta), PageRequest.of(0, 20), 1));
 
-        var page = service.listar(ConsultaFilterDTO.builder().status(StatusConsulta.CONFIRMADA).termo("avaliacao").build(), PageRequest.of(0, 20));
+        var page = service.listar(
+                ConsultaFilterDTO.builder().status(StatusConsulta.CONFIRMADA).termo("avaliacao").build(),
+                PageRequest.of(0, 20)
+        );
 
         assertEquals(1, page.getTotalElements());
         assertEquals(33L, page.getContent().getFirst().getId());

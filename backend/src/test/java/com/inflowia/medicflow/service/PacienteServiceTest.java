@@ -84,9 +84,15 @@ class PacienteServiceTest {
         Page<Paciente> page = new PageImpl<>(List.of(paciente), pageable, 1);
         LocalDateTime ultimaConsulta = LocalDateTime.of(2026, 3, 1, 10, 0);
 
+        Consulta consulta = Consulta.builder()
+                .id(99L)
+                .paciente(paciente)
+                .dataHora(ultimaConsulta)
+                .build();
+
         when(repository.search("Maria", "123", true, "Uni", pageable)).thenReturn(page);
-        when(consultaRepository.findTopByPacienteIdOrderByDataHoraDesc(1L))
-                .thenReturn(Optional.of(Consulta.builder().id(99L).dataHora(ultimaConsulta).build()));
+        when(consultaRepository.buscarConsultasOrdenadasPorPacienteEDataDesc(List.of(1L)))
+                .thenReturn(List.of(consulta));
 
         Page<PacienteListDTO> resultado = service.listar(" Maria ", "123", null, "Uni", pageable);
 
@@ -94,6 +100,7 @@ class PacienteServiceTest {
         assertEquals("Maria Oliveira", resultado.getContent().getFirst().getNomeCompleto());
         assertEquals(ultimaConsulta, resultado.getContent().getFirst().getUltimaConsulta());
         verify(repository).search("Maria", "123", true, "Uni", pageable);
+        verify(consultaRepository).buscarConsultasOrdenadasPorPacienteEDataDesc(List.of(1L));
     }
 
     @Test
@@ -117,6 +124,7 @@ class PacienteServiceTest {
 
         Consulta ultimaConsulta = Consulta.builder()
                 .id(10L)
+                .paciente(paciente)
                 .dataHora(LocalDateTime.of(2026, 3, 10, 14, 30))
                 .tipo(TipoConsulta.RETORNO)
                 .status(StatusConsulta.CONCLUIDA)
