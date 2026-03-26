@@ -22,8 +22,7 @@ public class ExameSolicitadoDetailsDTO {
 
     private Long consultaId;
     private Long pacienteId;
-    private String pacientePrimeiroNome;
-    private String pacienteSobrenome;
+    private String pacienteNome;
 
     private Long exameBaseId;
     private String exameNome;
@@ -41,8 +40,10 @@ public class ExameSolicitadoDetailsDTO {
             this.consultaId = entity.getConsulta().getId();
             if (entity.getConsulta().getPaciente() != null) {
                 this.pacienteId = entity.getConsulta().getPaciente().getId();
-                this.pacientePrimeiroNome = entity.getConsulta().getPaciente().getPrimeiroNome();
-                this.pacienteSobrenome = entity.getConsulta().getPaciente().getSobrenome();
+                this.pacienteNome = composeName(
+                        entity.getConsulta().getPaciente().getNome(),
+                        entity.getConsulta().getPaciente().getSobrenome()
+                );
             }
         }
 
@@ -51,5 +52,19 @@ public class ExameSolicitadoDetailsDTO {
             this.exameNome = entity.getExameBase().getNome();
             this.codigoTuss = entity.getExameBase().getCodigoTuss();
         }
+    }
+
+    private String composeName(String first, String second) {
+        StringBuilder builder = new StringBuilder();
+        if (first != null && !first.isBlank()) {
+            builder.append(first.trim());
+        }
+        if (second != null && !second.isBlank()) {
+            if (builder.length() > 0) {
+                builder.append(" ");
+            }
+            builder.append(second.trim());
+        }
+        return builder.length() == 0 ? null : builder.toString();
     }
 }

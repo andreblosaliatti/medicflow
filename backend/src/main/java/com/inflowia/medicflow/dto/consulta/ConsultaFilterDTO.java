@@ -26,7 +26,6 @@ public class ConsultaFilterDTO {
     private MeioPagamento meioPagamento;
     private Boolean pago;
     private Boolean retorno;
-    private Boolean teleconsulta;
     private String termo;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)

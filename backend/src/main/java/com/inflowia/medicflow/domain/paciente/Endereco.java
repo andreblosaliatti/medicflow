@@ -1,37 +1,38 @@
 package com.inflowia.medicflow.domain.paciente;
 
 import com.inflowia.medicflow.dto.EnderecoDTO;
-
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.*;
-
-/**
- * Representa o endereço de um paciente.
- */
 
 @Embeddable
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Endereco {
-    private String logradouro;
-    private String numero;
-    private String complemento;
-    private String bairro;
-    private String cidade;
-    private String uf;
-    private String cep;
 
-    public Endereco (String logradouro, String numero, String complemento, String bairro, String cidade, String uf, String cep){
-        this.logradouro = logradouro;
-        this.numero = numero;
-        this.complemento = complemento;
-        this.bairro = bairro;
-        this.cidade = cidade;
-        this.uf = uf;
-        this.cep = cep;
-    }
+    @Column(length = 255)
+    private String logradouro;
+
+    @Column(length = 50)
+    private String numero;
+
+    @Column(length = 255)
+    private String complemento;
+
+    @Column(length = 255)
+    private String bairro;
+
+    @Column(length = 255)
+    private String cidade;
+
+    @Column(length = 2)
+    private String uf;
+
+    @Column(length = 20)
+    private String cep;
 
     public void atualizarInformacoes(EnderecoDTO dados) {
         if (dados.logradouro() != null) this.logradouro = dados.logradouro();
@@ -41,6 +42,5 @@ public class Endereco {
         if (dados.cidade() != null) this.cidade = dados.cidade();
         if (dados.uf() != null) this.uf = dados.uf();
         if (dados.cep() != null) this.cep = dados.cep();
-        }
-
+    }
 }

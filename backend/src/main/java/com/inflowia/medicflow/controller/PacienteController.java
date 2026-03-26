@@ -48,7 +48,7 @@ public class PacienteController {
             @RequestParam(required = false) String cpf,
             @RequestParam(required = false) Boolean ativo,
             @RequestParam(required = false, name = "convenio") String convenio,
-            @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
+            @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
 
         Page<PacienteListDTO> page = service.listar(nome, cpf, ativo, convenio, pageable);
         return ResponseEntity.ok(page);
@@ -60,7 +60,7 @@ public class PacienteController {
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) String cpf,
             @RequestParam(required = false, name = "convenio") String convenio,
-            @PageableDefault(size = 10, sort = "primeiroNome") Pageable pageable) {
+            @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
 
         return ResponseEntity.ok(service.listarInativos(nome, cpf, convenio, pageable));
     }

@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -29,7 +30,7 @@ public class ConsultaUpdateDTO {
     private StatusConsulta status;
 
     @PositiveOrZero(message = "O valor da consulta não pode ser negativo")
-    private Double valorConsulta;
+    private BigDecimal valorConsulta;
 
     private MeioPagamento meioPagamento;
     private Boolean pago;
@@ -40,7 +41,6 @@ public class ConsultaUpdateDTO {
 
     private Boolean retorno;
     private LocalDateTime dataLimiteRetorno;
-    private Boolean teleconsulta;
 
     @Size(max = 500, message = "O link de acesso deve ter no máximo 500 caracteres")
     private String linkAcesso;
@@ -76,14 +76,13 @@ public class ConsultaUpdateDTO {
             LocalDateTime dataHora,
             TipoConsulta tipo,
             StatusConsulta status,
-            Double valorConsulta,
+            BigDecimal valorConsulta,
             MeioPagamento meioPagamento,
             Boolean pago,
             LocalDateTime dataPagamento,
             Integer duracaoMinutos,
             Boolean retorno,
             LocalDateTime dataLimiteRetorno,
-            Boolean teleconsulta,
             String linkAcesso,
             String planoSaude,
             String numeroCarteirinha,
@@ -106,7 +105,6 @@ public class ConsultaUpdateDTO {
         this.duracaoMinutos = duracaoMinutos;
         this.retorno = retorno;
         this.dataLimiteRetorno = dataLimiteRetorno;
-        this.teleconsulta = teleconsulta;
         this.linkAcesso = linkAcesso;
         this.planoSaude = planoSaude;
         this.numeroCarteirinha = numeroCarteirinha;

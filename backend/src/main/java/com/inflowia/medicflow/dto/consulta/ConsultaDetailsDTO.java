@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class ConsultaDetailsDTO {
     private TipoConsulta tipo;
     private StatusConsulta status;
 
-    private Double valorConsulta;
+    private BigDecimal valorConsulta;
     private MeioPagamento meioPagamento;
 
     private Boolean pago;
@@ -36,7 +37,6 @@ public class ConsultaDetailsDTO {
     private boolean retorno;
     private LocalDateTime dataLimiteRetorno;
 
-    private boolean teleconsulta;
     private String linkAcesso;
 
     private String planoSaude;
@@ -69,7 +69,6 @@ public class ConsultaDetailsDTO {
         this.duracaoMinutos = entity.getDuracaoMinutos();
         this.retorno = entity.isRetorno();
         this.dataLimiteRetorno = entity.getDataLimiteRetorno();
-        this.teleconsulta = entity.isTeleconsulta();
         this.linkAcesso = entity.getLinkAcesso();
         this.planoSaude = entity.getPlanoSaude();
         this.numeroCarteirinha = entity.getNumeroCarteirinha();
@@ -82,17 +81,17 @@ public class ConsultaDetailsDTO {
         this.acompanhamento = new ConsultaAcompanhamentoDTO(entity);
         this.pacienteId = entity.getPaciente() != null ? entity.getPaciente().getId() : null;
         this.pacienteNome = entity.getPaciente() != null
-                ? composeName(entity.getPaciente().getPrimeiroNome(), entity.getPaciente().getSobrenome())
+                ? composeName(entity.getPaciente().getNome(), entity.getPaciente().getSobrenome())
                 : null;
         this.medicoId = entity.getMedico() != null ? entity.getMedico().getId() : null;
         this.medicoNome = entity.getMedico() != null
                 ? composeName(entity.getMedico().getNome(), entity.getMedico().getSobrenome())
                 : null;
-        this.medicamentosPrescritos = entity.getMedicamentoPrescrito() != null
-                ? entity.getMedicamentoPrescrito().stream().map(MedicamentoPrescritoMinDTO::new).toList()
+        this.medicamentosPrescritos = entity.getMedicamentosPrescritos() != null
+                ? entity.getMedicamentosPrescritos().stream().map(MedicamentoPrescritoMinDTO::new).toList()
                 : List.of();
-        this.examesSolicitados = entity.getExameSolicitado() != null
-                ? entity.getExameSolicitado().stream().map(ExameSolicitadoMinDTO::new).toList()
+        this.examesSolicitados = entity.getExamesSolicitados() != null
+                ? entity.getExamesSolicitados().stream().map(ExameSolicitadoMinDTO::new).toList()
                 : List.of();
     }
 

@@ -57,10 +57,16 @@ public class ConsultaService {
     @Transactional
     public ConsultaDetailsDTO criar(ConsultaDTO dto) {
         Paciente paciente = pacienteRepository.findByIdAndAtivoTrue(dto.getPacienteId())
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente")));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.PACIENTE_NOT_FOUND,
+                        ExceptionMessages.notFound("Paciente")
+                ));
 
         Medico medico = medicoRepository.findByIdAndAtivoTrue(dto.getMedicoId())
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICO_NOT_FOUND, ExceptionMessages.notFound("Médico")));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.MEDICO_NOT_FOUND,
+                        ExceptionMessages.notFound("Médico")
+                ));
 
         Consulta entity = new Consulta();
         copyCreateDtoToEntity(dto, entity, paciente, medico);
@@ -80,12 +86,18 @@ public class ConsultaService {
 
             if (dto.getPacienteId() != null) {
                 paciente = pacienteRepository.findByIdAndAtivoTrue(dto.getPacienteId())
-                        .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente")));
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                ErrorCodes.PACIENTE_NOT_FOUND,
+                                ExceptionMessages.notFound("Paciente")
+                        ));
             }
 
             if (dto.getMedicoId() != null) {
                 medico = medicoRepository.findByIdAndAtivoTrue(dto.getMedicoId())
-                        .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICO_NOT_FOUND, ExceptionMessages.notFound("Médico")));
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                ErrorCodes.MEDICO_NOT_FOUND,
+                                ExceptionMessages.notFound("Médico")
+                        ));
             }
 
             if (dto.getStatus() != null) {
@@ -99,20 +111,29 @@ public class ConsultaService {
             return new ConsultaDetailsDTO(entity);
 
         } catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta"));
+            throw new ResourceNotFoundException(
+                    ErrorCodes.CONSULTA_NOT_FOUND,
+                    ExceptionMessages.notFound("Consulta")
+            );
         }
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
-    public void delete(Long id){
-        if(!consultaRepository.existsById(id)){
-            throw new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta"));
+    public void delete(Long id) {
+        if (!consultaRepository.existsById(id)) {
+            throw new ResourceNotFoundException(
+                    ErrorCodes.CONSULTA_NOT_FOUND,
+                    ExceptionMessages.notFound("Consulta")
+            );
         }
+
         try {
             consultaRepository.deleteById(id);
-        }
-        catch (DataIntegrityViolationException e) {
-            throw new BusinessRuleException(ErrorCodes.CONSULTA_BUSINESS_RULE, "Não é possível excluir a consulta informada porque ela está vinculada a outros registros.");
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessRuleException(
+                    ErrorCodes.CONSULTA_BUSINESS_RULE,
+                    "Não é possível excluir a consulta informada porque ela está vinculada a outros registros."
+            );
         }
     }
 
@@ -126,7 +147,10 @@ public class ConsultaService {
     public Page<ConsultaMinDTO> listar(ConsultaFilterDTO filtro, Pageable pageable) {
         ConsultaFilterDTO filtroNormalizado = normalizarFiltro(filtro);
         validarFiltros(filtroNormalizado);
-        Page<Consulta> page = consultaRepository.findAll(ConsultaSpecifications.withFilters(filtroNormalizado), pageable);
+        Page<Consulta> page = consultaRepository.findAll(
+                ConsultaSpecifications.withFilters(filtroNormalizado),
+                pageable
+        );
         return page.map(ConsultaMinDTO::new);
     }
 
@@ -134,7 +158,10 @@ public class ConsultaService {
     public Page<ConsultaTableItemDTO> listarParaTabela(ConsultaFilterDTO filtro, Pageable pageable) {
         ConsultaFilterDTO filtroNormalizado = normalizarFiltro(filtro);
         validarFiltros(filtroNormalizado);
-        Page<Consulta> page = consultaRepository.findAll(ConsultaSpecifications.withFilters(filtroNormalizado), pageable);
+        Page<Consulta> page = consultaRepository.findAll(
+                ConsultaSpecifications.withFilters(filtroNormalizado),
+                pageable
+        );
         return page.map(ConsultaTableItemDTO::new);
     }
 
@@ -142,14 +169,20 @@ public class ConsultaService {
     public Page<ConsultaAgendaItemDTO> listarParaAgenda(ConsultaFilterDTO filtro, Pageable pageable) {
         ConsultaFilterDTO filtroNormalizado = normalizarFiltro(filtro);
         validarFiltros(filtroNormalizado);
-        Page<Consulta> page = consultaRepository.findAll(ConsultaSpecifications.withFilters(filtroNormalizado), pageable);
+        Page<Consulta> page = consultaRepository.findAll(
+                ConsultaSpecifications.withFilters(filtroNormalizado),
+                pageable
+        );
         return page.map(ConsultaAgendaItemDTO::new);
     }
 
     @Transactional(readOnly = true)
     public Page<ConsultaMinDTO> listarPorPaciente(Long pacienteId, Pageable pageable) {
         if (!pacienteRepository.existsByIdAndAtivoTrue(pacienteId)) {
-            throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
+            throw new ResourceNotFoundException(
+                    ErrorCodes.PACIENTE_NOT_FOUND,
+                    ExceptionMessages.notFound("Paciente")
+            );
         }
         return listar(ConsultaFilterDTO.builder().pacienteId(pacienteId).build(), pageable);
     }
@@ -157,7 +190,10 @@ public class ConsultaService {
     @Transactional(readOnly = true)
     public Page<ConsultaMinDTO> listarPorMedico(Long medicoId, Pageable pageable) {
         if (!medicoRepository.existsByIdAndAtivoTrue(medicoId)) {
-            throw new ResourceNotFoundException(ErrorCodes.MEDICO_NOT_FOUND, ExceptionMessages.notFound("Médico"));
+            throw new ResourceNotFoundException(
+                    ErrorCodes.MEDICO_NOT_FOUND,
+                    ExceptionMessages.notFound("Médico")
+            );
         }
         return listar(ConsultaFilterDTO.builder().medicoId(medicoId).build(), pageable);
     }
@@ -165,7 +201,10 @@ public class ConsultaService {
     @Transactional(readOnly = true)
     public ConsultaDetailsDTO buscarUltimaConsultaPorPaciente(Long pacienteId) {
         Consulta consulta = consultaRepository.findTopByPacienteIdOrderByDataHoraDesc(pacienteId)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.NO_CONSULTATIONS_FOR_PATIENT));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.CONSULTA_NOT_FOUND,
+                        ExceptionMessages.NO_CONSULTATIONS_FOR_PATIENT
+                ));
         return new ConsultaDetailsDTO(consulta);
     }
 
@@ -230,7 +269,10 @@ public class ConsultaService {
 
     private Consulta getConsulta(Long id) {
         return consultaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta")));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.CONSULTA_NOT_FOUND,
+                        ExceptionMessages.notFound("Consulta")
+                ));
     }
 
     private List<EnumOptionDTO> toOptions(StatusConsulta[] values) {
@@ -261,16 +303,26 @@ public class ConsultaService {
         }
 
         if (filtro.getPacienteId() != null && !pacienteRepository.existsByIdAndAtivoTrue(filtro.getPacienteId())) {
-            throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
+            throw new ResourceNotFoundException(
+                    ErrorCodes.PACIENTE_NOT_FOUND,
+                    ExceptionMessages.notFound("Paciente")
+            );
         }
 
         if (filtro.getMedicoId() != null && !medicoRepository.existsByIdAndAtivoTrue(filtro.getMedicoId())) {
-            throw new ResourceNotFoundException(ErrorCodes.MEDICO_NOT_FOUND, ExceptionMessages.notFound("Médico"));
+            throw new ResourceNotFoundException(
+                    ErrorCodes.MEDICO_NOT_FOUND,
+                    ExceptionMessages.notFound("Médico")
+            );
         }
 
-        if (filtro.getDataHoraInicio() != null && filtro.getDataHoraFim() != null
+        if (filtro.getDataHoraInicio() != null
+                && filtro.getDataHoraFim() != null
                 && filtro.getDataHoraInicio().isAfter(filtro.getDataHoraFim())) {
-            throw new BusinessRuleException(ErrorCodes.CONSULTA_BUSINESS_RULE, ExceptionMessages.INVALID_CONSULTATION_PERIOD);
+            throw new BusinessRuleException(
+                    ErrorCodes.CONSULTA_BUSINESS_RULE,
+                    ExceptionMessages.INVALID_CONSULTATION_PERIOD
+            );
         }
 
         if (StringUtils.hasText(filtro.getTermo())) {
@@ -291,7 +343,6 @@ public class ConsultaService {
         entity.setDuracaoMinutos(dto.getDuracaoMinutos());
         entity.setRetorno(dto.isRetorno());
         entity.setDataLimiteRetorno(dto.getDataLimiteRetorno());
-        entity.setTeleconsulta(dto.isTeleconsulta());
         entity.setLinkAcesso(dto.getLinkAcesso());
         entity.setPlanoSaude(dto.getPlanoSaude());
         entity.setNumeroCarteirinha(dto.getNumeroCarteirinha());
@@ -337,9 +388,6 @@ public class ConsultaService {
         }
         if (dto.getDataLimiteRetorno() != null) {
             entity.setDataLimiteRetorno(dto.getDataLimiteRetorno());
-        }
-        if (dto.getTeleconsulta() != null) {
-            entity.setTeleconsulta(dto.getTeleconsulta());
         }
         if (dto.getLinkAcesso() != null) {
             entity.setLinkAcesso(dto.getLinkAcesso());

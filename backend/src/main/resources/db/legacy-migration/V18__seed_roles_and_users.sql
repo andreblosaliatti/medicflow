@@ -28,14 +28,18 @@ INSERT INTO tb_usuarios
 SELECT *
 FROM (
     VALUES
-    (TRUE, '32844208606', 'admin@medicflow.com',    'admin',      '$2a$12$Nnggmf74vk2TdWawL.lHMuypRJH8tDLTzEvR9VSQHyfvQh7QLlhxu', 'System',  'Admin',   'Rua Central',      '1'),
-    (TRUE, '39053344705', 'dr.house@example.com',   'drhouse',    '$2a$12$Nnggmf74vk2TdWawL.lHMuypRJH8tDLTzEvR9VSQHyfvQh7QLlhxu', 'Gregory', 'House',   'Rua Médica 1',     '10'),
-    (TRUE, '90011122201', 'dr.cameron@example.com', 'drcameron',  '$2a$12$Nnggmf74vk2TdWawL.lHMuypRJH8tDLTzEvR9VSQHyfvQh7QLlhxu', 'Allison', 'Cameron', 'Rua Médica 2',     '20'),
-    (TRUE, '12345678903', 'nf.juliana@example.com', 'juliana.enf','$2a$12$Nnggmf74vk2TdWawL.lHMuypRJH8tDLTzEvR9VSQHyfvQh7QLlhxu', 'Juliana', 'Rocha',   'Rua Enfermagem 1', '300'),
-    (TRUE, '12345678901', 'sec.marina@example.com', 'marinasec',  '$2a$12$Nnggmf74vk2TdWawL.lHMuypRJH8tDLTzEvR9VSQHyfvQh7QLlhxu', 'Marina',  'Silva',   'Rua Clínica 10',   '100')
+    (TRUE, '32844208606', 'admin@medicflow.com',    'admin',      '$2a$12$...', 'System',  'Admin',   'Rua Central',      '1'),
+    (TRUE, '39053344705', 'dr.house@example.com',   'drhouse',    '$2a$12$...', 'Gregory', 'House',   'Rua Médica 1',     '10'),
+    (TRUE, '90011122201', 'dr.cameron@example.com', 'drcameron',  '$2a$12$...', 'Allison', 'Cameron', 'Rua Médica 2',     '20'),
+    (TRUE, '12345678903', 'nf.juliana@example.com', 'juliana.enf','$2a$12$...', 'Juliana', 'Rocha',   'Rua Enfermagem 1', '300'),
+    (TRUE, '12345678901', 'sec.marina@example.com', 'marinasec',  '$2a$12$...', 'Marina',  'Silva',   'Rua Clínica 10',   '100')
 ) AS v(ativo, cpf, email, login, senha, nome, sobrenome, logradouro, numero)
 WHERE NOT EXISTS (
-    SELECT 1 FROM tb_usuarios u WHERE u.login = v.login
+    SELECT 1
+    FROM tb_usuarios u
+    WHERE u.login = v.login
+       OR u.email = v.email
+       OR u.cpf = v.cpf
 );
 
 -- =========================================================

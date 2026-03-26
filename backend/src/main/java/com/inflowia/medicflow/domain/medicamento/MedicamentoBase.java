@@ -30,7 +30,7 @@ public class MedicamentoBase {
     @Column(name = "principio_ativo", length = 255)
     private String principioAtivo;
 
-    @Column(name = "dcb", length = 255)
+    @Column(length = 255)
     private String dcb;
 
     @Column(name = "forma_farmaceutica", length = 120)
@@ -39,7 +39,7 @@ public class MedicamentoBase {
     @Column(name = "dosagem_padrao", length = 120)
     private String dosagemPadrao;
 
-    @Column(name = "concentracao", length = 120)
+    @Column(length = 120)
     private String concentracao;
 
     @Column(name = "via_administracao", length = 100)
@@ -51,18 +51,18 @@ public class MedicamentoBase {
     @Column(name = "registro_anvisa", length = 50)
     private String registroAnvisa;
 
-    @Column(name = "fabricante", length = 255)
+    @Column(length = 255)
     private String fabricante;
 
-    @Column(name = "controlado", nullable = false)
+    @Column(nullable = false)
     @Builder.Default
     private Boolean controlado = false;
 
-    @Column(name = "ativo", nullable = false)
+    @Column(nullable = false)
     @Builder.Default
     private Boolean ativo = true;
 
-    @OneToMany(mappedBy = "medicamentoBase")
     @Builder.Default
-    private List<MedicamentoPrescrito> medicamentoPrescrito = new ArrayList<>();
+    @OneToMany(mappedBy = "medicamentoBase")
+    private List<MedicamentoPrescrito> medicamentosPrescritos = new ArrayList<>();
 }

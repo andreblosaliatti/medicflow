@@ -22,7 +22,7 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
     @Query("""
             SELECT p
             FROM Paciente p
-            WHERE UPPER(CONCAT(COALESCE(p.primeiroNome, ''), ' ', COALESCE(p.sobrenome, '')))
+            WHERE UPPER(CONCAT(COALESCE(p.nome, ''), ' ', COALESCE(p.sobrenome, '')))
                     LIKE UPPER(CONCAT('%', COALESCE(:nome, ''), '%'))
               AND COALESCE(p.cpf, '') LIKE CONCAT('%', COALESCE(:cpf, ''), '%')
               AND (:ativo IS NULL OR p.ativo = :ativo)

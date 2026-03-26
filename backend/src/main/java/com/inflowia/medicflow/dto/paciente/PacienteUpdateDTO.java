@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @Schema(name = "PacienteUpdateFormDTO", description = "DTO de formulário para atualização parcial/total de pacientes.")
 public class PacienteUpdateDTO {
 
-    private String primeiroNome;
+    private String nome;
     private String sobrenome;
 
     @Pattern(regexp = "\\(\\d{2}\\)\\s\\d{4,5}-\\d{4}",

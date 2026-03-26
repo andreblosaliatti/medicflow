@@ -151,7 +151,7 @@ class ExameSolicitadoServiceTest {
     private ExameSolicitado exameSolicitadoComPaciente() {
         Paciente paciente = new Paciente();
         paciente.setId(7L);
-        paciente.setPrimeiroNome("Ana");
+        paciente.setNome("Ana");
         paciente.setSobrenome("Silva");
 
         Consulta consulta = new Consulta();

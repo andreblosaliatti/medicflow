@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -33,7 +34,7 @@ public class ConsultaDTO {
         private StatusConsulta status;
 
         @PositiveOrZero(message = "O valor da consulta não pode ser negativo")
-        private Double valorConsulta;
+        private BigDecimal valorConsulta;
 
         @NotNull(message = "O meio de pagamento é obrigatório")
         private MeioPagamento meioPagamento;
@@ -46,9 +47,7 @@ public class ConsultaDTO {
 
         private boolean retorno;
         private LocalDateTime dataLimiteRetorno;
-
-        private boolean teleconsulta;
-
+        
         @Size(max = 500, message = "O link de acesso deve ter no máximo 500 caracteres")
         private String linkAcesso;
 
@@ -61,6 +60,9 @@ public class ConsultaDTO {
         @NotBlank(message = "O motivo da consulta é obrigatório")
         @Size(max = 500, message = "O motivo deve ter no máximo 500 caracteres")
         private String motivo;
+
+        @NotNull(message = "O paciente da consulta é obrigatório")
+        private Long pacienteId;
 
         @Size(max = 4000, message = "A anamnese deve ter no máximo 4000 caracteres")
         private String anamnese;
@@ -76,9 +78,6 @@ public class ConsultaDTO {
 
         @Size(max = 2000, message = "As observações devem ter no máximo 2000 caracteres")
         private String observacoes;
-
-        @NotNull(message = "O paciente da consulta é obrigatório")
-        private Long pacienteId;
 
         @NotNull(message = "O médico da consulta é obrigatório")
         private Long medicoId;

@@ -139,7 +139,7 @@ class MedicamentoServiceTest {
 
         assertEquals(77L, result.getId());
         assertEquals("Fórmula manipulada", result.getNome());
-        assertNull(consulta.getMedicamentoPrescrito().get(0).getMedicamentoBase());
+        assertNull(consulta.getMedicamentosPrescritos().get(0).getMedicamentoBase());
     }
 
     @Test
@@ -165,7 +165,7 @@ class MedicamentoServiceTest {
         var result = service.adicionarMedicamento(consultaId, dto);
 
         assertEquals("Amoxicilina", result.getNome());
-        assertEquals(base, consulta.getMedicamentoPrescrito().get(0).getMedicamentoBase());
+        assertEquals(base, consulta.getMedicamentosPrescritos().get(0).getMedicamentoBase());
     }
 
     @Test
@@ -191,7 +191,7 @@ class MedicamentoServiceTest {
 
         assertEquals(99L, result.getId());
         assertEquals("Losartana", result.getNome());
-        assertEquals(base, consulta.getMedicamentoPrescrito().get(0).getMedicamentoBase());
+        assertEquals(base, consulta.getMedicamentosPrescritos().get(0).getMedicamentoBase());
     }
 
     @Test

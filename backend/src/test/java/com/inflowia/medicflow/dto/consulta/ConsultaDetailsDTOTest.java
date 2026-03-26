@@ -25,7 +25,7 @@ class ConsultaDetailsDTOTest {
     void constructorMustExposeAcompanhamentoAndPrescricoesCollections() {
         Paciente paciente = new Paciente();
         paciente.setId(3L);
-        paciente.setPrimeiroNome("Marina");
+        paciente.setNome("Marina");
         paciente.setSobrenome("Costa");
 
         Medico medico = new Medico();

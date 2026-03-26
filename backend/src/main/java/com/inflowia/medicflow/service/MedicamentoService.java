@@ -98,7 +98,7 @@ public class MedicamentoService {
                 .findTopByPacienteIdOrderByDataHoraDesc(pacienteId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.NO_PATIENT_CONSULTATIONS));
 
-        return consulta.getMedicamentoPrescrito()
+        return consulta.getMedicamentosPrescritos()
                 .stream()
                 .map(MedicamentoPrescritoMinDTO::new)
                 .toList();
@@ -120,7 +120,6 @@ public class MedicamentoService {
                 .frequencia(dados.getFrequencia().trim())
                 .via(dados.getVia().trim())
                 .consulta(consulta)
-                .paciente(consulta.getPaciente())
                 .dataInicio(
                         consulta.getDataHora() != null
                                 ? consulta.getDataHora().toLocalDate()
@@ -129,7 +128,7 @@ public class MedicamentoService {
                 .ativo(true)
                 .build();
 
-        consulta.getMedicamentoPrescrito().add(prescrito);
+        consulta.getMedicamentosPrescritos().add(prescrito);
 
         MedicamentoPrescrito salvo = medicamentoPrescritoRepository.save(prescrito);
 

@@ -40,7 +40,7 @@ class PacienteControllerTest {
 
         Paciente paciente = Paciente.builder()
                 .id(1L)
-                .primeiroNome("João")
+                .nome("João")
                 .sobrenome("da Silva")
                 .cpf("123.456.789-09")
                 .dataNascimento(LocalDate.of(1980, 1, 1))
@@ -83,7 +83,7 @@ class PacienteControllerTest {
     void deveBuscarPerfilConsolidadoDoPaciente() {
         Paciente paciente = Paciente.builder()
                 .id(1L)
-                .primeiroNome("João")
+                .nome("João")
                 .sobrenome("da Silva")
                 .cpf("123.456.789-09")
                 .dataNascimento(LocalDate.of(1980, 1, 1))

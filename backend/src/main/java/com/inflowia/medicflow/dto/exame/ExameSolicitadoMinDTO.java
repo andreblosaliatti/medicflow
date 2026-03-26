@@ -40,7 +40,7 @@ public class ExameSolicitadoMinDTO {
         this.exameNome = entity.getExameBase() != null ? entity.getExameBase().getNome() : null;
         this.pacienteNome = entity.getConsulta() != null && entity.getConsulta().getPaciente() != null
                 ? composeName(
-                entity.getConsulta().getPaciente().getPrimeiroNome(),
+                entity.getConsulta().getPaciente().getNome(),
                 entity.getConsulta().getPaciente().getSobrenome())
                 : null;
     }
