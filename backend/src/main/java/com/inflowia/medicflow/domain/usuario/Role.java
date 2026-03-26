@@ -1,51 +1,40 @@
 package com.inflowia.medicflow.domain.usuario;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.Objects;
 
 @Entity
-@Table(name = "tb_role")
+@Table(
+        name = "tb_role",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_role_authority", columnNames = "authority")
+        }
+)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 100)
     private String authority;
-
-    public Role() {}
-
-    public Role(Long id, String authority) {
-        this.id = id;
-        this.authority = authority;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getAuthority() {
-        return authority;
-    }
-
-    public void setAuthority(String authority) {
-        this.authority = authority;
-    }
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Role role = (Role) o;
+        if (this == o) return true;
+        if (!(o instanceof Role role)) return false;
         return Objects.equals(id, role.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hash(id);
     }
 }

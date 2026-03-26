@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 @Builder(toBuilder = true)
 public class ConsultaFilterDTO {
 
-    private Long pacienteId;
     private Long medicoId;
     private StatusConsulta status;
     private TipoConsulta tipo;

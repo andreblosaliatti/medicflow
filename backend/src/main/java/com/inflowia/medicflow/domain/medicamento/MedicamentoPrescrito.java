@@ -1,7 +1,6 @@
 package com.inflowia.medicflow.domain.medicamento;
 
 import com.inflowia.medicflow.domain.consulta.Consulta;
-import com.inflowia.medicflow.domain.paciente.Paciente;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,19 +19,19 @@ public class MedicamentoPrescrito {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome_prescrito", nullable = false)
+    @Column(name = "nome_prescrito", nullable = false, length = 255)
     private String nome;
 
-    @Column(name = "dosagem_prescrita", nullable = false)
+    @Column(name = "dosagem_prescrita", nullable = false, length = 120)
     private String dosagem;
 
-    @Column(name = "frequencia")
+    @Column(length = 255)
     private String frequencia;
 
-    @Column(name = "via")
+    @Column(length = 100)
     private String via;
 
-    @Column(name = "observacoes", length = 1000)
+    @Column(length = 1000)
     private String observacoes;
 
     @Column(name = "data_inicio", nullable = false)
@@ -41,16 +40,13 @@ public class MedicamentoPrescrito {
     @Column(name = "data_fim")
     private LocalDate dataFim;
 
-    @Column(name = "ativo", nullable = false)
-    private Boolean ativo;
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean ativo = true;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "consulta_id", nullable = false)
     private Consulta consulta;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "paciente_id")
-    private Paciente paciente;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medicamento_base_id")

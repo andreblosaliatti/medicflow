@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class ConsultaDetailsDTO {
     private TipoConsulta tipo;
     private StatusConsulta status;
 
-    private Double valorConsulta;
+    private BigDecimal valorConsulta;
     private MeioPagamento meioPagamento;
 
     private Boolean pago;
@@ -36,7 +37,6 @@ public class ConsultaDetailsDTO {
     private boolean retorno;
     private LocalDateTime dataLimiteRetorno;
 
-    private boolean teleconsulta;
     private String linkAcesso;
 
     private String planoSaude;
@@ -50,7 +50,6 @@ public class ConsultaDetailsDTO {
     private String observacoes;
     private ConsultaAcompanhamentoDTO acompanhamento;
 
-    private Long pacienteId;
     private String pacienteNome;
     private Long medicoId;
     private String medicoNome;
@@ -69,7 +68,6 @@ public class ConsultaDetailsDTO {
         this.duracaoMinutos = entity.getDuracaoMinutos();
         this.retorno = entity.isRetorno();
         this.dataLimiteRetorno = entity.getDataLimiteRetorno();
-        this.teleconsulta = entity.isTeleconsulta();
         this.linkAcesso = entity.getLinkAcesso();
         this.planoSaude = entity.getPlanoSaude();
         this.numeroCarteirinha = entity.getNumeroCarteirinha();

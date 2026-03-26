@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -20,7 +21,7 @@ public class ConsultaTableItemDTO {
     private TipoConsulta tipo;
     private StatusConsulta status;
     private MeioPagamento meioPagamento;
-    private Double valorConsulta;
+    private BigDecimal valorConsulta;
     private Boolean pago;
     private Integer duracaoMinutos;
     private Long pacienteId;

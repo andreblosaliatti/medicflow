@@ -1,25 +1,25 @@
 package com.inflowia.medicflow.domain.usuario;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import lombok.*;
-
-import org.hibernate.validator.constraints.br.CPF;
-
 import com.inflowia.medicflow.domain.paciente.Endereco;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
+import org.hibernate.validator.constraints.br.CPF;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Inheritance(strategy = InheritanceType.JOINED)
 @Entity
-@Table(name = "tb_usuarios",
+@Table(
+        name = "tb_usuarios",
         uniqueConstraints = {
-            @UniqueConstraint(name = "uk_usuario_login", columnNames = "login"),
-            @UniqueConstraint(name = "uk_usuario_email", columnNames = "email"),
-            @UniqueConstraint(name = "uk_usuario_cpf", columnNames = "cpf")
-
-        })
+                @UniqueConstraint(name = "uk_usuario_login", columnNames = "login"),
+                @UniqueConstraint(name = "uk_usuario_email", columnNames = "email"),
+                @UniqueConstraint(name = "uk_usuario_cpf", columnNames = "cpf")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,29 +32,29 @@ public class Usuario {
     private Long id;
 
     @NotBlank
-    @Column(nullable = false,unique = true)
+    @Column(nullable = false, length = 255)
     private String login;
 
     @NotBlank
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String senha;
 
     @NotBlank
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String nome;
 
     @NotBlank
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String sobrenome;
 
     @Email
     @NotBlank
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String email;
 
     @CPF
     @NotBlank
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, length = 14)
     private String cpf;
 
     @Embedded
@@ -62,9 +62,11 @@ public class Usuario {
 
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "tb_usuario_role",
+    @JoinTable(
+            name = "tb_usuario_role",
             joinColumns = @JoinColumn(name = "usuario_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
     private Set<Role> roles = new HashSet<>();
 
     @Builder.Default

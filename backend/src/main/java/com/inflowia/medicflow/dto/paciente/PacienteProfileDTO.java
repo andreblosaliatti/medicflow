@@ -25,7 +25,7 @@ public class PacienteProfileDTO {
 
     public PacienteProfileDTO(Paciente paciente, PacienteHistoricoResumoDTO historico) {
         this.id = paciente.getId();
-        this.nomeCompleto = (paciente.getPrimeiroNome() + " " + paciente.getSobrenome()).trim();
+        this.nomeCompleto = (paciente.getnome() + " " + paciente.getSobrenome()).trim();
         this.cpf = paciente.getCpf();
         this.dataNascimento = paciente.getDataNascimento();
         this.telefone = paciente.getTelefone();

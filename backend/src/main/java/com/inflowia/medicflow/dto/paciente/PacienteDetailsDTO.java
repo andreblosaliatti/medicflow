@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public class PacienteDetailsDTO {
 
     private Long id;
-    private String primeiroNome;
+    private String nome;
     private String sobrenome;
     private String cpf;
     private LocalDate dataNascimento;
@@ -23,7 +23,7 @@ public class PacienteDetailsDTO {
 
     public PacienteDetailsDTO(Paciente p) {
         this.id = p.getId();
-        this.primeiroNome = p.getPrimeiroNome();
+        this.nome = p.getnome();
         this.sobrenome = p.getSobrenome();
         this.cpf = p.getCpf();
         this.dataNascimento = p.getDataNascimento();

@@ -1,5 +1,3 @@
-BEGIN;
-
 INSERT INTO exame_base (nome, codigo_tuss, tipo, prazo_estimado)
 SELECT
     v.nome,
@@ -81,5 +79,3 @@ WHERE NOT EXISTS (
     FROM exame_base eb
     WHERE eb.codigo_tuss = v.codigo_tuss
 );
-
-COMMIT;

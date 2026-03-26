@@ -7,6 +7,7 @@ import com.inflowia.medicflow.domain.usuario.Medico;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,35 +25,48 @@ public class Consulta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "data_hora", nullable = false)
     private LocalDateTime dataHora;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private TipoConsulta tipo;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private StatusConsulta status;
 
-    private Double valorConsulta;
+    @Column(name = "valor_consulta", precision = 10, scale = 2)
+    private BigDecimal valorConsulta;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "meio_pagamento", nullable = false, length = 20)
     private MeioPagamento meioPagamento;
 
-    private Boolean pago;
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean pago = false;
+
+    @Column(name = "data_pagamento")
     private LocalDateTime dataPagamento;
 
+    @Column(name = "duracao_minutos")
     private Integer duracaoMinutos;
 
-    private boolean retorno;
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean retorno = false;
+
+    @Column(name = "data_limite_retorno")
     private LocalDateTime dataLimiteRetorno;
 
-    private boolean teleconsulta;
+    @Column(name = "link_acesso", length = 255)
     private String linkAcesso;
 
-     private String planoSaude;
+    @Column(name = "plano_saude", length = 255)
+    private String planoSaude;
+
+    @Column(name = "numero_carteirinha", length = 255)
     private String numeroCarteirinha;
 
     @Column(length = 500)
@@ -61,7 +75,7 @@ public class Consulta {
     @Column(length = 4000)
     private String anamnese;
 
-    @Column(length = 4000)
+    @Column(name = "exame_fisico", length = 4000)
     private String exameFisico;
 
     @Column(length = 4000)
@@ -73,21 +87,21 @@ public class Consulta {
     @Column(length = 2000)
     private String observacoes;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "paciente_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "paciente_id", nullable = false)
     private Paciente paciente;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "medico_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "medico_id", nullable = false)
     private Medico medico;
 
     @Builder.Default
     @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MedicamentoPrescrito> medicamentoPrescrito = new ArrayList<>();
+    private List<MedicamentoPrescrito> medicamentosPrescritos = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "consulta")
-    private List<ExameSolicitado> exameSolicitado = new ArrayList<>();
+    @OneToMany(mappedBy = "consulta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ExameSolicitado> examesSolicitados = new ArrayList<>();
 
     public Consulta(LocalDateTime dataHora,
                     TipoConsulta tipo,
@@ -101,5 +115,7 @@ public class Consulta {
         this.motivo = motivo;
         this.paciente = paciente;
         this.medico = medico;
+        this.pago = false;
+        this.retorno = false;
     }
 }

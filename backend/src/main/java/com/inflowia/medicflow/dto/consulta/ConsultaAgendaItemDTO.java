@@ -19,9 +19,7 @@ public class ConsultaAgendaItemDTO {
     private Integer duracaoMinutos;
     private TipoConsulta tipo;
     private StatusConsulta status;
-    private Boolean teleconsulta;
     private String linkAcesso;
-    private Long pacienteId;
     private String pacienteNome;
     private Long medicoId;
     private String medicoNome;
@@ -33,7 +31,6 @@ public class ConsultaAgendaItemDTO {
         this.duracaoMinutos = entity.getDuracaoMinutos();
         this.tipo = entity.getTipo();
         this.status = entity.getStatus();
-        this.teleconsulta = entity.isTeleconsulta();
         this.linkAcesso = entity.getLinkAcesso();
         this.pacienteId = entity.getPaciente() != null ? entity.getPaciente().getId() : null;
         this.pacienteNome = entity.getPaciente() != null

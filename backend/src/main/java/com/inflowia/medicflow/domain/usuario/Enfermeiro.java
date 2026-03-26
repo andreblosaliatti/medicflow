@@ -11,29 +11,32 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@PrimaryKeyJoinColumn(name = "id")
 public class Enfermeiro extends Usuario {
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 50)
     private String coren;
 
-    @Column(length = 2, nullable = false)
-    private String ufCoren; // RS, SP, etc.
+    @Column(name = "uf_coren", nullable = false, length = 2)
+    private String ufCoren;
 
-    @Column(length = 120)
-    private String especialidadeEnfermagem; // Ex: UTI, Pediatria, etc.
+    @Column(name = "especialidade_enfermagem", length = 120)
+    private String especialidadeEnfermagem;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "setor_clinico", length = 50)
     private SetorClinico setorClinico;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "turno_trabalho", length = 30)
     private TurnoTrabalho turnoTrabalho;
 
+    @Column(name = "data_admissao")
     private LocalDate dataAdmissao;
 
+    @Column(name = "data_demissao")
     private LocalDate dataDemissao;
 
     @Column(length = 1000)
     private String observacoes;
-
-
 }
