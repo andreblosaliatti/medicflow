@@ -57,27 +57,27 @@ class ConsultaServiceTest {
     @Test
     void criarMustValidateTeleconsultaBeforeSaving() {
         ConsultaDTO dto = new ConsultaDTO(
-                LocalDateTime.now().plusDays(1),
-                TipoConsulta.TELECONSULTA,
-                StatusConsulta.AGENDADA,
-                new BigDecimal("150.00"),
-                MeioPagamento.PIX,
-                false,
-                null,
-                30,
-                false,
-                null,
-                null,
-                null,
-                null,
-                "Revisão clínica",
-                1L,
-                null,
-                null,
-                null,
-                null,
-                null,
-                2L
+                LocalDateTime.now().plusDays(1), // dataHora
+                TipoConsulta.TELECONSULTA,       // tipo
+                StatusConsulta.AGENDADA,         // status
+                new BigDecimal("150.00"),        // valorConsulta
+                MeioPagamento.PIX,               // meioPagamento
+                false,                           // pago
+                null,                            // dataPagamento
+                30,                              // duracaoMinutos
+                false,                           // retorno
+                null,                            // dataLimiteRetorno
+                null,                            // linkAcesso
+                null,                            // planoSaude
+                null,                            // numeroCarteirinha
+                "Revisão clínica",               // motivo
+                1L,                              // pacienteId
+                null,                            // anamnese
+                null,                            // exameFisico
+                null,                            // diagnostico
+                null,                            // prescricao
+                null,                            // observacoes
+                2L                               // medicoId
         );
 
         when(pacienteRepository.findByIdAndAtivoTrue(1L)).thenReturn(Optional.of(new Paciente()));
@@ -152,10 +152,12 @@ class ConsultaServiceTest {
         consulta.setDataHora(LocalDateTime.now().plusDays(1));
         consulta.setMeioPagamento(MeioPagamento.PIX);
         consulta.setPaciente(new Paciente(1L, "Ana", "Souza", null, null, null, null, null, null, null, true, List.of()));
+
         Medico medico = new Medico();
         medico.setId(2L);
         medico.setNome("Carlos");
         medico.setSobrenome("Silva");
+
         consulta.setMedico(medico);
         consulta.setMotivo("Avaliação clínica");
         return consulta;
