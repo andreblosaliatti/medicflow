@@ -8,9 +8,9 @@ import com.inflowia.medicflow.domain.medicamento.MedicamentoBase;
 import com.inflowia.medicflow.domain.medicamento.MedicamentoPrescrito;
 import com.inflowia.medicflow.domain.paciente.Paciente;
 import com.inflowia.medicflow.domain.usuario.Medico;
+import com.inflowia.medicflow.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDate;
@@ -19,8 +19,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@DataJpaTest
-class MedicamentoPrescritoRepositoryTest {
+class MedicamentoPrescritoRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     private MedicamentoPrescritoRepository repository;
@@ -57,7 +56,7 @@ class MedicamentoPrescritoRepositoryTest {
                 .dosagem("50mg")
                 .frequencia("1x dia")
                 .via("VO")
-                .dataInicio(LocalDate.now()) // 🔥 obrigatório
+                .dataInicio(LocalDate.now())
                 .ativo(true)
                 .build());
 
@@ -79,8 +78,6 @@ class MedicamentoPrescritoRepositoryTest {
 
         assertEquals(1, result.getTotalElements());
     }
-
-    // ===== FACTORIES =====
 
     private Paciente criarPaciente(String nome, String sobrenome, String cpf) {
         return pacienteRepository.save(Paciente.builder()
