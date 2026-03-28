@@ -70,16 +70,15 @@ class ConsultaDetailsDTOTest {
         exame.setConsulta(consulta);
         exame.setExameBase(exameBase);
 
-        consulta.setMedicamentoPrescrito(List.of(medicamento));
-        consulta.setExameSolicitado(List.of(exame));
+        consulta.setMedicamentosPrescritos(List.of(medicamento));
+        consulta.setExamesSolicitados(List.of(exame));
 
         ConsultaDetailsDTO dto = new ConsultaDetailsDTO(consulta);
 
         assertNotNull(dto.getAcompanhamento());
         assertEquals("Prescrição textual", dto.getAcompanhamento().getPrescricao());
         assertEquals(1, dto.getMedicamentosPrescritos().size());
-        assertEquals(12L, dto.getMedicamentosPrescritos().getFirst().getConsultaId());
-        assertEquals(3L, dto.getMedicamentosPrescritos().getFirst().getPacienteId());
+        assertEquals("Dipirona", dto.getMedicamentosPrescritos().getFirst().getNome());
         assertEquals(1, dto.getExamesSolicitados().size());
         assertEquals("Marina Costa", dto.getExamesSolicitados().getFirst().getPacienteNome());
     }

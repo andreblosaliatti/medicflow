@@ -19,10 +19,10 @@ public class MedicamentoPrescrito {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome_prescrito", nullable = false, length = 255)
+    @Column(name = "nome", nullable = false, length = 255)
     private String nome;
 
-    @Column(name = "dosagem_prescrita", nullable = false, length = 120)
+    @Column(name = "dosagem", nullable = false, length = 120)
     private String dosagem;
 
     @Column(length = 255)

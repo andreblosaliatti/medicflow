@@ -51,6 +51,6 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
             """)
     List<Medico> searchActiveForSelect(@Param("termo") String termo, Pageable pageable);
 
-    @Query("SELECT DISTINCT m FROM Medico m LEFT JOIN FETCH m.consultasMedico c LEFT JOIN FETCH c.paciente WHERE m.ativo = true")
+    @Query("SELECT DISTINCT m FROM Medico m LEFT JOIN FETCH m.consultas c LEFT JOIN FETCH c.paciente WHERE m.ativo = true")
     List<Medico> findAllActiveWithConsultasAndPacientes();
 }

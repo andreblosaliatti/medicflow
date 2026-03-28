@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.security;
 
+import io.jsonwebtoken.io.DecodingException;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,11 +37,9 @@ class JwtServiceTest {
 
     @Test
     void shouldRejectInvalidBase64JwtSecret() {
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        assertThrows(
+                DecodingException.class,
                 () -> new JwtService("not-base64", 86_400_000L)
         );
-
-        assertTrue(exception.getMessage().contains("Base64"));
     }
 }

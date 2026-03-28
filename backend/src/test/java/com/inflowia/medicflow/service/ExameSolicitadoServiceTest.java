@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,8 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 class ExameSolicitadoServiceTest {
@@ -53,7 +53,7 @@ class ExameSolicitadoServiceTest {
     }
 
     @Test
-    void buscarPorIdMustMapPacienteSobrenomeCorretamente() throws Exception {
+    void buscarPorIdMustMapPacienteNomeCorretamente() throws Exception {
         injectDependencies();
         ExameSolicitado entity = exameSolicitadoComPaciente();
 
@@ -61,8 +61,7 @@ class ExameSolicitadoServiceTest {
 
         ExameSolicitadoDetailsDTO result = service.buscarPorId(1L);
 
-        assertEquals("Ana", result.getPacientePrimeiroNome());
-        assertEquals("Silva", result.getPacienteSobrenome());
+        assertEquals("Ana Silva", result.getPacienteNome());
     }
 
     @Test
