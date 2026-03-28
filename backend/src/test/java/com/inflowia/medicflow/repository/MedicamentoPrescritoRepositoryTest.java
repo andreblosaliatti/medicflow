@@ -8,9 +8,11 @@ import com.inflowia.medicflow.domain.medicamento.MedicamentoBase;
 import com.inflowia.medicflow.domain.medicamento.MedicamentoPrescrito;
 import com.inflowia.medicflow.domain.paciente.Paciente;
 import com.inflowia.medicflow.domain.usuario.Medico;
-import com.inflowia.medicflow.support.AbstractIntegrationTest;
+import com.inflowia.medicflow.support.AbstractRepositoryTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDate;
@@ -19,7 +21,9 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class MedicamentoPrescritoRepositoryTest extends AbstractIntegrationTest {
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+class MedicamentoPrescritoRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
     private MedicamentoPrescritoRepository repository;
@@ -38,7 +42,6 @@ class MedicamentoPrescritoRepositoryTest extends AbstractIntegrationTest {
 
     @Test
     void findByConsultaPacienteIdShouldNotMixOtherPaciente() {
-
         Paciente paciente1 = criarPaciente("Ana", "Souza", "52998224725");
         Paciente paciente2 = criarPaciente("Carlos", "Oliveira", "39053344705");
 
@@ -71,10 +74,7 @@ class MedicamentoPrescritoRepositoryTest extends AbstractIntegrationTest {
                 .ativo(true)
                 .build());
 
-        var result = repository.findByConsultaPacienteId(
-                paciente1.getId(),
-                PageRequest.of(0, 10)
-        );
+        var result = repository.findByConsultaPacienteId(paciente1.getId(), PageRequest.of(0, 10));
 
         assertEquals(1, result.getTotalElements());
     }
@@ -105,18 +105,18 @@ class MedicamentoPrescritoRepositoryTest extends AbstractIntegrationTest {
     private Medico criarMedico() {
         String suf = UUID.randomUUID().toString().substring(0, 5);
 
-        Medico m = new Medico();
-        m.setLogin("med_" + suf);
-        m.setSenha("123");
-        m.setNome("Dr");
-        m.setSobrenome("Teste");
-        m.setEmail("med" + suf + "@test.com");
-        m.setCpf("11144477735");
-        m.setAtivo(true);
-        m.setCrm("CRM" + suf);
-        m.setEspecialidade("Clinico");
+        Medico medico = new Medico();
+        medico.setLogin("med_" + suf);
+        medico.setSenha("123");
+        medico.setNome("Dr");
+        medico.setSobrenome("Teste");
+        medico.setEmail("med" + suf + "@test.com");
+        medico.setCpf("11144477735");
+        medico.setAtivo(true);
+        medico.setCrm("CRM" + suf);
+        medico.setEspecialidade("Clinico");
 
-        return medicoRepository.save(m);
+        return medicoRepository.save(medico);
     }
 
     private MedicamentoBase criarMedicamento(String nome) {
