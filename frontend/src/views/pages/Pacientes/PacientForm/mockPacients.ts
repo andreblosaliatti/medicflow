@@ -5,7 +5,7 @@ const LS_KEY = "mf_mock_pacientes_v1";
 const seed: Paciente[] = [
   {
     id: 5,
-    primeiroNome: "Pedro",
+    nome: "Pedro",
     sobrenome: "Santos",
     cpf: "123.456.789-00",
     dataNascimento: "1988-05-12",
@@ -26,7 +26,7 @@ const seed: Paciente[] = [
   },
   {
     id: 3,
-    primeiroNome: "Ana",
+    nome: "Ana",
     sobrenome: "Souza",
     cpf: "987.654.321-00",
     dataNascimento: "1992-11-20",

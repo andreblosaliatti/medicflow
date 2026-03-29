@@ -75,7 +75,7 @@ export default function ConsultaCreate() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const metadataQuery = useConsultaMetadataQuery();
-  const pacientesQuery = usePacientesQuery({ size: 200, sort: "primeiroNome,asc" });
+  const pacientesQuery = usePacientesQuery({ size: 200, sort: "nome,asc" });
   const createMutation = useCreateConsultaMutation();
 
   const medicoId = Number(user?.id ?? 0);

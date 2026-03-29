@@ -21,7 +21,7 @@ import { statusTone } from "../domain/ui/statusTone";
 export function pacienteNomeById(pacienteId: number): string {
   const pacientes: PacienteDTO[] = getPacientes();
   const p = pacientes.find((x) => x.id === pacienteId);
-  return p ? `${p.primeiroNome} ${p.sobrenome}` : "Paciente";
+  return p ? `${p.nome} ${p.sobrenome}` : "Paciente";
 }
 
 function two(n: number) {
@@ -157,7 +157,7 @@ export function toPacientesRows(): PacienteRowModel[] {
 
   return pacientes.map((p: PacienteDTO) => ({
     id: p.id,
-    nome: `${p.primeiroNome} ${p.sobrenome}`.trim(),
+    nome: `${p.nome} ${p.sobrenome}`.trim(),
     telefone: p.telefone,
     ultimaConsulta: ultimaConsulta(p.id),
     convenio: p.planoSaude || "Nunca",
@@ -425,7 +425,7 @@ export function getProntuarioByPacienteId(pacienteId: number): ProntuarioPacient
 
   return {
     pacienteId: String(p.id),
-    pacienteNome: `${p.primeiroNome} ${p.sobrenome}`.trim(),
+    pacienteNome: `${p.nome} ${p.sobrenome}`.trim(),
     documento: p.cpf,
     dataNascimento: p.dataNascimento,
     consultas: prontuarioConsultas,

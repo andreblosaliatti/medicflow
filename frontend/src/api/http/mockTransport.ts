@@ -84,7 +84,7 @@ function ensureNumber(value: string, fieldName: string) {
 }
 
 function composeNome(paciente: MockPaciente) {
-  return `${paciente.primeiroNome} ${paciente.sobrenome}`.trim();
+  return `${paciente.nome} ${paciente.sobrenome}`.trim();
 }
 
 function sortConsultasDesc(a: ConsultaDTO, b: ConsultaDTO) {
@@ -231,7 +231,7 @@ function handleCreatePaciente(body: Partial<MockPaciente> | undefined) {
   const nextId = pacientes.reduce((highest, paciente) => Math.max(highest, paciente.id), 0) + 1;
   const created: MockPaciente = {
     id: nextId,
-    primeiroNome: body.primeiroNome ?? "",
+    nome: body.nome ?? "",
     sobrenome: body.sobrenome ?? "",
     cpf: body.cpf ?? "",
     dataNascimento: body.dataNascimento ?? "",
@@ -270,7 +270,7 @@ function handleUpdatePaciente(pathname: string, body: Partial<MockPaciente> | un
 
   const updated: MockPaciente = {
     ...pacientes[index],
-    primeiroNome: body.primeiroNome ?? pacientes[index].primeiroNome,
+    nome: body.nome ?? pacientes[index].nome,
     sobrenome: body.sobrenome ?? pacientes[index].sobrenome,
     dataNascimento: body.dataNascimento ?? pacientes[index].dataNascimento,
     telefone: body.telefone ?? pacientes[index].telefone,
@@ -308,7 +308,7 @@ function handleConsultasTabela(searchParams: URLSearchParams) {
       duracaoMinutos: consulta.duracaoMinutos,
       pacienteId: consulta.pacienteId,
       pacienteNome: composeNome(getPacientes().find((paciente) => paciente.id === consulta.pacienteId) ?? {
-        primeiroNome: "Paciente",
+        nome: "Paciente",
         sobrenome: "",
       } as MockPaciente),
       medicoId: Number(consulta.medicoId),

@@ -1,7 +1,7 @@
 import type { PacienteFormValues } from "../../../../api/pacientes/types";
 
 export type FormErrorKey =
-  | "primeiroNome"
+  | "nome"
   | "sobrenome"
   | "cpf"
   | "dataNascimento"
@@ -46,7 +46,7 @@ export function formatPhoneBR(value: string) {
 export function validatePaciente(dto: PacienteFormValues): FormErrors {
   const errors: FormErrors = {};
 
-  if (!dto.primeiroNome.trim()) errors.primeiroNome = "Informe o primeiro nome.";
+  if (!dto.nome.trim()) errors.nome = "Informe o primeiro nome.";
   if (!dto.sobrenome.trim()) errors.sobrenome = "Informe o sobrenome.";
 
   const cpfDigits = onlyDigits(dto.cpf);

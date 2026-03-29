@@ -19,7 +19,7 @@ function buildPacientesParams(params: PacienteListParams = {}): PacienteListPara
   return {
     page: 0,
     size: 200,
-    sort: "primeiroNome,asc",
+    sort: "nome,asc",
     ...params,
   };
 }

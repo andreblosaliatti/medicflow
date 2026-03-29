@@ -91,7 +91,7 @@ type FormSectionProps = {
 function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProps) {
   const navigate = useNavigate();
   const metadataQuery = useConsultaMetadataQuery();
-  const pacientesQuery = usePacientesQuery({ size: 200, sort: "primeiroNome,asc" });
+  const pacientesQuery = usePacientesQuery({ size: 200, sort: "nome,asc" });
   const updateMutation = useUpdateConsultaMutation();
   const [form, setForm] = useState<ConsultaFormModel>(() => toFormModel(initialDetails));
 
