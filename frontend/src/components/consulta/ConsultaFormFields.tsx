@@ -34,7 +34,7 @@ export default function ConsultaFormFields({ form, onChange }: ConsultaFormField
         >
           {seedPacientes.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.primeiroNome} {p.sobrenome}
+              {p.nome} {p.sobrenome}
             </option>
           ))}
         </select>

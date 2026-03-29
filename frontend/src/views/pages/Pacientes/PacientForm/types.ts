@@ -12,7 +12,7 @@ export type Endereco = {
 
 export type Paciente = {
   id: number;
-  primeiroNome: string;
+  nome: string;
   sobrenome: string;
   cpf: string;
   dataNascimento: string;
@@ -27,7 +27,7 @@ export type Paciente = {
 export function emptyPaciente(nextId: number): Paciente {
   return {
     id: nextId,
-    primeiroNome: "",
+    nome: "",
     sobrenome: "",
     cpf: "",
     dataNascimento: "",

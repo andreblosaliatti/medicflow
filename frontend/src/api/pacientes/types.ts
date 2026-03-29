@@ -14,7 +14,7 @@ export type EnderecoApi = {
 
 export type PacienteApi = {
   id: number;
-  primeiroNome: string;
+  nome: string;
   sobrenome: string;
   cpf: string;
   dataNascimento: string;
@@ -72,7 +72,7 @@ export type PacienteProfileApi = {
 export type PacienteCreatePayload = Omit<PacienteApi, "id">;
 
 export type PacienteUpdatePayload = {
-  primeiroNome: string;
+  nome: string;
   sobrenome: string;
   telefone: string;
   email: string;

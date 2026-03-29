@@ -178,7 +178,7 @@ export default function AgendaPage() {
   const [search, setSearch] = useState("");
   const [lockPaciente, setLockPaciente] = useState(false);
 
-  const pacientesQuery = usePacientesQuery({ size: 200, sort: "primeiroNome,asc" });
+  const pacientesQuery = usePacientesQuery({ size: 200, sort: "nome,asc" });
   const agendaQuery = useAgendaEventsQuery({
     dataHoraInicio: toLocalDateTimeParam(range.start),
     dataHoraFim: toLocalDateTimeParam(range.end),

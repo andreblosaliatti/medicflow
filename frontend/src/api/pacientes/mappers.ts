@@ -126,7 +126,7 @@ function normalizeStatus(value: string | null | undefined): StatusConsulta | nul
 export function emptyPacienteForm(): PacienteFormValues {
   return {
     id: 0,
-    primeiroNome: "",
+    nome: "",
     sobrenome: "",
     cpf: "",
     dataNascimento: "",
@@ -141,7 +141,7 @@ export function emptyPacienteForm(): PacienteFormValues {
 
 export function toPacienteCreatePayload(values: PacienteFormValues): PacienteCreatePayload {
   return {
-    primeiroNome: values.primeiroNome.trim(),
+    nome: values.nome.trim(),
     sobrenome: values.sobrenome.trim(),
     cpf: values.cpf.trim(),
     dataNascimento: values.dataNascimento,
@@ -156,7 +156,7 @@ export function toPacienteCreatePayload(values: PacienteFormValues): PacienteCre
 
 export function toPacienteUpdatePayload(values: PacienteFormValues): PacienteUpdatePayload {
   return {
-    primeiroNome: values.primeiroNome.trim(),
+    nome: values.nome.trim(),
     sobrenome: values.sobrenome.trim(),
     telefone: values.telefone.trim(),
     email: values.email.trim(),

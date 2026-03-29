@@ -65,9 +65,9 @@ export default function PacienteForm({
             <div className="pacienteField pacienteSpan3">
               <Input
                 label="Primeiro nome"
-                value={value.primeiroNome}
-                onChange={(ev) => set("primeiroNome", ev.target.value)}
-                helperText={errors.primeiroNome}
+                value={value.nome}
+                onChange={(ev) => set("nome", ev.target.value)}
+                helperText={errors.nome}
                 placeholder="Ex.: Maria"
                 disabled={submitting}
               />

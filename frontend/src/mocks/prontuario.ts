@@ -42,7 +42,7 @@ export type ProntuarioPaciente = {
 };
 
 function nomeCompleto(p: PacienteDTO) {
-  return `${p.primeiroNome} ${p.sobrenome}`.trim();
+  return `${p.nome} ${p.sobrenome}`.trim();
 }
 
 function baseFromConsulta(c: ConsultaDTO): ProntuarioConsulta {

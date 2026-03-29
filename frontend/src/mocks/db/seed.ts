@@ -9,7 +9,7 @@ export type Sexo = "MASCULINO" | "FEMININO" | "OUTRO" | "NAO_INFORMAR";
 
 export type PacienteDTO = {
   id: number;
-  primeiroNome: string;
+  nome: string;
   sobrenome: string;
   cpf: string;
   dataNascimento: string; // yyyy-mm-dd
@@ -66,7 +66,7 @@ export const MEDICO_SEED = {
 export const seedPacientes: PacienteDTO[] = [
   {
     id: 1,
-    primeiroNome: "Sofia",
+    nome: "Sofia",
     sobrenome: "Almeida",
     cpf: "111.222.333-44",
     dataNascimento: "1991-02-10",
@@ -87,7 +87,7 @@ export const seedPacientes: PacienteDTO[] = [
   },
   {
     id: 2,
-    primeiroNome: "Rafael",
+    nome: "Rafael",
     sobrenome: "Lima",
     cpf: "222.333.444-55",
     dataNascimento: "1986-08-22",
@@ -108,7 +108,7 @@ export const seedPacientes: PacienteDTO[] = [
   },
   {
     id: 3,
-    primeiroNome: "Ana",
+    nome: "Ana",
     sobrenome: "Souza",
     cpf: "333.444.555-66",
     dataNascimento: "1992-11-20",
@@ -129,7 +129,7 @@ export const seedPacientes: PacienteDTO[] = [
   },
   {
     id: 4,
-    primeiroNome: "Gabriel",
+    nome: "Gabriel",
     sobrenome: "Martins",
     cpf: "444.555.666-77",
     dataNascimento: "1979-04-03",
@@ -150,7 +150,7 @@ export const seedPacientes: PacienteDTO[] = [
   },
   {
     id: 5,
-    primeiroNome: "Mariana",
+    nome: "Mariana",
     sobrenome: "Oliveira",
     cpf: "555.666.777-88",
     dataNascimento: "1983-12-15",
@@ -331,7 +331,7 @@ export const seedConsultas: ConsultaDTO[] = [
 export function emptyPaciente(nextId: number): PacienteDTO {
   return {
     id: nextId,
-    primeiroNome: "",
+    nome: "",
     sobrenome: "",
     cpf: "",
     dataNascimento: "",
