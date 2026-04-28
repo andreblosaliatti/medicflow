@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useCreateConsultaMutation, useConsultaMetadataQuery } from "../../../../api/consultas/hooks";
 import type { ConsultaCreatePayload } from "../../../../api/consultas/types";
+import { useMedicoOptionsQuery } from "../../../../api/medicos/hooks";
 import { usePacientesQuery } from "../../../../api/pacientes/hooks";
 import type { DuracaoMinutos, MeioPagamento, TipoConsulta } from "../../../../domain/enums/statusConsulta";
 import { useAuth } from "../../../../context/useAuth";
@@ -19,7 +20,7 @@ import "./styles.css";
 
 type ConsultaCreateForm = {
   pacienteId: number | null;
-  medicoId: number;
+  medicoId: number | null;
   medicoNome: string;
   dataHora: string;
   duracaoMinutos: DuracaoMinutos;
@@ -71,6 +72,11 @@ function parseMoneyToNumber(input: string): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function parsePositiveId(value: string | null | undefined): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 export default function ConsultaCreate() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -78,8 +84,10 @@ export default function ConsultaCreate() {
   const pacientesQuery = usePacientesQuery({ size: 200, sort: "nome,asc" });
   const createMutation = useCreateConsultaMutation();
 
-  const medicoId = Number(user?.id ?? 0);
-  const medicoNome = user?.name ?? "Profissional";
+  const isDoctorUser = user?.role === "MEDICO";
+  const medicoId = isDoctorUser ? parsePositiveId(user?.medicoId) : null;
+  const medicoNome = isDoctorUser ? user?.name ?? "" : "";
+  const medicosQuery = useMedicoOptionsQuery(!isDoctorUser);
 
   const pacienteOptions = useMemo<readonly SelectOption<number>[]>(() => {
     return pacientesQuery.data.content.map((paciente) => ({
@@ -99,6 +107,17 @@ export default function ConsultaCreate() {
       ))
       .map((option) => ({ value: option.code, label: option.label }));
   }, [metadataQuery.data]);
+
+  const medicoOptions = useMemo<readonly SelectOption<number>[]>(() => {
+    if (isDoctorUser && medicoId !== null) {
+      return [{ value: medicoId, label: medicoNome || "Medico" }];
+    }
+
+    return medicosQuery.data.map((medico) => ({
+      value: medico.id,
+      label: medico.label,
+    }));
+  }, [isDoctorUser, medicoId, medicoNome, medicosQuery.data]);
 
   const pagamentoOptions = useMemo<readonly SelectOption<MeioPagamento>[]>(() => {
     const options = metadataQuery.data?.meiosPagamento ?? [];
@@ -133,7 +152,7 @@ export default function ConsultaCreate() {
   });
 
   async function save() {
-    if (!form.pacienteId) return;
+    if (!form.pacienteId || !form.medicoId) return;
 
     const payload: ConsultaCreatePayload = {
       dataHora: normalizeDateTimeLocal(form.dataHora),
@@ -165,10 +184,10 @@ export default function ConsultaCreate() {
     }
   }
 
-  const error = createMutation.error ?? pacientesQuery.error ?? metadataQuery.error;
-  const isLoading = pacientesQuery.isLoading || metadataQuery.isLoading;
+  const error = createMutation.error ?? pacientesQuery.error ?? medicosQuery.error ?? metadataQuery.error;
+  const isLoading = pacientesQuery.isLoading || metadataQuery.isLoading || (!isDoctorUser && medicosQuery.isLoading);
   const hasValidTeleconsultaLink = form.tipo !== "TELECONSULTA" || Boolean(form.linkAcesso.trim());
-  const canSave = Boolean(form.pacienteId && form.motivo.trim() && hasValidTeleconsultaLink && !createMutation.isPending && !isLoading);
+  const canSave = Boolean(form.pacienteId && form.medicoId && form.motivo.trim() && hasValidTeleconsultaLink && !createMutation.isPending && !isLoading);
 
   return (
     <>
@@ -195,7 +214,25 @@ export default function ConsultaCreate() {
 
                 <div className="consultas-field">
                   <span className="consultas-label">Médico</span>
-                  <Input value={form.medicoNome} disabled />
+                  {isDoctorUser ? (
+                    <Input value={form.medicoNome} disabled />
+                  ) : (
+                    <SelectField<number>
+                      value={form.medicoId}
+                      onChange={(selectedMedicoId) => {
+                        const option = medicoOptions.find((item) => item.value === selectedMedicoId) ?? null;
+                        setForm((current) => ({
+                          ...current,
+                          medicoId: selectedMedicoId,
+                          medicoNome: option?.label ?? current.medicoNome,
+                        }));
+                      }}
+                      options={medicoOptions}
+                      placeholder={medicosQuery.isLoading ? "Carregando medicos..." : "Selecionar medico"}
+                      ariaLabel="Selecionar medico"
+                      disabled={medicosQuery.isLoading || medicoOptions.length === 0}
+                    />
+                  )}
                 </div>
               </div>
 

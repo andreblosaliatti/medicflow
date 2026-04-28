@@ -6,8 +6,10 @@ type Props = {
   mode: "create" | "edit";
   drawerKey: string;
   value: ConsultaDraft | null;
-  doctorId: number;
+  doctorId: number | null;
   doctorName: string;
+  doctorOptions: readonly SelectOption<number>[];
+  lockDoctor?: boolean;
   patientOptions: readonly SelectOption<number>[];
   lockPaciente?: boolean;
   isSaving?: boolean;
@@ -22,6 +24,8 @@ export default function ConsultaDrawerHost({
   value,
   doctorId,
   doctorName,
+  doctorOptions,
+  lockDoctor,
   patientOptions,
   lockPaciente,
   isSaving,
@@ -36,6 +40,8 @@ export default function ConsultaDrawerHost({
       initialValue={value}
       doctorId={doctorId}
       doctorName={doctorName}
+      doctorOptions={doctorOptions}
+      lockDoctor={lockDoctor}
       patientOptions={patientOptions}
       lockPaciente={lockPaciente}
       isSaving={isSaving}

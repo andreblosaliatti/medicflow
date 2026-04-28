@@ -3,9 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { useConsultaDetailsQuery, useConsultaMetadataQuery, useUpdateConsultaMutation } from "../../../../api/consultas/hooks";
 import type { ConsultaDetailsViewModel, ConsultaUpdatePayload } from "../../../../api/consultas/types";
+import { useMedicoOptionsQuery } from "../../../../api/medicos/hooks";
 import { usePacientesQuery } from "../../../../api/pacientes/hooks";
 import type { DuracaoMinutos, MeioPagamento, TipoConsulta } from "../../../../domain/enums/statusConsulta";
 import { canEditConsulta } from "../../../../domain/consulta/workflow";
+import { useAuth } from "../../../../context/useAuth";
 import PageHeader from "../../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../../components/ui/Card";
 import Input from "../../../../components/form/Input";
@@ -90,8 +92,11 @@ type FormSectionProps = {
 
 function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canSelectDoctor = user?.role === "SECRETARIA" || user?.role === "ADMIN";
   const metadataQuery = useConsultaMetadataQuery();
   const pacientesQuery = usePacientesQuery({ size: 200, sort: "nome,asc" });
+  const medicosQuery = useMedicoOptionsQuery(canSelectDoctor);
   const updateMutation = useUpdateConsultaMutation();
   const [form, setForm] = useState<ConsultaFormModel>(() => toFormModel(initialDetails));
 
@@ -113,6 +118,25 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
       ))
       .map((option) => ({ value: option.code, label: option.label }));
   }, [metadataQuery.data]);
+
+  const medicoOptions = useMemo<readonly SelectOption<number>[]>(() => {
+    const options = medicosQuery.data.map((medico) => ({
+      value: medico.id,
+      label: medico.label,
+    }));
+
+    if (form.medicoId === null || options.some((option) => option.value === form.medicoId)) {
+      return options;
+    }
+
+    return [
+      {
+        value: form.medicoId,
+        label: form.medicoNome || `Medico #${form.medicoId}`,
+      },
+      ...options,
+    ];
+  }, [form.medicoId, form.medicoNome, medicosQuery.data]);
 
   const pagamentoOptions = useMemo<readonly SelectOption<MeioPagamento>[]>(() => {
     const options = metadataQuery.data?.meiosPagamento ?? [];
@@ -151,7 +175,7 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
     }
   }
 
-  if (metadataQuery.isLoading || pacientesQuery.isLoading) {
+  if (metadataQuery.isLoading || pacientesQuery.isLoading || (canSelectDoctor && medicosQuery.isLoading)) {
     return (
       <div className="consultas-page consultas-page--form">
         <PageHeader title="Editar consulta" subtitle="Carregando dados" />
@@ -159,9 +183,9 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
     );
   }
 
-  const error = updateMutation.error ?? pacientesQuery.error ?? metadataQuery.error;
+  const error = updateMutation.error ?? pacientesQuery.error ?? medicosQuery.error ?? metadataQuery.error;
   const hasValidTeleconsultaLink = form.tipo !== "TELECONSULTA" || Boolean(form.linkAcesso.trim());
-  const canSave = Boolean(form.pacienteId && form.motivo.trim() && hasValidTeleconsultaLink && !updateMutation.isPending);
+  const canSave = Boolean(form.pacienteId && form.medicoId && form.motivo.trim() && hasValidTeleconsultaLink && !updateMutation.isPending);
 
   if (!canEditConsulta(initialDetails.status)) {
     return (
@@ -198,7 +222,25 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
 
                 <div className="consultas-field">
                   <span className="consultas-label">Médico</span>
-                  <Input value={form.medicoNome} disabled />
+                  {canSelectDoctor ? (
+                    <SelectField<number>
+                      value={form.medicoId}
+                      onChange={(selectedMedicoId) => {
+                        const option = medicoOptions.find((item) => item.value === selectedMedicoId) ?? null;
+                        setForm((current) => ({
+                          ...current,
+                          medicoId: selectedMedicoId,
+                          medicoNome: option?.label ?? current.medicoNome,
+                        }));
+                      }}
+                      options={medicoOptions}
+                      placeholder={medicosQuery.isLoading ? "Carregando medicos..." : "Selecionar medico"}
+                      ariaLabel="Selecionar medico"
+                      disabled={medicosQuery.isLoading || medicoOptions.length === 0}
+                    />
+                  ) : (
+                    <Input value={form.medicoNome} disabled />
+                  )}
                 </div>
               </div>
 

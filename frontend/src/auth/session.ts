@@ -2,6 +2,7 @@ export type UserRole = "ADMIN" | "MEDICO" | "SECRETARIA" | "ATENDENTE" | "ENFERM
 
 export type SessionUser = {
   id: string;
+  medicoId?: string | null;
   login: string;
   name: string;
   role: UserRole;
@@ -14,7 +15,7 @@ export type SessionData = {
   user: SessionUser;
 };
 
-export const SESSION_STORAGE_KEY = "mf_auth_session_v2";
+export const SESSION_STORAGE_KEY = "mf_auth_session_v3";
 export const POST_LOGIN_REDIRECT_KEY = "mf_post_login_redirect_v1";
 const SESSION_CLEARED_EVENT = "mf:session-cleared";
 
@@ -45,6 +46,7 @@ function isSessionData(value: unknown): value is SessionData {
       user &&
       typeof user.id === "string" &&
       user.id &&
+      (user.medicoId === undefined || user.medicoId === null || typeof user.medicoId === "string") &&
       typeof user.login === "string" &&
       user.login &&
       typeof user.name === "string" &&

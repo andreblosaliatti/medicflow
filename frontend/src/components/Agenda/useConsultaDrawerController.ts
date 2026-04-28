@@ -5,10 +5,10 @@ import type { ConsultaDraft } from "./AppointmentDetailDrawer";
 type Mode = "create" | "edit";
 
 type Params = {
-  doctorId: number;
+  doctorId: number | null;
   doctorName: string;
-  emptyDraft: (doctorId: number, doctorName: string) => ConsultaDraft;
-  fromEventToDraft: (event: AppointmentEvent, doctorId: number, doctorName: string) => ConsultaDraft;
+  emptyDraft: (doctorId: number | null, doctorName: string) => ConsultaDraft;
+  fromEventToDraft: (event: AppointmentEvent, doctorId: number | null, doctorName: string) => ConsultaDraft;
 };
 
 type Controller = {

@@ -8,6 +8,7 @@ export type LoginPayload = {
 
 type LoginResponse = {
   id: number | string;
+  medicoId?: number | string | null;
   login?: string;
   nomeCompleto?: string;
   roles?: string[];
@@ -43,6 +44,7 @@ function toSessionData(response: LoginResponse, payload: LoginPayload): SessionD
     token: response.token,
     user: {
       id: String(response.id),
+      medicoId: response.medicoId != null ? String(response.medicoId) : undefined,
       login: response.login ?? payload.login,
       name: response.nomeCompleto ?? payload.login,
       role,

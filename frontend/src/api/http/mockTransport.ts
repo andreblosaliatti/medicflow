@@ -17,6 +17,7 @@ type LoginResponse = {
   token: string;
   usuario: {
     id: string;
+    medicoId?: string | null;
     nome: string;
     email: string;
     role: "MEDICO" | "SECRETARIA" | "ADMIN";
@@ -141,6 +142,7 @@ function handleLogin(body: LoginRequest | undefined): Promise<LoginResponse> {
     token: "mock-jwt-token",
     usuario: {
       id: "u1",
+      medicoId: "1",
       nome: "Dr. João Carvalho",
       email: body.email,
       role: "MEDICO",

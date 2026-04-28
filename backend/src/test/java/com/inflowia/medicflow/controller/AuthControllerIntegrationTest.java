@@ -1,6 +1,7 @@
 package com.inflowia.medicflow.controller;
 
 import com.inflowia.medicflow.api.ApiPaths;
+import com.inflowia.medicflow.domain.usuario.Medico;
 import com.inflowia.medicflow.domain.usuario.Role;
 import com.inflowia.medicflow.domain.usuario.Usuario;
 import com.inflowia.medicflow.repository.RoleRepository;
@@ -56,16 +57,19 @@ class AuthControllerIntegrationTest extends AbstractIntegrationTest {
         Role adminRole = roleRepository.save(new Role(null, "ROLE_ADMIN"));
         Role medicoRole = roleRepository.save(new Role(null, "ROLE_MEDICO"));
 
-        usuario = usuarioRepository.save(Usuario.builder()
-                .login("auth.user")
-                .senha(passwordEncoder.encode("secret123"))
-                .nome("Auth")
-                .sobrenome("User")
-                .email("auth.user@test.com")
-                .cpf("95633733088")
-                .ativo(true)
-                .roles(Set.of(adminRole, medicoRole))
-                .build());
+        Medico medico = new Medico();
+        medico.setLogin("auth.user");
+        medico.setSenha(passwordEncoder.encode("secret123"));
+        medico.setNome("Auth");
+        medico.setSobrenome("User");
+        medico.setEmail("auth.user@test.com");
+        medico.setCpf("95633733088");
+        medico.setAtivo(true);
+        medico.setRoles(Set.of(adminRole, medicoRole));
+        medico.setCrm("CRM-12345");
+        medico.setEspecialidade("Clinica geral");
+
+        usuario = usuarioRepository.save(medico);
 
         token = jwtService.generateToken(User.withUsername(usuario.getLogin())
                 .password(usuario.getSenha())
@@ -87,6 +91,7 @@ class AuthControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.id").value(usuario.getId()))
                 .andExpect(jsonPath("$.login").value("auth.user"))
                 .andExpect(jsonPath("$.nomeCompleto").value("Auth User"))
+                .andExpect(jsonPath("$.medicoId").value(usuario.getId()))
                 .andExpect(jsonPath("$.roles[0]").value("ADMIN"))
                 .andExpect(jsonPath("$.roles[1]").value("MEDICO"))
                 .andExpect(jsonPath("$.permissions").isArray())
@@ -105,6 +110,7 @@ class AuthControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.id").value(usuario.getId()))
                 .andExpect(jsonPath("$.login").value("auth.user"))
                 .andExpect(jsonPath("$.nomeCompleto").value("Auth User"))
+                .andExpect(jsonPath("$.medicoId").value(usuario.getId()))
                 .andExpect(jsonPath("$.roles[0]").value("ADMIN"))
                 .andExpect(jsonPath("$.roles[1]").value("MEDICO"))
                 .andExpect(jsonPath("$.permissions").value(hasItem("consultas:write")))

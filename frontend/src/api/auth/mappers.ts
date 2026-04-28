@@ -20,6 +20,7 @@ export function toSessionData(response: LoginResponse): AuthSessionViewModel {
     token: response.token,
     user: {
       id: String(response.id),
+      medicoId: response.medicoId != null ? String(response.medicoId) : undefined,
       login: response.login,
       name: response.nomeCompleto,
       role,

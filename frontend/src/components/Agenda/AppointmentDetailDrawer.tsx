@@ -19,7 +19,7 @@ import "./styles.css";
 export type ConsultaDraft = {
   pacienteId: number | null;
   pacienteNome: string;
-  medicoId: number;
+  medicoId: number | null;
   medicoNome: string;
   dataHora: string;
   duracaoMinutos: DuracaoMinutos;
@@ -40,8 +40,10 @@ type Props = {
   open: boolean;
   mode: "create" | "edit";
   initialValue: ConsultaDraft | null;
-  doctorId: number;
+  doctorId: number | null;
   doctorName: string;
+  doctorOptions: readonly SelectOption<number>[];
+  lockDoctor?: boolean;
   patientOptions: readonly SelectOption<number>[];
   lockPaciente?: boolean;
   isSaving?: boolean;
@@ -58,7 +60,7 @@ function toIsoLocal(d: Date) {
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
 }
 
-function emptyDraft(doctorId: number, doctorName: string): ConsultaDraft {
+function emptyDraft(doctorId: number | null, doctorName: string): ConsultaDraft {
   const now = new Date();
   now.setMinutes(0, 0, 0);
 
@@ -110,6 +112,8 @@ export default function ConsultaFormDrawer({
   initialValue,
   doctorId,
   doctorName,
+  doctorOptions,
+  lockDoctor,
   patientOptions,
   lockPaciente,
   isSaving = false,
@@ -129,8 +133,8 @@ export default function ConsultaFormDrawer({
     const value = initialValue ?? emptyDraft(doctorId, doctorName);
     return {
       ...value,
-      medicoId: doctorId,
-      medicoNome: doctorName,
+      medicoId: value.medicoId ?? doctorId,
+      medicoNome: value.medicoNome || doctorName,
       status: mode === "create" ? "AGENDADA" : value.status,
     };
   }, [initialValue, doctorId, doctorName, mode]);
@@ -146,13 +150,27 @@ export default function ConsultaFormDrawer({
     const payload: ConsultaDraft = {
       ...form,
       status: mode === "create" ? "AGENDADA" : form.status,
-      medicoId: doctorId,
-      medicoNome: doctorName,
     };
     onSave(payload);
   }
 
-  const canSave = Boolean(form.pacienteId && form.motivo.trim() && !isSaving);
+  const canSave = Boolean(form.pacienteId && form.medicoId && form.motivo.trim() && !isSaving);
+  const visibleDoctorOptions = useMemo<readonly SelectOption<number>[]>(() => {
+    if (
+      form.medicoId === null
+      || doctorOptions.some((option) => option.value === form.medicoId)
+    ) {
+      return doctorOptions;
+    }
+
+    return [
+      {
+        value: form.medicoId,
+        label: form.medicoNome || `Medico #${form.medicoId}`,
+      },
+      ...doctorOptions,
+    ];
+  }, [doctorOptions, form.medicoId, form.medicoNome]);
 
   return (
     <Drawer
@@ -187,7 +205,25 @@ export default function ConsultaFormDrawer({
 
           <div className="consultaDrawerField">
             <label className="consultaDrawerLabel">Médico</label>
-            <Input value={doctorName} onChange={() => {}} disabled />
+            {lockDoctor ? (
+              <Input value={form.medicoNome || doctorName} onChange={() => {}} disabled />
+            ) : (
+              <SelectField<number>
+                value={form.medicoId}
+                onChange={(medicoId) => {
+                  const option = visibleDoctorOptions.find((item) => item.value === medicoId) ?? null;
+                  setForm((prev) => ({
+                    ...prev,
+                    medicoId,
+                    medicoNome: option?.label ?? prev.medicoNome,
+                  }));
+                }}
+                options={visibleDoctorOptions}
+                placeholder="Selecione o medico"
+                ariaLabel="Medico"
+                disabled={visibleDoctorOptions.length === 0}
+              />
+            )}
           </div>
         </div>
 

@@ -12,6 +12,7 @@ public class LoginResponse {
     private Long id;
     private String login;
     private String nomeCompleto;
+    private Long medicoId;
     private List<String> roles;
     private List<String> permissions;
     private String token;
