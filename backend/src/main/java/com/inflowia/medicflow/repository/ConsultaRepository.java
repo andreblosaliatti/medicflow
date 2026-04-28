@@ -19,6 +19,8 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long>, JpaSp
 
     Optional<Consulta> findTopByPacienteIdOrderByIdDesc(Long pacienteId);
 
+    Optional<Consulta> findTopByPacienteIdAndMedicoIdOrderByIdDesc(Long pacienteId, Long medicoId);
+
     List<Consulta> findByPacienteIdOrderByDataHoraDesc(Long pacienteId);
 
     long countByPacienteId(Long pacienteId);

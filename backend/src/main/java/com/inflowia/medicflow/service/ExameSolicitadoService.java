@@ -16,12 +16,13 @@ import com.inflowia.medicflow.exception.BusinessRuleException;
 import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.exception.ResourceNotFoundException;
+import com.inflowia.medicflow.security.CurrentUserScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -43,6 +44,9 @@ public class ExameSolicitadoService {
     @Autowired
     private PacienteRepository pacienteRepository;
 
+    @Autowired
+    private CurrentUserScope currentUserScope;
+
     // CREATE
     @Transactional
     public ExameSolicitadoDetailsDTO inserir(ExameSolicitadoUpdateDTO dto) {
@@ -53,13 +57,12 @@ public class ExameSolicitadoService {
     }
 
     // DELETE
-    @Transactional(propagation = Propagation.SUPPORTS)
+    @Transactional
     public void delete(Long id) {
-        if (!exameSolicitadoRepository.existsById(id)) {
-            throw new ResourceNotFoundException(ErrorCodes.EXAME_SOLICITADO_NOT_FOUND, ExceptionMessages.notFound("Exame solicitado"));
-        }
+        ExameSolicitado entity = getExameSolicitado(id);
+        assertCanAccessExameSolicitado(entity);
         try {
-            exameSolicitadoRepository.deleteById(id);
+            exameSolicitadoRepository.delete(entity);
         } catch (DataIntegrityViolationException e) {
             throw new BusinessRuleException(ErrorCodes.EXAME_SOLICITADO_BUSINESS_RULE, "Não é possível excluir o exame solicitado informado porque ele está vinculado a outros registros. Utilize a inativação.");
         }
@@ -68,16 +71,16 @@ public class ExameSolicitadoService {
     // FIND BY ID
     @Transactional(readOnly = true)
     public ExameSolicitadoDetailsDTO buscarPorId(Long id) {
-        ExameSolicitado entity = exameSolicitadoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_SOLICITADO_NOT_FOUND, ExceptionMessages.notFound("Exame solicitado")));
+        ExameSolicitado entity = getExameSolicitado(id);
+        assertCanAccessExameSolicitado(entity);
 
         return new ExameSolicitadoDetailsDTO(entity);
     }
 
     @Transactional
     public ExameSolicitadoDetailsDTO atualizar(Long id, ExameSolicitadoPatchDTO dto) {
-        ExameSolicitado entity = exameSolicitadoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_SOLICITADO_NOT_FOUND, ExceptionMessages.notFound("Exame solicitado")));
+        ExameSolicitado entity = getExameSolicitado(id);
+        assertCanAccessExameSolicitado(entity);
 
         validatePatch(entity, dto);
         entity.setStatus(dto.getStatus());
@@ -91,8 +94,8 @@ public class ExameSolicitadoService {
 
     @Transactional
     public ExameSolicitadoDetailsDTO atualizarParcialmente(Long id, ExameSolicitadoPatchDTO dto) {
-        ExameSolicitado entity = exameSolicitadoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_SOLICITADO_NOT_FOUND, ExceptionMessages.notFound("Exame solicitado")));
+        ExameSolicitado entity = getExameSolicitado(id);
+        assertCanAccessExameSolicitado(entity);
 
         validatePatch(entity, dto);
 
@@ -116,12 +119,10 @@ public class ExameSolicitadoService {
     // LISTAR EXAMES DE UMA CONSULTA
     @Transactional(readOnly = true)
     public Page<ExameSolicitadoMinDTO> listarPorConsulta(Long consultaId, Pageable pageable) {
-        if (!consultaRepository.existsById(consultaId)) {
-            throw new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta"));
-        }
+        Consulta consulta = getConsulta(consultaId);
+        assertCanAccessConsulta(consulta);
 
-        Page<ExameSolicitado> page = exameSolicitadoRepository
-                .findByConsultaId(consultaId, pageable);
+        Page<ExameSolicitado> page = findByConsultaNoEscopo(consultaId, pageable);
 
         return page.map(ExameSolicitadoMinDTO::new);
     }
@@ -133,8 +134,7 @@ public class ExameSolicitadoService {
             throw new ResourceNotFoundException(ErrorCodes.EXAME_BASE_NOT_FOUND, ExceptionMessages.notFound("Exame base"));
         }
 
-        Page<ExameSolicitado> page = exameSolicitadoRepository
-                .findByExameBaseId(exameBaseId, pageable);
+        Page<ExameSolicitado> page = findByExameBaseNoEscopo(exameBaseId, pageable);
 
         return page.map(ExameSolicitadoMinDTO::new);
     }
@@ -145,8 +145,7 @@ public class ExameSolicitadoService {
             throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
         }
 
-        Page<ExameSolicitado> page =
-                exameSolicitadoRepository.findByConsultaPacienteId(pacienteId, pageable);
+        Page<ExameSolicitado> page = findByPacienteNoEscopo(pacienteId, pageable);
 
         return page.map(ExameSolicitadoMinDTO::new);
     }
@@ -158,8 +157,7 @@ public class ExameSolicitadoService {
             throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
         }
 
-        Consulta ultimaConsulta = consultaRepository
-                .findTopByPacienteIdOrderByIdDesc(pacienteId)
+        Consulta ultimaConsulta = findUltimaConsultaPacienteNoEscopo(pacienteId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ErrorCodes.CONSULTA_NOT_FOUND,
                         ExceptionMessages.NO_CONSULTATIONS_FOR_PATIENT));
@@ -180,11 +178,94 @@ public class ExameSolicitadoService {
 
         Consulta consulta = consultaRepository.findById(dto.getConsultaId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta")));
+        assertCanAccessConsulta(consulta);
         entity.setConsulta(consulta);
 
         ExameBase exameBase = exameBaseRepository.findById(dto.getExameBaseId())
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.EXAME_BASE_NOT_FOUND, ExceptionMessages.notFound("Exame base")));
         entity.setExameBase(exameBase);
+    }
+
+    private ExameSolicitado getExameSolicitado(Long id) {
+        return exameSolicitadoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.EXAME_SOLICITADO_NOT_FOUND,
+                        ExceptionMessages.notFound("Exame solicitado")
+                ));
+    }
+
+    private Consulta getConsulta(Long consultaId) {
+        return consultaRepository.findById(consultaId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.CONSULTA_NOT_FOUND,
+                        ExceptionMessages.notFound("Consulta")
+                ));
+    }
+
+    private Page<ExameSolicitado> findByConsultaNoEscopo(Long consultaId, Pageable pageable) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return exameSolicitadoRepository.findByConsultaId(consultaId, pageable);
+        }
+
+        return exameSolicitadoRepository.findByConsultaIdAndConsultaMedicoId(
+                consultaId,
+                currentUserScope.requireMedicoId(),
+                pageable
+        );
+    }
+
+    private Page<ExameSolicitado> findByExameBaseNoEscopo(Long exameBaseId, Pageable pageable) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return exameSolicitadoRepository.findByExameBaseId(exameBaseId, pageable);
+        }
+
+        return exameSolicitadoRepository.findByExameBaseIdAndConsultaMedicoId(
+                exameBaseId,
+                currentUserScope.requireMedicoId(),
+                pageable
+        );
+    }
+
+    private Page<ExameSolicitado> findByPacienteNoEscopo(Long pacienteId, Pageable pageable) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return exameSolicitadoRepository.findByConsultaPacienteId(pacienteId, pageable);
+        }
+
+        return exameSolicitadoRepository.findByConsultaPacienteIdAndConsultaMedicoId(
+                pacienteId,
+                currentUserScope.requireMedicoId(),
+                pageable
+        );
+    }
+
+    private java.util.Optional<Consulta> findUltimaConsultaPacienteNoEscopo(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return consultaRepository.findTopByPacienteIdOrderByIdDesc(pacienteId);
+        }
+
+        return consultaRepository.findTopByPacienteIdAndMedicoIdOrderByIdDesc(
+                pacienteId,
+                currentUserScope.requireMedicoId()
+        );
+    }
+
+    private void assertCanAccessExameSolicitado(ExameSolicitado exameSolicitado) {
+        assertCanAccessConsulta(exameSolicitado.getConsulta());
+    }
+
+    private void assertCanAccessConsulta(Consulta consulta) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return;
+        }
+
+        Long consultaMedicoId = consulta.getMedico() != null ? consulta.getMedico().getId() : null;
+        if (!currentUserScope.requireMedicoId().equals(consultaMedicoId)) {
+            throw accessDenied();
+        }
+    }
+
+    private AccessDeniedException accessDenied() {
+        return new AccessDeniedException(ExceptionMessages.ACCESS_DENIED);
     }
 
     private void validatePatch(ExameSolicitado entity, ExameSolicitadoPatchDTO dto) {

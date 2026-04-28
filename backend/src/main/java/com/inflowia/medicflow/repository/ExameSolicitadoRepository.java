@@ -13,9 +13,15 @@ public interface ExameSolicitadoRepository extends JpaRepository<ExameSolicitado
 
     Page<ExameSolicitado> findByConsultaId(Long consultaId, Pageable pageable);
 
+    Page<ExameSolicitado> findByConsultaIdAndConsultaMedicoId(Long consultaId, Long medicoId, Pageable pageable);
+
     Page<ExameSolicitado> findByExameBaseId(Long exameBaseId, Pageable pageable);
 
+    Page<ExameSolicitado> findByExameBaseIdAndConsultaMedicoId(Long exameBaseId, Long medicoId, Pageable pageable);
+
     Page<ExameSolicitado> findByConsultaPacienteId(Long pacienteId, Pageable pageable);
+
+    Page<ExameSolicitado> findByConsultaPacienteIdAndConsultaMedicoId(Long pacienteId, Long medicoId, Pageable pageable);
 
     List<ExameSolicitado> findByConsultaPacienteId(Long pacienteId);
 }
