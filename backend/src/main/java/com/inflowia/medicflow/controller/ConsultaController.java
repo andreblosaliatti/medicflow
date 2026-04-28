@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.controller;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.domain.consulta.StatusConsulta;
 import com.inflowia.medicflow.dto.consulta.ConsultaAgendaItemDTO;
 import com.inflowia.medicflow.dto.consulta.ConsultaDTO;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
-@RequestMapping("/consultas")
+@RequestMapping(ApiPaths.CONSULTAS)
 public class ConsultaController {
 
     private final ConsultaService service;
@@ -36,7 +37,7 @@ public class ConsultaController {
             UriComponentsBuilder uriBuilder) {
 
         ConsultaDetailsDTO created = service.criar(dto);
-        var uri = uriBuilder.path("/consultas/{id}")
+        var uri = uriBuilder.path(ApiPaths.CONSULTAS + "/{id}")
                 .buildAndExpand(created.getId())
                 .toUri();
 

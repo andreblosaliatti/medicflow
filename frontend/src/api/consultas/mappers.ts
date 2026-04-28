@@ -23,7 +23,14 @@ function parseDate(value: string | null | undefined) {
 }
 
 function normalizeTipo(tipo: string | null | undefined): TipoConsulta {
-  if (tipo === "TELECONSULTA" || tipo === "RETORNO") return tipo;
+  if (
+    tipo === "PRESENCIAL"
+    || tipo === "TELECONSULTA"
+    || tipo === "RETORNO"
+    || tipo === "URGENCIA"
+  ) {
+    return tipo;
+  }
   return "PRESENCIAL";
 }
 
@@ -150,7 +157,7 @@ export function toConsultaDetailsViewModel(consulta: ConsultaDetailsApi): Consul
     meioPagamento,
     meioPagamentoLabel: formatMeioPagamento(meioPagamento),
     dataPagamento: consulta.dataPagamento,
-    teleconsulta: Boolean(consulta.teleconsulta),
+    teleconsulta: tipo === "TELECONSULTA",
     linkAcesso: consulta.linkAcesso,
     retorno: Boolean(consulta.retorno),
     dataLimiteRetorno: consulta.dataLimiteRetorno,

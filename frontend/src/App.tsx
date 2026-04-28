@@ -53,7 +53,7 @@ export default function App() {
                 <Route path=":id" element={<PacientProfile />} />
               </Route>
 
-              <Route element={<PrivateRoute allowedRoles={["MEDICO"]} />}>
+              <Route element={<PrivateRoute allowedRoles={["MEDICO", "SECRETARIA", "ADMIN"]} />}>
                 <Route path="/consultas">
                   <Route index element={<ConsultasPage />} />
                   <Route path="nova" element={<ConsultaNew />} />

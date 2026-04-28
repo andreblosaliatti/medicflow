@@ -9,7 +9,7 @@ type ConsultaFormFieldsProps = {
 };
 
 const DURACOES: DuracaoMinutos[] = [15, 30, 45, 60];
-const TIPOS: TipoConsulta[] = ["PRESENCIAL", "TELECONSULTA", "RETORNO"];
+const TIPOS: TipoConsulta[] = ["PRESENCIAL", "TELECONSULTA", "RETORNO", "URGENCIA"];
 
 function isDuracaoMinutos(v: number): v is DuracaoMinutos {
   return (DURACOES as number[]).includes(v);

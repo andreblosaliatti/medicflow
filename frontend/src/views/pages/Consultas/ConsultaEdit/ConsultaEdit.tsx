@@ -106,7 +106,10 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
     const options = metadataQuery.data?.tipos ?? [];
     return options
       .filter((option): option is { code: TipoConsulta; label: string } => (
-        option.code === "PRESENCIAL" || option.code === "TELECONSULTA" || option.code === "RETORNO"
+        option.code === "PRESENCIAL"
+        || option.code === "TELECONSULTA"
+        || option.code === "RETORNO"
+        || option.code === "URGENCIA"
       ))
       .map((option) => ({ value: option.code, label: option.label }));
   }, [metadataQuery.data]);
@@ -137,7 +140,6 @@ function ConsultaEditFormSection({ consultaId, initialDetails }: FormSectionProp
       dataPagamento: current.pago ? normalizeDateTimeLocal(current.dataPagamento || current.dataHora) : null,
       retorno: current.tipo === "RETORNO",
       dataLimiteRetorno: null,
-      teleconsulta: current.tipo === "TELECONSULTA",
       linkAcesso: current.tipo === "TELECONSULTA" ? current.linkAcesso.trim() : null,
       planoSaude: null,
       numeroCarteirinha: null,

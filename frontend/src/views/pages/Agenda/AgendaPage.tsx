@@ -49,6 +49,7 @@ const typeOptions: readonly SelectOption<TypeFilter>[] = [
   { value: "PRESENCIAL", label: "Presencial" },
   { value: "TELECONSULTA", label: "Teleconsulta" },
   { value: "RETORNO", label: "Retorno" },
+  { value: "URGENCIA", label: "Urgência" },
 ] as const;
 
 function startOfWeek(date: Date) {
@@ -251,7 +252,6 @@ export default function AgendaPage() {
       dataPagamento: data.pago ? normalizeDateTimeLocal(data.dataPagamento || data.dataHora) : null,
       retorno: data.tipo === "RETORNO",
       dataLimiteRetorno: data.tipo === "RETORNO" && data.dataLimiteRetorno ? normalizeDateTimeLocal(data.dataLimiteRetorno) : null,
-      teleconsulta: data.tipo === "TELECONSULTA",
       linkAcesso: data.tipo === "TELECONSULTA" ? data.linkAcesso || null : null,
       planoSaude: null,
       numeroCarteirinha: null,

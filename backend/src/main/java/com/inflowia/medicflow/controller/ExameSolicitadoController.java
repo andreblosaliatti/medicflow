@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.controller;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoDetailsDTO;
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoMinDTO;
 import com.inflowia.medicflow.dto.exame.ExameSolicitadoPatchDTO;
@@ -17,7 +18,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/exames-solicitados")
+@RequestMapping(ApiPaths.EXAMES_SOLICITADOS)
 public class ExameSolicitadoController {
 
     @Autowired

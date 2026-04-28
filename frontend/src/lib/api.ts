@@ -9,7 +9,7 @@ import {
   rememberPostLoginRedirect,
 } from "../auth/session";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "/api").replace(/\/$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "/api/v1").replace(/\/$/, "");
 const SKIP_AUTH_HEADER = "X-Skip-Auth";
 
 type ApiRequestConfig<TData = unknown> = AxiosRequestConfig<TData>;

@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.config;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.dto.CustomError;
 import com.inflowia.medicflow.dto.ValidationError;
 import io.swagger.v3.oas.models.Components;
@@ -75,7 +76,7 @@ public class OpenApiConfig {
                 .addProperty("error", new StringSchema().example("Not Found"))
                 .addProperty("code", new StringSchema().example("PACIENTE-NOT-FOUND-404"))
                 .addProperty("message", new StringSchema().example("Paciente não encontrado."))
-                .addProperty("path", new StringSchema().example("/pacientes/999"))
+                .addProperty("path", new StringSchema().example(ApiPaths.PACIENTES + "/999"))
                 .addProperty("traceId", new StringSchema().example("2ab7d2ca-2ca2-4b67-940d-f7d8c19860ef"));
     }
 
@@ -87,7 +88,7 @@ public class OpenApiConfig {
                 .addProperty("error", new StringSchema().example("Unprocessable Entity"))
                 .addProperty("code", new StringSchema().example("CORE-VALIDATION-422"))
                 .addProperty("message", new StringSchema().example("Dados inválidos."))
-                .addProperty("path", new StringSchema().example("/pacientes"))
+                .addProperty("path", new StringSchema().example(ApiPaths.PACIENTES))
                 .addProperty("traceId", new StringSchema().example("2ab7d2ca-2ca2-4b67-940d-f7d8c19860ef"))
                 .addProperty("errors", new ArraySchema().items(new Schema<>().$ref("#/components/schemas/FieldMessage")));
     }
@@ -139,7 +140,7 @@ public class OpenApiConfig {
                                         "error", "Not Found",
                                         "code", code,
                                         "message", message,
-                                        "path", "/recurso/999",
+                                        "path", ApiPaths.API_V1 + "/recurso/999",
                                         "traceId", "2ab7d2ca-2ca2-4b67-940d-f7d8c19860ef"
                                 ))))
                 ));
@@ -152,7 +153,7 @@ public class OpenApiConfig {
         exampleBody.put("error", code.endsWith("422") ? "Unprocessable Entity" : "Bad Request");
         exampleBody.put("code", code);
         exampleBody.put("message", "Dados inválidos.");
-        exampleBody.put("path", "/recurso");
+        exampleBody.put("path", ApiPaths.API_V1 + "/recurso");
         exampleBody.put("traceId", "2ab7d2ca-2ca2-4b67-940d-f7d8c19860ef");
         exampleBody.put("errors", new Object[]{Map.of("fieldName", fieldName, "message", fieldMessage)});
 

@@ -11,7 +11,7 @@ export type RegistroExameDTO = {
   id: string; // mock id
   exameBaseId?: string;
   nome: string;
-  status: "SOLICITADO" | "REALIZADO" | "RESULTADO";
+  status: "SOLICITADO" | "AGENDADO" | "REALIZADO" | "CANCELADO";
   justificativa?: string;
   observacoes?: string;
 };

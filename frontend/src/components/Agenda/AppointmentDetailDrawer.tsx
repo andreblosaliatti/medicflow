@@ -87,6 +87,7 @@ const tipoOptions = [
   { value: "PRESENCIAL", label: "Presencial" },
   { value: "TELECONSULTA", label: "Teleconsulta" },
   { value: "RETORNO", label: "Retorno" },
+  { value: "URGENCIA", label: "Urgência" },
 ] as const;
 
 const duracaoOptions = [

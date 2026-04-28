@@ -92,7 +92,10 @@ export default function ConsultaCreate() {
     const options = metadataQuery.data?.tipos ?? [];
     return options
       .filter((option): option is { code: TipoConsulta; label: string } => (
-        option.code === "PRESENCIAL" || option.code === "TELECONSULTA" || option.code === "RETORNO"
+        option.code === "PRESENCIAL"
+        || option.code === "TELECONSULTA"
+        || option.code === "RETORNO"
+        || option.code === "URGENCIA"
       ))
       .map((option) => ({ value: option.code, label: option.label }));
   }, [metadataQuery.data]);
@@ -143,7 +146,6 @@ export default function ConsultaCreate() {
       duracaoMinutos: form.duracaoMinutos,
       retorno: form.tipo === "RETORNO",
       dataLimiteRetorno: null,
-      teleconsulta: form.tipo === "TELECONSULTA",
       linkAcesso: form.tipo === "TELECONSULTA" ? form.linkAcesso.trim() : null,
       planoSaude: null,
       numeroCarteirinha: null,

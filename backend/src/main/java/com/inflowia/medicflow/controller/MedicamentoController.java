@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.controller;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.dto.medicamento.MedicamentoPrescritoDTO;
 import com.inflowia.medicflow.dto.medicamento.MedicamentoPrescritoMinDTO;
 import com.inflowia.medicflow.service.MedicamentoService;
@@ -15,7 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/medicamentos")
+@RequestMapping(ApiPaths.MEDICAMENTOS)
 public class MedicamentoController {
 
     @Autowired

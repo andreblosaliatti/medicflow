@@ -14,8 +14,8 @@ const items: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", roles: ["MEDICO", "SECRETARIA", "ADMIN"], end: true },
   { to: "/agenda", label: "Agenda", roles: ["MEDICO", "SECRETARIA", "ADMIN"] },
   { to: "/pacientes", label: "Pacientes", roles: ["MEDICO", "SECRETARIA", "ADMIN"] },
-  { to: "/consultas", label: "Consultas", roles: ["MEDICO"] },
-  { to: "/pendencias", label: "Pendências", roles: ["MEDICO"] },
+  { to: "/consultas", label: "Consultas", roles: ["MEDICO", "SECRETARIA", "ADMIN"] },
+  { to: "/pendencias", label: "Pendências", roles: ["MEDICO", "SECRETARIA", "ADMIN"] },
 ];
 
 function formatRole(role: UserRole) {

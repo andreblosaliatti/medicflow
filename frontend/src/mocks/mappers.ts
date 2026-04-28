@@ -54,7 +54,7 @@ function moneyBRL(v?: number): string {
 // =========================
 // Agenda (UI)
 // =========================
-export type AppointmentType = "PRESENCIAL" | "TELECONSULTA" | "RETORNO";
+export type AppointmentType = "PRESENCIAL" | "TELECONSULTA" | "RETORNO" | "URGENCIA";
 export type AppointmentStatus =
   | "AGENDADA"
   | "CONFIRMADA"
@@ -350,7 +350,7 @@ export type ProntuarioMedicacao = {
 
 export type ProntuarioExame = {
   nome: string;
-  status: "SOLICITADO" | "REALIZADO" | "RESULTADO";
+  status: "SOLICITADO" | "AGENDADO" | "REALIZADO" | "CANCELADO";
   observacoes?: string;
 };
 

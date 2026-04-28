@@ -29,7 +29,10 @@ function isUserRole(value: string): value is UserRole {
 function resolveRole(roles: string[]): UserRole {
   const normalized = roles.filter(isUserRole);
   const prioritized = ROLE_PRIORITY.find((role) => normalized.includes(role));
-  return prioritized ?? "MEDICO";
+  if (!prioritized) {
+    throw new Error("Usuario autenticado sem perfil compativel com a aplicacao.");
+  }
+  return prioritized;
 }
 
 function toSessionData(response: LoginResponse, payload: LoginPayload): SessionData {
@@ -43,7 +46,7 @@ function toSessionData(response: LoginResponse, payload: LoginPayload): SessionD
       login: response.login ?? payload.login,
       name: response.nomeCompleto ?? payload.login,
       role,
-      roles: normalizedRoles.length > 0 ? normalizedRoles : [role],
+      roles: normalizedRoles,
       permissions: response.permissions ?? [],
     },
   };

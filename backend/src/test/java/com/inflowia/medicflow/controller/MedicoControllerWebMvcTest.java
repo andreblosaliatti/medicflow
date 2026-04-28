@@ -1,6 +1,7 @@
 package com.inflowia.medicflow.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.config.CorrelationIdFilter;
 import com.inflowia.medicflow.dto.medico.MedicoSelectDTO;
 import com.inflowia.medicflow.security.ApiAccessDeniedHandler;
@@ -57,7 +58,7 @@ class MedicoControllerWebMvcTest {
                 new MedicoSelectDTO(1L, "Ana Silva", "CRM-1", "Cardiologia")
         ));
 
-        mockMvc.perform(get("/medicos/autocomplete")
+        mockMvc.perform(get(ApiPaths.MEDICOS + "/autocomplete")
                         .param("termo", "ana")
                         .param("limite", "5"))
                 .andExpect(status().isOk())

@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.dto;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Instant;
@@ -20,7 +21,7 @@ public class CustomError {
     private final String code;
     @Schema(example = "Paciente não encontrado.")
     private final String message;
-    @Schema(example = "/pacientes/999")
+    @Schema(example = ApiPaths.PACIENTES + "/999")
     private final String path;
     @Schema(example = "2ab7d2ca-2ca2-4b67-940d-f7d8c19860ef", nullable = true)
     private final String traceId;

@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.controller;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.domain.usuario.Role;
 import com.inflowia.medicflow.domain.usuario.Usuario;
 import com.inflowia.medicflow.repository.RoleRepository;
@@ -74,7 +75,7 @@ class AuthControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldLoginWithStandardizedPayload() throws Exception {
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post(ApiPaths.AUTH + "/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -97,7 +98,7 @@ class AuthControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnAuthenticatedUserFromMeEndpoint() throws Exception {
-        mockMvc.perform(get("/auth/me")
+        mockMvc.perform(get(ApiPaths.AUTH + "/me")
                         .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -112,9 +113,9 @@ class AuthControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldRequireAuthenticationForMeEndpoint() throws Exception {
-        mockMvc.perform(get("/auth/me").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get(ApiPaths.AUTH + "/me").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value(ErrorCodes.AUTH_AUTHENTICATION_ERROR))
-                .andExpect(jsonPath("$.path").value("/auth/me"));
+                .andExpect(jsonPath("$.path").value(ApiPaths.AUTH + "/me"));
     }
 }
