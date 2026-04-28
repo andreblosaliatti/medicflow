@@ -23,11 +23,12 @@ import com.inflowia.medicflow.repository.ConsultaRepository;
 import com.inflowia.medicflow.repository.MedicoRepository;
 import com.inflowia.medicflow.repository.PacienteRepository;
 import com.inflowia.medicflow.repository.specification.ConsultaSpecifications;
+import com.inflowia.medicflow.security.CurrentUserScope;
 import com.inflowia.medicflow.service.validation.ConsultaDomainValidator;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ConsultaService {
@@ -43,19 +45,24 @@ public class ConsultaService {
     private final PacienteRepository pacienteRepository;
     private final MedicoRepository medicoRepository;
     private final ConsultaDomainValidator consultaDomainValidator;
+    private final CurrentUserScope currentUserScope;
 
     public ConsultaService(ConsultaRepository consultaRepository,
                            PacienteRepository pacienteRepository,
                            MedicoRepository medicoRepository,
-                           ConsultaDomainValidator consultaDomainValidator) {
+                           ConsultaDomainValidator consultaDomainValidator,
+                           CurrentUserScope currentUserScope) {
         this.consultaRepository = consultaRepository;
         this.pacienteRepository = pacienteRepository;
         this.medicoRepository = medicoRepository;
         this.consultaDomainValidator = consultaDomainValidator;
+        this.currentUserScope = currentUserScope;
     }
 
     @Transactional
     public ConsultaDetailsDTO criar(ConsultaDTO dto) {
+        assertCanUseMedicoId(dto.getMedicoId());
+
         Paciente paciente = pacienteRepository.findByIdAndAtivoTrue(dto.getPacienteId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ErrorCodes.PACIENTE_NOT_FOUND,
@@ -78,44 +85,40 @@ public class ConsultaService {
 
     @Transactional
     public ConsultaDetailsDTO atualizar(Long id, ConsultaUpdateDTO dto) {
-        try {
-            Consulta entity = consultaRepository.getReferenceById(id);
-
-            Paciente paciente = null;
-            Medico medico = null;
-
-            if (dto.getPacienteId() != null) {
-                paciente = pacienteRepository.findByIdAndAtivoTrue(dto.getPacienteId())
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                ErrorCodes.PACIENTE_NOT_FOUND,
-                                ExceptionMessages.notFound("Paciente")
-                        ));
-            }
-
-            if (dto.getMedicoId() != null) {
-                medico = medicoRepository.findByIdAndAtivoTrue(dto.getMedicoId())
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                ErrorCodes.MEDICO_NOT_FOUND,
-                                ExceptionMessages.notFound("Médico")
-                        ));
-            }
-
-            if (dto.getStatus() != null) {
-                consultaDomainValidator.validateStatusTransition(entity.getStatus(), dto.getStatus());
-            }
-
-            copyUpdateDtoToEntity(dto, entity, paciente, medico);
-            consultaDomainValidator.validate(entity);
-
-            entity = consultaRepository.save(entity);
-            return new ConsultaDetailsDTO(entity);
-
-        } catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException(
-                    ErrorCodes.CONSULTA_NOT_FOUND,
-                    ExceptionMessages.notFound("Consulta")
-            );
+        Consulta entity = getConsulta(id);
+        assertCanAccessConsulta(entity);
+        if (dto.getMedicoId() != null) {
+            assertCanUseMedicoId(dto.getMedicoId());
         }
+
+        Paciente paciente = null;
+        Medico medico = null;
+
+        if (dto.getPacienteId() != null) {
+            paciente = pacienteRepository.findByIdAndAtivoTrue(dto.getPacienteId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            ErrorCodes.PACIENTE_NOT_FOUND,
+                            ExceptionMessages.notFound("Paciente")
+                    ));
+        }
+
+        if (dto.getMedicoId() != null) {
+            medico = medicoRepository.findByIdAndAtivoTrue(dto.getMedicoId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            ErrorCodes.MEDICO_NOT_FOUND,
+                            ExceptionMessages.notFound("Médico")
+                    ));
+        }
+
+        if (dto.getStatus() != null) {
+            consultaDomainValidator.validateStatusTransition(entity.getStatus(), dto.getStatus());
+        }
+
+        copyUpdateDtoToEntity(dto, entity, paciente, medico);
+        consultaDomainValidator.validate(entity);
+
+        entity = consultaRepository.save(entity);
+        return new ConsultaDetailsDTO(entity);
     }
 
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -140,12 +143,13 @@ public class ConsultaService {
     @Transactional(readOnly = true)
     public ConsultaDetailsDTO buscarPorId(Long id) {
         Consulta entity = getConsulta(id);
+        assertCanAccessConsulta(entity);
         return new ConsultaDetailsDTO(entity);
     }
 
     @Transactional(readOnly = true)
     public Page<ConsultaMinDTO> listar(ConsultaFilterDTO filtro, Pageable pageable) {
-        ConsultaFilterDTO filtroNormalizado = normalizarFiltro(filtro);
+        ConsultaFilterDTO filtroNormalizado = aplicarEscopoMedico(normalizarFiltro(filtro));
         validarFiltros(filtroNormalizado);
         Page<Consulta> page = consultaRepository.findAll(
                 ConsultaSpecifications.withFilters(filtroNormalizado),
@@ -156,7 +160,7 @@ public class ConsultaService {
 
     @Transactional(readOnly = true)
     public Page<ConsultaTableItemDTO> listarParaTabela(ConsultaFilterDTO filtro, Pageable pageable) {
-        ConsultaFilterDTO filtroNormalizado = normalizarFiltro(filtro);
+        ConsultaFilterDTO filtroNormalizado = aplicarEscopoMedico(normalizarFiltro(filtro));
         validarFiltros(filtroNormalizado);
         Page<Consulta> page = consultaRepository.findAll(
                 ConsultaSpecifications.withFilters(filtroNormalizado),
@@ -167,7 +171,7 @@ public class ConsultaService {
 
     @Transactional(readOnly = true)
     public Page<ConsultaAgendaItemDTO> listarParaAgenda(ConsultaFilterDTO filtro, Pageable pageable) {
-        ConsultaFilterDTO filtroNormalizado = normalizarFiltro(filtro);
+        ConsultaFilterDTO filtroNormalizado = aplicarEscopoMedico(normalizarFiltro(filtro));
         validarFiltros(filtroNormalizado);
         Page<Consulta> page = consultaRepository.findAll(
                 ConsultaSpecifications.withFilters(filtroNormalizado),
@@ -200,7 +204,7 @@ public class ConsultaService {
 
     @Transactional(readOnly = true)
     public ConsultaDetailsDTO buscarUltimaConsultaPorPaciente(Long pacienteId) {
-        Consulta consulta = consultaRepository.findTopByPacienteIdOrderByDataHoraDesc(pacienteId)
+        Consulta consulta = buscarUltimaConsultaPorPacienteNoEscopo(pacienteId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ErrorCodes.CONSULTA_NOT_FOUND,
                         ExceptionMessages.NO_CONSULTATIONS_FOR_PATIENT
@@ -230,6 +234,7 @@ public class ConsultaService {
     @Transactional
     public ConsultaDetailsDTO confirmar(Long id) {
         Consulta consulta = getConsulta(id);
+        assertCanAccessConsulta(consulta);
         consultaDomainValidator.validateCanConfirm(consulta);
         consultaDomainValidator.validateStatusTransition(consulta.getStatus(), StatusConsulta.CONFIRMADA);
         consulta.setStatus(StatusConsulta.CONFIRMADA);
@@ -240,6 +245,7 @@ public class ConsultaService {
     @Transactional
     public ConsultaDetailsDTO cancelar(Long id) {
         Consulta consulta = getConsulta(id);
+        assertCanAccessConsulta(consulta);
         consultaDomainValidator.validateCanCancel(consulta);
         consultaDomainValidator.validateStatusTransition(consulta.getStatus(), StatusConsulta.CANCELADA);
         consulta.setStatus(StatusConsulta.CANCELADA);
@@ -250,6 +256,7 @@ public class ConsultaService {
     @Transactional
     public ConsultaDetailsDTO iniciarAtendimento(Long id) {
         Consulta consulta = getConsulta(id);
+        assertCanAccessConsulta(consulta);
         consultaDomainValidator.validateCanStart(consulta);
         consultaDomainValidator.validateStatusTransition(consulta.getStatus(), StatusConsulta.EM_ATENDIMENTO);
         consulta.setStatus(StatusConsulta.EM_ATENDIMENTO);
@@ -260,6 +267,7 @@ public class ConsultaService {
     @Transactional
     public ConsultaDetailsDTO finalizarAtendimento(Long id) {
         Consulta consulta = getConsulta(id);
+        assertCanAccessConsulta(consulta);
         consultaDomainValidator.validateCanFinish(consulta);
         consultaDomainValidator.validateStatusTransition(consulta.getStatus(), StatusConsulta.CONCLUIDA);
         consulta.setStatus(StatusConsulta.CONCLUIDA);
@@ -295,6 +303,57 @@ public class ConsultaService {
 
     private ConsultaFilterDTO normalizarFiltro(ConsultaFilterDTO filtro) {
         return filtro != null ? filtro : new ConsultaFilterDTO();
+    }
+
+    private ConsultaFilterDTO aplicarEscopoMedico(ConsultaFilterDTO filtro) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return filtro;
+        }
+
+        Long medicoId = currentUserScope.requireMedicoId();
+        if (filtro.getMedicoId() != null && !medicoId.equals(filtro.getMedicoId())) {
+            throw accessDenied();
+        }
+
+        filtro.setMedicoId(medicoId);
+        return filtro;
+    }
+
+    private Optional<Consulta> buscarUltimaConsultaPorPacienteNoEscopo(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return consultaRepository.findTopByPacienteIdOrderByDataHoraDesc(pacienteId);
+        }
+
+        return consultaRepository.findTopByPacienteIdAndMedicoIdOrderByDataHoraDesc(
+                pacienteId,
+                currentUserScope.requireMedicoId()
+        );
+    }
+
+    private void assertCanAccessConsulta(Consulta consulta) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return;
+        }
+
+        Long medicoId = currentUserScope.requireMedicoId();
+        Long consultaMedicoId = consulta.getMedico() != null ? consulta.getMedico().getId() : null;
+        if (!medicoId.equals(consultaMedicoId)) {
+            throw accessDenied();
+        }
+    }
+
+    private void assertCanUseMedicoId(Long medicoId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return;
+        }
+
+        if (!currentUserScope.requireMedicoId().equals(medicoId)) {
+            throw accessDenied();
+        }
+    }
+
+    private AccessDeniedException accessDenied() {
+        return new AccessDeniedException(ExceptionMessages.ACCESS_DENIED);
     }
 
     private void validarFiltros(ConsultaFilterDTO filtro) {
