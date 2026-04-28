@@ -22,9 +22,11 @@ import com.inflowia.medicflow.repository.ConsultaRepository;
 import com.inflowia.medicflow.repository.ExameSolicitadoRepository;
 import com.inflowia.medicflow.repository.MedicamentoPrescritoRepository;
 import com.inflowia.medicflow.repository.PacienteRepository;
+import com.inflowia.medicflow.security.CurrentUserScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -51,6 +53,9 @@ public class PacienteService {
     @Autowired
     private MedicamentoPrescritoRepository medicamentoPrescritoRepository;
 
+    @Autowired
+    private CurrentUserScope currentUserScope;
+
     @Transactional
     public PacienteDTO cadastrar(PacienteDTO dto) {
         Paciente entidade = new Paciente();
@@ -69,13 +74,7 @@ public class PacienteService {
                                         Pageable pageable) {
         Boolean ativoFilter = ativo != null ? ativo : Boolean.TRUE;
 
-        Page<Paciente> page = repository.search(
-                normalizarFiltro(nome),
-                normalizarFiltro(cpf),
-                ativoFilter,
-                normalizarFiltro(convenio),
-                pageable
-        );
+        Page<Paciente> page = searchPacientesNoEscopo(nome, cpf, ativoFilter, convenio, pageable);
 
         List<Paciente> pacientes = page.getContent();
         Map<Long, LocalDateTime> ultimasConsultasPorPaciente = buscarUltimasConsultasPorPaciente(pacientes);
@@ -97,22 +96,24 @@ public class PacienteService {
     @Transactional(readOnly = true)
     public PacienteDTO buscarPorId(Long id) {
         Paciente paciente = getPacienteAtivo(id);
+        assertCanAccessPaciente(paciente.getId());
         return new PacienteDTO(paciente);
     }
 
     @Transactional(readOnly = true)
     public PacienteProfileDTO buscarPerfil(Long id) {
         Paciente paciente = getPacienteAtivo(id);
-        Consulta ultimaConsulta = consultaRepository.findTopByPacienteIdOrderByDataHoraDesc(id).orElse(null);
+        assertCanAccessPaciente(paciente.getId());
+        Consulta ultimaConsulta = buscarUltimaConsultaNoEscopo(id);
 
         PacienteUltimaConsultaResumoDTO ultimaConsultaResumo = ultimaConsulta != null
                 ? new PacienteUltimaConsultaResumoDTO(ultimaConsulta)
                 : null;
 
         PacienteHistoricoResumoDTO historico = new PacienteHistoricoResumoDTO(
-                consultaRepository.countByPacienteId(id),
-                exameSolicitadoRepository.countByConsultaPacienteId(id),
-                medicamentoPrescritoRepository.countByConsultaPacienteId(id),
+                countConsultasNoEscopo(id),
+                countExamesNoEscopo(id),
+                countMedicamentosNoEscopo(id),
                 ultimaConsulta != null ? ultimaConsulta.getDataHora() : null,
                 ultimaConsultaResumo
         );
@@ -123,9 +124,10 @@ public class PacienteService {
     @Transactional(readOnly = true)
     public PacienteProntuarioDetailsDTO buscarProntuario(Long id) {
         Paciente paciente = getPacienteAtivo(id);
-        List<Consulta> consultas = consultaRepository.findByPacienteIdOrderByDataHoraDesc(id);
-        List<MedicamentoPrescrito> medicamentos = medicamentoPrescritoRepository.findByConsultaPacienteId(id);
-        List<ExameSolicitado> exames = exameSolicitadoRepository.findByConsultaPacienteId(id);
+        assertCanAccessPaciente(paciente.getId());
+        List<Consulta> consultas = findConsultasNoEscopo(id);
+        List<MedicamentoPrescrito> medicamentos = findMedicamentosNoEscopo(id);
+        List<ExameSolicitado> exames = findExamesNoEscopo(id);
 
         Map<Long, List<PacienteProntuarioMedicacaoDTO>> medicacoesPorConsulta = medicamentos.stream()
                 .collect(Collectors.groupingBy(
@@ -166,6 +168,7 @@ public class PacienteService {
     @Transactional
     public PacienteDTO atualizar(Long id, PacienteUpdateDTO dto) {
         Paciente paciente = getPacienteAtivo(id);
+        assertCanAccessPaciente(paciente.getId());
         copiarUpdateDtoParaEntidade(dto, paciente);
 
         Paciente atualizado = repository.save(paciente);
@@ -175,6 +178,7 @@ public class PacienteService {
     @Transactional
     public void delete(Long id) {
         Paciente paciente = getPacienteAtivo(id);
+        assertCanAccessPaciente(paciente.getId());
         paciente.setAtivo(false);
         repository.save(paciente);
     }
@@ -192,6 +196,123 @@ public class PacienteService {
                 ));
     }
 
+    private Page<Paciente> searchPacientesNoEscopo(String nome,
+                                                   String cpf,
+                                                   Boolean ativo,
+                                                   String convenio,
+                                                   Pageable pageable) {
+        String nomeNormalizado = normalizarFiltro(nome);
+        String cpfNormalizado = normalizarFiltro(cpf);
+        String convenioNormalizado = normalizarFiltro(convenio);
+
+        if (!currentUserScope.requiresMedicoScope()) {
+            return repository.search(
+                    nomeNormalizado,
+                    cpfNormalizado,
+                    ativo,
+                    convenioNormalizado,
+                    pageable
+            );
+        }
+
+        return repository.searchLinkedToMedico(
+                nomeNormalizado,
+                cpfNormalizado,
+                ativo,
+                convenioNormalizado,
+                currentUserScope.requireMedicoId(),
+                pageable
+        );
+    }
+
+    private Consulta buscarUltimaConsultaNoEscopo(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return consultaRepository.findTopByPacienteIdOrderByDataHoraDesc(pacienteId).orElse(null);
+        }
+
+        return consultaRepository.findTopByPacienteIdAndMedicoIdOrderByDataHoraDesc(
+                pacienteId,
+                currentUserScope.requireMedicoId()
+        ).orElse(null);
+    }
+
+    private long countConsultasNoEscopo(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return consultaRepository.countByPacienteId(pacienteId);
+        }
+
+        return consultaRepository.countByPacienteIdAndMedicoId(pacienteId, currentUserScope.requireMedicoId());
+    }
+
+    private long countExamesNoEscopo(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return exameSolicitadoRepository.countByConsultaPacienteId(pacienteId);
+        }
+
+        return exameSolicitadoRepository.countByConsultaPacienteIdAndConsultaMedicoId(
+                pacienteId,
+                currentUserScope.requireMedicoId()
+        );
+    }
+
+    private long countMedicamentosNoEscopo(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return medicamentoPrescritoRepository.countByConsultaPacienteId(pacienteId);
+        }
+
+        return medicamentoPrescritoRepository.countByConsultaPacienteIdAndConsultaMedicoId(
+                pacienteId,
+                currentUserScope.requireMedicoId()
+        );
+    }
+
+    private List<Consulta> findConsultasNoEscopo(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return consultaRepository.findByPacienteIdOrderByDataHoraDesc(pacienteId);
+        }
+
+        return consultaRepository.findByPacienteIdAndMedicoIdOrderByDataHoraDesc(
+                pacienteId,
+                currentUserScope.requireMedicoId()
+        );
+    }
+
+    private List<MedicamentoPrescrito> findMedicamentosNoEscopo(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return medicamentoPrescritoRepository.findByConsultaPacienteId(pacienteId);
+        }
+
+        return medicamentoPrescritoRepository.findByConsultaPacienteIdAndConsultaMedicoId(
+                pacienteId,
+                currentUserScope.requireMedicoId()
+        );
+    }
+
+    private List<ExameSolicitado> findExamesNoEscopo(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return exameSolicitadoRepository.findByConsultaPacienteId(pacienteId);
+        }
+
+        return exameSolicitadoRepository.findByConsultaPacienteIdAndConsultaMedicoId(
+                pacienteId,
+                currentUserScope.requireMedicoId()
+        );
+    }
+
+    private void assertCanAccessPaciente(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return;
+        }
+
+        if (!consultaRepository.existsByPacienteIdAndMedicoId(pacienteId, currentUserScope.requireMedicoId())) {
+            throw accessDenied();
+        }
+    }
+
+    private AccessDeniedException accessDenied() {
+        return new AccessDeniedException(ExceptionMessages.ACCESS_DENIED);
+    }
+
     private Map<Long, LocalDateTime> buscarUltimasConsultasPorPaciente(List<Paciente> pacientes) {
         if (pacientes == null || pacientes.isEmpty()) {
             return Collections.emptyMap();
@@ -201,7 +322,12 @@ public class PacienteService {
                 .map(Paciente::getId)
                 .toList();
 
-        List<Consulta> consultas = consultaRepository.buscarConsultasOrdenadasPorPacienteEDataDesc(pacienteIds);
+        List<Consulta> consultas = currentUserScope.requiresMedicoScope()
+                ? consultaRepository.buscarConsultasOrdenadasPorPacienteEDataDescPorMedico(
+                        pacienteIds,
+                        currentUserScope.requireMedicoId()
+                )
+                : consultaRepository.buscarConsultasOrdenadasPorPacienteEDataDesc(pacienteIds);
 
         Map<Long, LocalDateTime> mapa = new HashMap<>();
 

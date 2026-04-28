@@ -13,6 +13,7 @@ import com.inflowia.medicflow.repository.ConsultaRepository;
 import com.inflowia.medicflow.repository.ExameSolicitadoRepository;
 import com.inflowia.medicflow.repository.MedicamentoPrescritoRepository;
 import com.inflowia.medicflow.repository.PacienteRepository;
+import com.inflowia.medicflow.security.CurrentUserScope;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,6 +50,9 @@ class PacienteServiceTest {
 
     @Mock
     private MedicamentoPrescritoRepository medicamentoPrescritoRepository;
+
+    @Mock
+    private CurrentUserScope currentUserScope;
 
     @InjectMocks
     private PacienteService service;

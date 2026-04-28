@@ -23,7 +23,13 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long>, JpaSp
 
     List<Consulta> findByPacienteIdOrderByDataHoraDesc(Long pacienteId);
 
+    List<Consulta> findByPacienteIdAndMedicoIdOrderByDataHoraDesc(Long pacienteId, Long medicoId);
+
     long countByPacienteId(Long pacienteId);
+
+    long countByPacienteIdAndMedicoId(Long pacienteId, Long medicoId);
+
+    boolean existsByPacienteIdAndMedicoId(Long pacienteId, Long medicoId);
 
     @Query("SELECT DISTINCT c.paciente FROM Consulta c WHERE c.medico.id = :medicoId")
     List<Paciente> findPacientesDistinctByMedicoId(@Param("medicoId") Long medicoId);
@@ -37,5 +43,17 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long>, JpaSp
     """)
     List<Consulta> buscarConsultasOrdenadasPorPacienteEDataDesc(
             @Param("pacienteIds") List<Long> pacienteIds
+    );
+
+    @Query("""
+        SELECT c
+        FROM Consulta c
+        WHERE c.paciente.id IN :pacienteIds
+          AND c.medico.id = :medicoId
+        ORDER BY c.paciente.id ASC, c.dataHora DESC
+    """)
+    List<Consulta> buscarConsultasOrdenadasPorPacienteEDataDescPorMedico(
+            @Param("pacienteIds") List<Long> pacienteIds,
+            @Param("medicoId") Long medicoId
     );
 }

@@ -13,11 +13,15 @@ public interface MedicamentoPrescritoRepository extends JpaRepository<Medicament
 
     long countByConsultaPacienteId(Long pacienteId);
 
+    long countByConsultaPacienteIdAndConsultaMedicoId(Long pacienteId, Long medicoId);
+
     Page<MedicamentoPrescrito> findByConsultaPacienteId(Long pacienteId, Pageable pageable);
 
     Page<MedicamentoPrescrito> findByConsultaPacienteIdAndConsultaMedicoId(Long pacienteId, Long medicoId, Pageable pageable);
 
     List<MedicamentoPrescrito> findByConsultaPacienteId(Long pacienteId);
+
+    List<MedicamentoPrescrito> findByConsultaPacienteIdAndConsultaMedicoId(Long pacienteId, Long medicoId);
 
     Page<MedicamentoPrescrito> findByConsultaId(Long consultaId, Pageable pageable);
 

@@ -34,4 +34,23 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
                           @Param("ativo") Boolean ativo,
                           @Param("convenio") String convenio,
                           Pageable pageable);
+
+    @Query("""
+            SELECT DISTINCT p
+            FROM Paciente p
+            JOIN p.consultas c
+            WHERE c.medico.id = :medicoId
+              AND UPPER(CONCAT(COALESCE(p.nome, ''), ' ', COALESCE(p.sobrenome, '')))
+                    LIKE UPPER(CONCAT('%', COALESCE(:nome, ''), '%'))
+              AND COALESCE(p.cpf, '') LIKE CONCAT('%', COALESCE(:cpf, ''), '%')
+              AND (:ativo IS NULL OR p.ativo = :ativo)
+              AND UPPER(COALESCE(p.planoSaude, ''))
+                    LIKE UPPER(CONCAT('%', COALESCE(:convenio, ''), '%'))
+            """)
+    Page<Paciente> searchLinkedToMedico(@Param("nome") String nome,
+                                        @Param("cpf") String cpf,
+                                        @Param("ativo") Boolean ativo,
+                                        @Param("convenio") String convenio,
+                                        @Param("medicoId") Long medicoId,
+                                        Pageable pageable);
 }
