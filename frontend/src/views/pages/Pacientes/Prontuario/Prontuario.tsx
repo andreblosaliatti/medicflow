@@ -76,6 +76,7 @@ export default function ProntuarioPage() {
       header={<PageHeader title={`Prontuário — ${pacienteNome}`} />}
       contentClassName="prontuario-content"
     >
+      <div className="mf-page-content">
       <div className="prontuario-timeline">
         {consultas.length === 0 ? (
           <Card>Nenhuma consulta encontrada.</Card>
@@ -192,6 +193,7 @@ export default function ProntuarioPage() {
             </Card>
           ))
         )}
+      </div>
       </div>
     </AppPage>
   );
