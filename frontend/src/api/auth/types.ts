@@ -7,6 +7,7 @@ export type LoginRequest = {
 
 export type LoginResponse = {
   id: number;
+  medicoId?: number | null;
   login: string;
   nomeCompleto: string;
   roles: string[];

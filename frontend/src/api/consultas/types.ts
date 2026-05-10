@@ -35,7 +35,6 @@ export type ConsultaDetailsApi = {
   duracaoMinutos: number | null;
   retorno: boolean;
   dataLimiteRetorno: string | null;
-  teleconsulta: boolean;
   linkAcesso: string | null;
   planoSaude: string | null;
   numeroCarteirinha: string | null;
@@ -57,7 +56,6 @@ export type ConsultaAgendaItemApi = {
   duracaoMinutos: number | null;
   tipo: string;
   status: string;
-  teleconsulta: boolean | null;
   linkAcesso: string | null;
   pacienteId: number | null;
   pacienteNome: string | null;
@@ -80,7 +78,6 @@ export type ConsultaListParams = {
   meioPagamento?: MeioPagamento;
   pago?: boolean;
   retorno?: boolean;
-  teleconsulta?: boolean;
   termo?: string;
   dataHoraInicio?: string;
   dataHoraFim?: string;
@@ -100,7 +97,6 @@ export type ConsultaCreatePayload = {
   duracaoMinutos: number;
   retorno: boolean;
   dataLimiteRetorno: string | null;
-  teleconsulta: boolean;
   linkAcesso: string | null;
   planoSaude: string | null;
   numeroCarteirinha: string | null;

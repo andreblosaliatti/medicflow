@@ -6,6 +6,7 @@ import {
   useCreateConsultaMutation,
   useUpdateConsultaMutation,
 } from "../../../api/consultas/hooks";
+import { useMedicoOptionsQuery } from "../../../api/medicos/hooks";
 import { usePacientesQuery } from "../../../api/pacientes/hooks";
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import Card from "../../../components/ui/Card";
@@ -49,6 +50,7 @@ const typeOptions: readonly SelectOption<TypeFilter>[] = [
   { value: "PRESENCIAL", label: "Presencial" },
   { value: "TELECONSULTA", label: "Teleconsulta" },
   { value: "RETORNO", label: "Retorno" },
+  { value: "URGENCIA", label: "Urgência" },
 ] as const;
 
 function startOfWeek(date: Date) {
@@ -109,6 +111,10 @@ function normalizeDateTimeLocal(value: string): string {
   return value;
 }
 
+function parsePositiveId(value: string | null | undefined): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
 
 function snapDuration(minutes: number): 15 | 30 | 45 | 60 {
   if (minutes <= 15) return 15;
@@ -117,7 +123,7 @@ function snapDuration(minutes: number): 15 | 30 | 45 | 60 {
   return 60;
 }
 
-function emptyDraft(doctorId: number, doctorName: string): ConsultaDraft {
+function emptyDraft(doctorId: number | null, doctorName: string): ConsultaDraft {
   const now = new Date();
   now.setMinutes(0, 0, 0);
 
@@ -142,7 +148,7 @@ function emptyDraft(doctorId: number, doctorName: string): ConsultaDraft {
   };
 }
 
-function fromEventToDraft(event: AppointmentEvent, doctorId: number, doctorName: string): ConsultaDraft {
+function fromEventToDraft(event: AppointmentEvent, doctorId: number | null, doctorName: string): ConsultaDraft {
   return {
     ...emptyDraft(doctorId, doctorName),
     pacienteId: event.patientId ?? null,
@@ -166,8 +172,9 @@ export default function AgendaPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const doctorId = Number(user?.id ?? 0);
-  const doctorName = user?.name ?? "Profissional";
+  const isDoctorUser = user?.role === "MEDICO";
+  const doctorId = isDoctorUser ? parsePositiveId(user?.medicoId) : null;
+  const doctorName = isDoctorUser ? user?.name ?? "" : "";
 
   const [range, setRange] = useState<VisibleRange>(() => ({
     start: startOfWeek(new Date()),
@@ -179,6 +186,7 @@ export default function AgendaPage() {
   const [lockPaciente, setLockPaciente] = useState(false);
 
   const pacientesQuery = usePacientesQuery({ size: 200, sort: "nome,asc" });
+  const medicosQuery = useMedicoOptionsQuery(!isDoctorUser);
   const agendaQuery = useAgendaEventsQuery({
     dataHoraInicio: toLocalDateTimeParam(range.start),
     dataHoraFim: toLocalDateTimeParam(range.end),
@@ -194,6 +202,17 @@ export default function AgendaPage() {
       label: paciente.nome,
     }));
   }, [pacientesQuery.data.content]);
+
+  const doctorOptions = useMemo<readonly SelectOption<number>[]>(() => {
+    if (isDoctorUser && doctorId !== null) {
+      return [{ value: doctorId, label: doctorName || "Medico" }];
+    }
+
+    return medicosQuery.data.map((medico) => ({
+      value: medico.id,
+      label: medico.label,
+    }));
+  }, [doctorId, doctorName, isDoctorUser, medicosQuery.data]);
 
   const drawer = useConsultaDrawerController({
     doctorId,
@@ -231,11 +250,11 @@ export default function AgendaPage() {
     });
   }, [agendaQuery.data, search, status, type]);
 
-  const error = agendaQuery.error ?? pacientesQuery.error ?? createMutation.error ?? updateMutation.error;
+  const error = agendaQuery.error ?? pacientesQuery.error ?? medicosQuery.error ?? createMutation.error ?? updateMutation.error;
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   async function handleSave(data: ConsultaDraft, mode: "create" | "edit") {
-    if (!data.pacienteId) return;
+    if (!data.pacienteId || !data.medicoId) return;
 
     const payload = {
       pacienteId: data.pacienteId,
@@ -251,7 +270,6 @@ export default function AgendaPage() {
       dataPagamento: data.pago ? normalizeDateTimeLocal(data.dataPagamento || data.dataHora) : null,
       retorno: data.tipo === "RETORNO",
       dataLimiteRetorno: data.tipo === "RETORNO" && data.dataLimiteRetorno ? normalizeDateTimeLocal(data.dataLimiteRetorno) : null,
-      teleconsulta: data.tipo === "TELECONSULTA",
       linkAcesso: data.tipo === "TELECONSULTA" ? data.linkAcesso || null : null,
       planoSaude: null,
       numeroCarteirinha: null,
@@ -374,6 +392,8 @@ export default function AgendaPage() {
         value={drawer.value}
         doctorId={doctorId}
         doctorName={doctorName}
+        doctorOptions={doctorOptions}
+        lockDoctor={isDoctorUser}
         patientOptions={patientOptions}
         lockPaciente={lockPaciente}
         isSaving={isSaving}

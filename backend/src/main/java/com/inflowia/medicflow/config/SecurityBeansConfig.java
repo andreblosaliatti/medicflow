@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.config;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.config.CorrelationIdFilter;
 import com.inflowia.medicflow.security.ApiAccessDeniedHandler;
 import com.inflowia.medicflow.security.ApiAuthenticationEntryPoint;
@@ -79,7 +80,7 @@ public class SecurityBeansConfig {
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(
-                            "/auth/login",
+                            ApiPaths.AUTH + "/login",
                             "/error",
                             "/actuator/health",
                             "/actuator/info"

@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.controller;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.dto.medico.MedicoComPacientesDTO;
 import com.inflowia.medicflow.dto.medico.MedicoDTO;
 import com.inflowia.medicflow.dto.medico.MedicoDetailsDTO;
@@ -30,7 +31,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/medicos")
+@RequestMapping(ApiPaths.MEDICOS)
 @RequiredArgsConstructor
 public class MedicoController {
 
@@ -45,7 +46,7 @@ public class MedicoController {
         MedicoDetailsDTO salvo = service.cadastrar(dto);
 
         URI uri = uriBuilder
-                .path("/medicos/{id}")
+                .path(ApiPaths.MEDICOS + "/{id}")
                 .buildAndExpand(salvo.getId())
                 .toUri();
 

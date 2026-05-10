@@ -26,64 +26,71 @@
   min-width: 0;
 }
 
-/* Empty / Pager */
-.mf-empty{
-  padding: 18px 6px 0;
-  text-align: center;
+.mf-patients-action-group{
+  gap: 8px;
 }
 
-.mf-empty__title{
-  font-weight: 900;
-  color: var(--mf-dark);
+.mf-patients-action-button{
+  min-height: 34px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(246,248,251,0.78);
 }
 
-.mf-empty__sub{
-  margin-top: 6px;
+.mf-patients-action-button--icon{
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+}
+
+.mf-patients-action-button--icon span{
+  line-height: 1;
+  letter-spacing: 0.04em;
+  transform: translateY(-1px);
+}
+
+.mf-pagination{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--mf-border);
   color: var(--mf-muted);
   font-weight: 700;
 }
 
-.mf-pager{
+.mf-pagination__text{
+  font-size: 13px;
+}
+
+.mf-pagination__actions{
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 0 0;
-  color: var(--mf-muted);
-  font-weight: 800;
+  gap: 10px;
 }
 
-.mf-pager__right{
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.mf-pagination__button{
+  min-width: 104px;
 }
 
-.mf-pager__btn{
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  border: 1px solid var(--mf-border);
-  background: var(--mf-surface);
-  cursor: pointer;
-  color: var(--mf-text);
-  font-weight: 900;
-}
-
-.mf-pager__btn:disabled{
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.mf-pager__page{
-  min-width: 34px;
-  height: 34px;
+.mf-pageIndex{
+  min-width: 108px;
+  height: 40px;
+  padding: 0 14px;
   border-radius: 10px;
   border: 1px solid var(--mf-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(246,248,251,0.65);
+  background: rgba(246,248,251,0.72);
   color: var(--mf-text);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 @media (max-width: 1100px){
@@ -97,13 +104,19 @@
     grid-template-columns: 1fr;
   }
 
-  .mf-pager{
+  .mf-pagination{
     flex-direction: column;
     align-items: stretch;
     gap: 10px;
   }
 
-  .mf-pager__right{
-    justify-content: flex-end;
+  .mf-pagination__actions{
+    justify-content: space-between;
+  }
+
+  .mf-pagination__button,
+  .mf-pageIndex{
+    flex: 1 1 0;
+    min-width: 0;
   }
 }

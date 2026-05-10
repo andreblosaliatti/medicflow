@@ -1,6 +1,7 @@
 package com.inflowia.medicflow.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.config.CorrelationIdFilter;
 import com.inflowia.medicflow.dto.usuario.DadosCadastroUsuario;
 import com.inflowia.medicflow.dto.usuario.DadosDetalhamentoUsuario;
@@ -65,13 +66,13 @@ class UsuarioControllerWebMvcTest {
         payload.setEmail("email-invalido");
         payload.setCpf("123");
 
-        mockMvc.perform(post("/usuarios")
+        mockMvc.perform(post(ApiPaths.USUARIOS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.code").value(ErrorCodes.CORE_REQUEST_BODY_INVALID))
                 .andExpect(jsonPath("$.message").value("Dados inválidos."))
-                .andExpect(jsonPath("$.path").value("/usuarios"))
+                .andExpect(jsonPath("$.path").value(ApiPaths.USUARIOS))
                 .andExpect(jsonPath("$.errors.length()").value(6));
     }
 
@@ -101,11 +102,11 @@ class UsuarioControllerWebMvcTest {
                 )
         );
 
-        mockMvc.perform(post("/usuarios")
+        mockMvc.perform(post(ApiPaths.USUARIOS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "http://localhost/usuarios/99"))
+                .andExpect(header().string("Location", "http://localhost" + ApiPaths.USUARIOS + "/99"))
                 .andExpect(jsonPath("$.id").value(99L))
                 .andExpect(jsonPath("$.login").value("novo.usuario"));
     }

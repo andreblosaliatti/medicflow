@@ -1,9 +1,11 @@
 package com.inflowia.medicflow.service;
 
+import com.inflowia.medicflow.domain.usuario.Medico;
 import com.inflowia.medicflow.domain.usuario.Usuario;
 import com.inflowia.medicflow.dto.auth.LoginRequest;
 import com.inflowia.medicflow.dto.auth.LoginResponse;
 import com.inflowia.medicflow.exception.ExceptionMessages;
+import com.inflowia.medicflow.repository.MedicoRepository;
 import com.inflowia.medicflow.repository.UsuarioRepository;
 import com.inflowia.medicflow.security.AccessRole;
 import com.inflowia.medicflow.security.AuthorizationMatrix;
@@ -29,6 +31,7 @@ public class AuthService {
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
+    private final MedicoRepository medicoRepository;
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
@@ -70,11 +73,17 @@ public class AuthService {
                 .collect(java.util.stream.Collectors.toSet()));
 
         String nomeCompleto = usuario.getNome() + " " + usuario.getSobrenome();
+        Long medicoId = roles.contains(AccessRole.MEDICO.apiName())
+                ? medicoRepository.findByIdAndAtivoTrue(usuario.getId())
+                        .map(Medico::getId)
+                        .orElse(null)
+                : null;
 
         return new LoginResponse(
                 usuario.getId(),
                 usuario.getLogin(),
                 nomeCompleto,
+                medicoId,
                 roles,
                 permissions.stream().sorted().toList(),
                 token

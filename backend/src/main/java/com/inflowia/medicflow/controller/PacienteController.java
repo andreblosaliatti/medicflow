@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.controller;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.dto.paciente.PacienteDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteListDTO;
 import com.inflowia.medicflow.dto.paciente.PacienteProntuarioDetailsDTO;
@@ -19,7 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/pacientes")
+@RequestMapping(ApiPaths.PACIENTES)
 public class PacienteController {
 
     @Autowired
@@ -34,7 +35,7 @@ public class PacienteController {
         PacienteDTO salvo = service.cadastrar(dto);
 
         URI uri = uriBuilder
-                .path("/pacientes/{id}")
+                .path(ApiPaths.PACIENTES + "/{id}")
                 .buildAndExpand(salvo.getId())
                 .toUri();
 

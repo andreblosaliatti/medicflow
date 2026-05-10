@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import AppPage from "../../../components/layout/AppPage/AppPage";
 import PageHeader from "../../../components/layout/PageHeader/PageHeader";
 import Panel from "../../../components/ui/Panel/Panel";
+import SecondaryButton from "../../../components/ui/SecondaryButton/SecondaryButton";
 
 import Input from "../../../components/form/Input";
 import SelectField from "../../../components/form/SelectField/SelectField";
@@ -252,23 +253,23 @@ export default function PacientesPage() {
 
                     <Td align="right" onClick={(event) => event.stopPropagation()}>
                       <div className="mf-row-actions">
-                        <div className="mf-split">
-                          <button
+                        <div className="mf-split mf-patients-action-group">
+                          <SecondaryButton
                             type="button"
-                            className="mf-btn-link"
-                            onClick={() => navigate(`/pacientes/${paciente.id}`)}
+                            className="mf-patients-action-button"
+                            onClick={() => navigate(`/pacientes/${paciente.id}`, { state: navState })}
                           >
                             Ver perfil
-                          </button>
+                          </SecondaryButton>
 
-                          <button
+                          <SecondaryButton
                             type="button"
-                            className="mf-rowMenuBtn"
-                            aria-label="Ações do paciente"
+                            className="mf-patients-action-button mf-patients-action-button--icon"
+                            aria-label="Mais ações do paciente"
                             onClick={() => setOpenMenuId(openMenuId === paciente.id ? null : paciente.id)}
                           >
-                            ⋯
-                          </button>
+                            <span aria-hidden="true">...</span>
+                          </SecondaryButton>
                         </div>
 
                         <RowMenu
@@ -299,18 +300,23 @@ export default function PacientesPage() {
             </span>
 
             <div className="mf-pagination__actions">
-              <button type="button" className="mf-pageBtn" disabled={safePage <= 1} onClick={() => setPage((currentPage) => currentPage - 1)}>
-                Anterior
-              </button>
-              <span className="mf-pageIndex">Página {safePage}</span>
-              <button
+              <SecondaryButton
                 type="button"
-                className="mf-pageBtn"
+                className="mf-pagination__button"
+                disabled={safePage <= 1}
+                onClick={() => setPage((currentPage) => currentPage - 1)}
+              >
+                Anterior
+              </SecondaryButton>
+              <span className="mf-pageIndex">Página {safePage}</span>
+              <SecondaryButton
+                type="button"
+                className="mf-pagination__button"
                 disabled={safePage >= totalPages}
                 onClick={() => setPage((currentPage) => currentPage + 1)}
               >
                 Próxima
-              </button>
+              </SecondaryButton>
             </div>
           </div>
         </Panel>

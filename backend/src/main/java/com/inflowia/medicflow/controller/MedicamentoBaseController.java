@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.controller;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.dto.medicamento.MedicamentoBaseDTO;
 import com.inflowia.medicflow.service.MedicamentoBaseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
-@RequestMapping("/medicamentos-base")
+@RequestMapping(ApiPaths.MEDICAMENTOS_BASE)
 public class MedicamentoBaseController {
 
     @Autowired

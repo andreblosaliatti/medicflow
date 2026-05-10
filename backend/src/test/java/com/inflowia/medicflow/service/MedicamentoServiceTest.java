@@ -11,6 +11,7 @@ import com.inflowia.medicflow.repository.ConsultaRepository;
 import com.inflowia.medicflow.repository.MedicamentoBaseRepository;
 import com.inflowia.medicflow.repository.MedicamentoPrescritoRepository;
 import com.inflowia.medicflow.repository.PacienteRepository;
+import com.inflowia.medicflow.security.CurrentUserScope;
 import com.inflowia.medicflow.service.validation.ConsultaDomainValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,9 @@ class MedicamentoServiceTest {
     @Mock
     ConsultaDomainValidator consultaDomainValidator;
 
+    @Mock
+    CurrentUserScope currentUserScope;
+
     MedicamentoService service;
 
     @BeforeEach
@@ -55,7 +59,8 @@ class MedicamentoServiceTest {
                 medicamentoPrescritoRepository,
                 medicamentoBaseRepository,
                 pacienteRepository,
-                consultaDomainValidator
+                consultaDomainValidator,
+                currentUserScope
         );
     }
 
@@ -64,7 +69,7 @@ class MedicamentoServiceTest {
         Long consultaId = 10L;
         var pageable = PageRequest.of(0, 10);
 
-        when(consultaRepository.existsById(consultaId)).thenReturn(true);
+        when(consultaRepository.findById(consultaId)).thenReturn(Optional.of(consultaValida()));
         when(medicamentoPrescritoRepository.findByConsultaId(consultaId, pageable))
                 .thenReturn(new PageImpl<>(List.of()));
 

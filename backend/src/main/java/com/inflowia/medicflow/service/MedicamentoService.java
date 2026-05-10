@@ -13,13 +13,14 @@ import com.inflowia.medicflow.exception.BusinessRuleException;
 import com.inflowia.medicflow.exception.ErrorCodes;
 import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.exception.ResourceNotFoundException;
+import com.inflowia.medicflow.security.CurrentUserScope;
 import com.inflowia.medicflow.service.validation.ConsultaDomainValidator;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -33,24 +34,26 @@ public class MedicamentoService {
     private final MedicamentoBaseRepository medicamentoBaseRepository;
     private final PacienteRepository pacienteRepository;
     private final ConsultaDomainValidator consultaDomainValidator;
+    private final CurrentUserScope currentUserScope;
 
     public MedicamentoService(ConsultaRepository consultaRepository,
                               MedicamentoPrescritoRepository medicamentoPrescritoRepository,
                               MedicamentoBaseRepository medicamentoBaseRepository,
                               PacienteRepository pacienteRepository,
-                              ConsultaDomainValidator consultaDomainValidator) {
+                              ConsultaDomainValidator consultaDomainValidator,
+                              CurrentUserScope currentUserScope) {
         this.consultaRepository = consultaRepository;
         this.medicamentoPrescritoRepository = medicamentoPrescritoRepository;
         this.medicamentoBaseRepository = medicamentoBaseRepository;
         this.pacienteRepository = pacienteRepository;
         this.consultaDomainValidator = consultaDomainValidator;
+        this.currentUserScope = currentUserScope;
     }
 
     @Transactional(readOnly = true)
     public Page<MedicamentoPrescritoMinDTO> listarPorConsulta(Long consultaId, Pageable pageable) {
-        if (!consultaRepository.existsById(consultaId)) {
-            throw new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta"));
-        }
+        Consulta consulta = getConsulta(consultaId);
+        assertCanAccessConsulta(consulta);
 
         Page<MedicamentoPrescrito> page =
                 medicamentoPrescritoRepository.findByConsultaId(consultaId, pageable);
@@ -64,26 +67,22 @@ public class MedicamentoService {
             throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
         }
 
-        Page<MedicamentoPrescrito> page =
-                medicamentoPrescritoRepository.findByConsultaPacienteId(pacienteId, pageable);
+        Page<MedicamentoPrescrito> page = findByPacienteNoEscopo(pacienteId, pageable);
 
         return page.map(MedicamentoPrescritoMinDTO::new);
     }
 
     @Transactional(readOnly = true)
     public MedicamentoPrescritoMinDTO findById(Long id) {
-        Optional<MedicamentoPrescrito> obj = medicamentoPrescritoRepository.findById(id);
-
-        MedicamentoPrescrito entity =
-                obj.orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICAMENTO_NOT_FOUND, ExceptionMessages.notFound("Medicamento")));
+        MedicamentoPrescrito entity = getMedicamentoPrescrito(id);
+        assertCanAccessMedicamento(entity);
 
         return new MedicamentoPrescritoMinDTO(entity);
     }
 
     @Transactional(readOnly = true)
     public Page<MedicamentoPrescritoMinDTO> buscaPorNome(String nome, Pageable pageable) {
-        Page<MedicamentoPrescrito> page =
-                medicamentoPrescritoRepository.searchByName(nome, pageable);
+        Page<MedicamentoPrescrito> page = searchByNameNoEscopo(nome, pageable);
 
         return page.map(MedicamentoPrescritoMinDTO::new);
     }
@@ -94,8 +93,7 @@ public class MedicamentoService {
             throw new ResourceNotFoundException(ErrorCodes.PACIENTE_NOT_FOUND, ExceptionMessages.notFound("Paciente"));
         }
 
-        Consulta consulta = consultaRepository
-                .findTopByPacienteIdOrderByDataHoraDesc(pacienteId)
+        Consulta consulta = findUltimaConsultaPacienteNoEscopo(pacienteId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.NO_PATIENT_CONSULTATIONS));
 
         return consulta.getMedicamentosPrescritos()
@@ -106,8 +104,8 @@ public class MedicamentoService {
 
     @Transactional
     public MedicamentoPrescritoMinDTO adicionarMedicamento(Long consultaId, MedicamentoPrescritoDTO dados) {
-        Consulta consulta = consultaRepository.findById(consultaId)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.CONSULTA_NOT_FOUND, ExceptionMessages.notFound("Consulta")));
+        Consulta consulta = getConsulta(consultaId);
+        assertCanAccessConsulta(consulta);
 
         consultaDomainValidator.validateCanAddMedication(consulta);
 
@@ -137,8 +135,8 @@ public class MedicamentoService {
 
     @Transactional
     public MedicamentoPrescritoMinDTO atualizarMedicamento(Long medicamentoId, MedicamentoPrescritoDTO dados) {
-        MedicamentoPrescrito prescrito = medicamentoPrescritoRepository.findById(medicamentoId)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorCodes.MEDICAMENTO_NOT_FOUND, ExceptionMessages.notFound("Medicamento")));
+        MedicamentoPrescrito prescrito = getMedicamentoPrescrito(medicamentoId);
+        assertCanAccessMedicamento(prescrito);
 
         consultaDomainValidator.validateCanAddMedication(prescrito.getConsulta());
 
@@ -156,23 +154,102 @@ public class MedicamentoService {
 
     @Transactional(readOnly = true)
     public Page<MedicamentoPrescritoMinDTO> findAll(Pageable pageable) {
-        Page<MedicamentoPrescrito> page =
-                medicamentoPrescritoRepository.findAll(pageable);
+        Page<MedicamentoPrescrito> page = findAllNoEscopo(pageable);
 
         return page.map(MedicamentoPrescritoMinDTO::new);
     }
 
-    @Transactional(propagation = Propagation.SUPPORTS)
+    @Transactional
     public void delete(Long id) {
-        if (!medicamentoPrescritoRepository.existsById(id)) {
-            throw new ResourceNotFoundException(ErrorCodes.MEDICAMENTO_NOT_FOUND, ExceptionMessages.notFound("Medicamento"));
-        }
+        MedicamentoPrescrito entity = getMedicamentoPrescrito(id);
+        assertCanAccessMedicamento(entity);
 
         try {
-            medicamentoPrescritoRepository.deleteById(id);
+            medicamentoPrescritoRepository.delete(entity);
         } catch (DataIntegrityViolationException e) {
             throw new BusinessRuleException(ErrorCodes.MEDICAMENTO_BUSINESS_RULE, "Não é possível excluir o medicamento informado porque ele está vinculado a outros registros.");
         }
+    }
+
+    private Consulta getConsulta(Long consultaId) {
+        return consultaRepository.findById(consultaId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.CONSULTA_NOT_FOUND,
+                        ExceptionMessages.notFound("Consulta")
+                ));
+    }
+
+    private MedicamentoPrescrito getMedicamentoPrescrito(Long id) {
+        return medicamentoPrescritoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ErrorCodes.MEDICAMENTO_NOT_FOUND,
+                        ExceptionMessages.notFound("Medicamento")
+                ));
+    }
+
+    private Page<MedicamentoPrescrito> findByPacienteNoEscopo(Long pacienteId, Pageable pageable) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return medicamentoPrescritoRepository.findByConsultaPacienteId(pacienteId, pageable);
+        }
+
+        return medicamentoPrescritoRepository.findByConsultaPacienteIdAndConsultaMedicoId(
+                pacienteId,
+                currentUserScope.requireMedicoId(),
+                pageable
+        );
+    }
+
+    private Page<MedicamentoPrescrito> searchByNameNoEscopo(String nome, Pageable pageable) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return medicamentoPrescritoRepository.searchByName(nome, pageable);
+        }
+
+        return medicamentoPrescritoRepository.searchByNameAndMedicoId(
+                nome,
+                currentUserScope.requireMedicoId(),
+                pageable
+        );
+    }
+
+    private Page<MedicamentoPrescrito> findAllNoEscopo(Pageable pageable) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return medicamentoPrescritoRepository.findAll(pageable);
+        }
+
+        return medicamentoPrescritoRepository.findByConsultaMedicoId(
+                currentUserScope.requireMedicoId(),
+                pageable
+        );
+    }
+
+    private Optional<Consulta> findUltimaConsultaPacienteNoEscopo(Long pacienteId) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return consultaRepository.findTopByPacienteIdOrderByDataHoraDesc(pacienteId);
+        }
+
+        return consultaRepository.findTopByPacienteIdAndMedicoIdOrderByDataHoraDesc(
+                pacienteId,
+                currentUserScope.requireMedicoId()
+        );
+    }
+
+    private void assertCanAccessMedicamento(MedicamentoPrescrito medicamento) {
+        assertCanAccessConsulta(medicamento.getConsulta());
+    }
+
+    private void assertCanAccessConsulta(Consulta consulta) {
+        if (!currentUserScope.requiresMedicoScope()) {
+            return;
+        }
+
+        Long consultaMedicoId = consulta.getMedico() != null ? consulta.getMedico().getId() : null;
+        if (!currentUserScope.requireMedicoId().equals(consultaMedicoId)) {
+            throw accessDenied();
+        }
+    }
+
+    private AccessDeniedException accessDenied() {
+        return new AccessDeniedException(ExceptionMessages.ACCESS_DENIED);
     }
 
     private MedicamentoResolvido resolverMedicamento(MedicamentoPrescritoDTO dados) {

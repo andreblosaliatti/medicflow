@@ -20,7 +20,7 @@
   transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
 
-.mf-secondary-button:hover{
+.mf-secondary-button:enabled:hover{
   background: rgba(15,23,42,.04);
   border-color: rgba(15,23,42,.18);
 }
@@ -32,8 +32,16 @@
 }
 
 .mf-secondary-button:disabled{
-  opacity: .6;
+  background: rgba(246,248,251,0.72);
+  border-color: var(--mf-border);
+  color: var(--mf-muted);
   cursor: not-allowed;
+  box-shadow: none;
+}
+
+.mf-secondary-button:disabled:hover{
+  background: rgba(246,248,251,0.72);
+  border-color: var(--mf-border);
 }
 
 /* ✅ garante que texto não some */

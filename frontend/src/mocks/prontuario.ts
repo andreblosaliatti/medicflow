@@ -16,7 +16,7 @@ export type ProntuarioMedicacao = {
 
 export type ProntuarioExame = {
   nome: string;
-  status: "SOLICITADO" | "REALIZADO" | "RESULTADO";
+  status: "SOLICITADO" | "AGENDADO" | "REALIZADO" | "CANCELADO";
 };
 
 export type ProntuarioConsulta = {

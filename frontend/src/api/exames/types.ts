@@ -1,6 +1,6 @@
 import type { PageResponse } from "../shared/types";
 
-export type StatusExameApi = "SOLICITADO" | "AGENDADO" | "REALIZADO" | "RESULTADO" | "CANCELADO";
+export type StatusExameApi = "SOLICITADO" | "AGENDADO" | "REALIZADO" | "CANCELADO";
 
 export type ExameApi = {
   id: number;

@@ -1,5 +1,6 @@
 package com.inflowia.medicflow.controller;
 
+import com.inflowia.medicflow.api.ApiPaths;
 import com.inflowia.medicflow.dto.usuario.DadosAtualizacaoUsuario;
 import com.inflowia.medicflow.dto.usuario.DadosCadastroUsuario;
 import com.inflowia.medicflow.dto.usuario.DadosDetalhamentoUsuario;
@@ -25,7 +26,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping(ApiPaths.USUARIOS)
 @RequiredArgsConstructor
 public class UsuarioController {
 

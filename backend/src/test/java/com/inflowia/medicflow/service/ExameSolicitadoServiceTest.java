@@ -11,6 +11,7 @@ import com.inflowia.medicflow.repository.ConsultaRepository;
 import com.inflowia.medicflow.repository.ExameBaseRepository;
 import com.inflowia.medicflow.repository.ExameSolicitadoRepository;
 import com.inflowia.medicflow.repository.PacienteRepository;
+import com.inflowia.medicflow.security.CurrentUserScope;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +44,9 @@ class ExameSolicitadoServiceTest {
 
     @Mock
     private PacienteRepository pacienteRepository;
+
+    @Mock
+    private CurrentUserScope currentUserScope;
 
     private ExameSolicitadoService service;
 
@@ -139,6 +143,7 @@ class ExameSolicitadoServiceTest {
         inject("exameBaseRepository", exameBaseRepository);
         inject("consultaRepository", consultaRepository);
         inject("pacienteRepository", pacienteRepository);
+        inject("currentUserScope", currentUserScope);
     }
 
     private void inject(String fieldName, Object value) throws Exception {

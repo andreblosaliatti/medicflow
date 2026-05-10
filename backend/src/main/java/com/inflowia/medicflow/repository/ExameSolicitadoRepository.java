@@ -11,11 +11,21 @@ public interface ExameSolicitadoRepository extends JpaRepository<ExameSolicitado
 
     long countByConsultaPacienteId(Long pacienteId);
 
+    long countByConsultaPacienteIdAndConsultaMedicoId(Long pacienteId, Long medicoId);
+
     Page<ExameSolicitado> findByConsultaId(Long consultaId, Pageable pageable);
+
+    Page<ExameSolicitado> findByConsultaIdAndConsultaMedicoId(Long consultaId, Long medicoId, Pageable pageable);
 
     Page<ExameSolicitado> findByExameBaseId(Long exameBaseId, Pageable pageable);
 
+    Page<ExameSolicitado> findByExameBaseIdAndConsultaMedicoId(Long exameBaseId, Long medicoId, Pageable pageable);
+
     Page<ExameSolicitado> findByConsultaPacienteId(Long pacienteId, Pageable pageable);
 
+    Page<ExameSolicitado> findByConsultaPacienteIdAndConsultaMedicoId(Long pacienteId, Long medicoId, Pageable pageable);
+
     List<ExameSolicitado> findByConsultaPacienteId(Long pacienteId);
+
+    List<ExameSolicitado> findByConsultaPacienteIdAndConsultaMedicoId(Long pacienteId, Long medicoId);
 }

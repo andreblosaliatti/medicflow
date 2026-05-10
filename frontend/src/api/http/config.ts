@@ -1,4 +1,4 @@
-const DEFAULT_DEV_API_PREFIX = "/api";
+const DEFAULT_DEV_API_PREFIX = "/api/v1";
 
 function normalizeBaseUrl(value: string | undefined) {
   if (!value) return null;

@@ -9,7 +9,8 @@ export type StatusConsulta =
 export type TipoConsulta =
   | "PRESENCIAL"
   | "TELECONSULTA"
-  | "RETORNO";
+  | "RETORNO"
+  | "URGENCIA";
 
 export type DuracaoMinutos = 15 | 30 | 45 | 60;
 

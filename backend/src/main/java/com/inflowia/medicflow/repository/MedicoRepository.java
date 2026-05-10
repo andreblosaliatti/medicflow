@@ -34,6 +34,8 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
 
     boolean existsByIdAndAtivoTrue(Long id);
 
+    Optional<Medico> findByLoginIgnoreCaseAndAtivoTrue(String login);
+
     List<Medico> findAllByAtivoTrue();
 
     @Query("""

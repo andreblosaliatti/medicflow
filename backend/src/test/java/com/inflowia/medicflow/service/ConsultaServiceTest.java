@@ -15,6 +15,7 @@ import com.inflowia.medicflow.exception.ExceptionMessages;
 import com.inflowia.medicflow.repository.ConsultaRepository;
 import com.inflowia.medicflow.repository.MedicoRepository;
 import com.inflowia.medicflow.repository.PacienteRepository;
+import com.inflowia.medicflow.security.CurrentUserScope;
 import com.inflowia.medicflow.service.validation.ConsultaDomainValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +51,9 @@ class ConsultaServiceTest {
 
     @Mock
     ConsultaDomainValidator consultaDomainValidator;
+
+    @Mock
+    CurrentUserScope currentUserScope;
 
     @InjectMocks
     ConsultaService service;
@@ -103,7 +107,7 @@ class ConsultaServiceTest {
                 .prescricao("Prescrever antibiótico")
                 .build();
 
-        when(consultaRepository.getReferenceById(consultaId)).thenReturn(consulta);
+        when(consultaRepository.findById(consultaId)).thenReturn(Optional.of(consulta));
         org.mockito.Mockito.doThrow(new BusinessRuleException(ExceptionMessages.CANCELED_CONSULTATION_PRESCRIPTION_NOT_ALLOWED))
                 .when(consultaDomainValidator)
                 .validate(any(Consulta.class));
